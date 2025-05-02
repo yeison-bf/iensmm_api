@@ -1,0 +1,87 @@
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { RolesModule } from './modules/roles/roles.module';
+import { UsersModule } from './modules/users/users.module';
+import { InstitutionsModule } from './modules/institutions/institutions.module';
+import { HeadquartersModule } from './modules/headquarters/headquarters.module';
+import { RatingsModule } from './modules/ratings/ratings.module';
+import { PeriodsModule } from './modules/periods/periods.module';
+import { PeriodDetailsModule } from './modules/period-details/period-details.module';
+import { DocumentTypeModule } from './modules/document-type/document-type.module';
+import { StudentsModule } from './modules/students/students.module';
+import { AdministratorsModule } from './modules/administrators/administrators.module';
+import { AdministratorTypeModule } from './modules/administrator-type/administrator-type.module';
+
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      envFilePath: join(__dirname, '..', 'config', 'env', `${process.env.NODE_ENV || 'dev'}.env`),
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_DATABASE'),
+        entities: [join(__dirname, '**', '*.{ts,js}')],
+        synchronize: configService.get<boolean>('DB_SYNCHRONIZE'),
+        logging: configService.get<boolean>('DB_LOGGING'),
+        ssl: configService.get<string>('DB_SSL') === 'true' ? 
+          { rejectUnauthorized: false } : 
+          false,
+      }),
+    }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('EMAIL_HOST'),
+          port: configService.get<number>('EMAIL_PORT'),
+          secure: configService.get<number>('EMAIL_PORT') === 465,
+          auth: {
+            user: configService.get<string>('EMAIL_USER'),
+            pass: configService.get<string>('EMAIL_PASS'),
+          },
+        },
+        defaults: {
+          from: configService.get<string>('EMAIL_FROM'),
+        },
+        template: {
+          dir: join(__dirname, 'templates'),
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
+    }),
+    RolesModule,
+    UsersModule,
+    InstitutionsModule,
+    HeadquartersModule,
+    RatingsModule,
+    PeriodsModule,
+    PeriodDetailsModule,
+    DocumentTypeModule,
+    StudentsModule,
+    AdministratorsModule,
+    AdministratorTypeModule,
+
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule { }
