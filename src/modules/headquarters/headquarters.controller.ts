@@ -27,12 +27,10 @@ export class HeadquartersController {
     return await this.headquartersService.findOneDaneCode(id);
   }
 
-
   @Get('email/:id')
   async findOneEmail(@Param('id') id: string) {
     return await this.headquartersService.findOneEmail(id);
   }
-
 
   @Put(':id')
   async update(

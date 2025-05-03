@@ -644,9 +644,15 @@ export class UsersService {
       // Find user with role and both possible relations
       const user = await this.userRepository.findOne({
         where: { username },
-        relations: ['role', 'student', 'administrator', 'documentType', 'headquarters'],
+        relations: [
+          'role',
+          'student',
+          'administrator',
+          'administrator.administratorType', // Changed from administratorTypeId to administratorType
+          'documentType',
+          'headquarters'
+        ],
       });
-
       if (!user) {
         return {
           success: false,
@@ -665,6 +671,7 @@ export class UsersService {
         };
       }
 
+      console.log(user);
       // Prepare token payload based on role
       let tokenPayload: any = {
         userId: user.id,
@@ -694,7 +701,16 @@ export class UsersService {
           ...tokenPayload,
           administrator: {
             id: user.administrator.id,
-            // Add other administrator-specific fields you want in the token
+            academicTitle: user.administrator.academicTitle,
+            trainingArea: user.administrator.trainingArea,
+            maritalStatus: user.administrator.maritalStatus,
+            startDate: user.administrator.startDate,
+            endDate: user.administrator.endDate,
+            teachingLevel: user.administrator.teachingLevel,
+            contractType: user.administrator.contractType,
+            signature: user.administrator.signature,
+            administratorTypeId: user.administrator.administratorTypeId,
+            administratorType: user.administrator.administratorType
           }
         };
       }
@@ -704,7 +720,6 @@ export class UsersService {
         expiresIn: '24h', // Token expires in 24 hours
       });
 
-      console.log(user)
       return {
         success: true,
         message: 'Login successful',
