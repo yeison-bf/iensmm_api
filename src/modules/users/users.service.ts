@@ -574,9 +574,67 @@ export class UsersService {
     }
   }
 
+  async findOneDocument(id: string) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { document: id},
+        select: {
+          password: false,
+        },
+      });
 
+      if (!user) {
+        return {
+          success: false,
+          message: `User with ID ${id} not found`,
+          data: null,
+        };
+      }
 
+      return {
+        success: true,
+        message: 'User retrieved successfully',
+        data: user,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving user: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
+  async findOneUserName(id: string) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { username: id},
+        select: {
+          password: false,
+        },
+      });
+
+      if (!user) {
+        return {
+          success: false,
+          message: `User with ID ${id} not found`,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'User retrieved successfully',
+        data: user,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving user: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
   // Metodos para el login.
 

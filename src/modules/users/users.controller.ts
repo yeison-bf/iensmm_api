@@ -62,6 +62,17 @@ export class UsersController {
     return this.usersService.findOneAdministrator(id);
   }
 
+  @Get('document/:id')
+  findOneDocument(@Param('id') id: string) {
+    return this.usersService.findOneDocument(id);
+  }
+
+
+  @Get('userName/:id')
+  findOneUserName(@Param('id') id: string) {
+    return this.usersService.findOneUserName(id);
+  }
+
 
 
   @Put('students/:id')

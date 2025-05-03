@@ -17,6 +17,8 @@ import { DocumentTypeModule } from './modules/document-type/document-type.module
 import { StudentsModule } from './modules/students/students.module';
 import { AdministratorsModule } from './modules/administrators/administrators.module';
 import { AdministratorTypeModule } from './modules/administrator-type/administrator-type.module';
+import { AttendantsModule } from './modules/attendants/attendants.module';
+import { TransfersModule } from './modules/transfers/transfers.module';
 
 
 @Module({
@@ -79,6 +81,8 @@ import { AdministratorTypeModule } from './modules/administrator-type/administra
     StudentsModule,
     AdministratorsModule,
     AdministratorTypeModule,
+    AttendantsModule,
+    TransfersModule,
 
   ],
   controllers: [AppController],

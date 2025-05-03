@@ -106,6 +106,7 @@ export class StudentsService {
     }
   }
 
+
   async update(id: number, updateStudentDto: UpdateStudentDto) {
     try {
       const student = await this.studentRepository.findOne({

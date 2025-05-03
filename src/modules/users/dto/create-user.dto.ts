@@ -17,8 +17,8 @@ export class CreateUserDto {
   document: string;
 
   @IsEmail()
-  @IsNotEmpty()
-  notificationEmail: string;
+  @IsEmail(undefined, { message: 'Invalid email format' })
+  notificationEmail: string | null;
 
   @IsString()
   @IsNotEmpty()

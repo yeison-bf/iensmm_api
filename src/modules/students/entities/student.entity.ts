@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Attendant } from 'src/modules/attendants/entities/attendant.entity';
 
 @Entity('student')
 export class Student {
@@ -36,6 +37,9 @@ export class Student {
   @OneToOne(() => User)
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @OneToMany(() => Attendant, attendant => attendant.student)
+  attendants: Attendant[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
