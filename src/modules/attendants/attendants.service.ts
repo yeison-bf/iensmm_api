@@ -98,6 +98,9 @@ export class AttendantsService {
     }
   }
 
+
+ 
+
   async findByStudent(studentId: number) {
     try {
       const attendants = await this.attendantRepository.find({

@@ -113,6 +113,71 @@ export class HeadquartersService {
     }
   }
 
+
+  async findOneDaneCode(id: string) {
+    try {
+      const headquarters = await this.headquartersRepository.findOne({
+        where: { daneCode: id },
+        relations: ['institution'],
+      });
+
+      if (!headquarters) {
+        return {
+          success: false,
+          message: `Headquarters with ID ${id} not found`,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Headquarters retrieved successfully',
+        data: headquarters,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving headquarters: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
+
+  async findOneEmail(id: string) {
+    try {
+      const headquarters = await this.headquartersRepository.findOne({
+        where: { email: id },
+        relations: ['institution'],
+      });
+
+      if (!headquarters) {
+        return {
+          success: false,
+          message: `Headquarters with ID ${id} not found`,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Headquarters retrieved successfully',
+        data: headquarters,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving headquarters: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
+
   async update(id: number, updateHeadquartersDto: UpdateHeadquartersDto) {
     try {
       const headquarters = await this.headquartersRepository.findOne({
