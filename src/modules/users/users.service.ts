@@ -650,7 +650,9 @@ export class UsersService {
           'administrator',
           'administrator.administratorType', // Changed from administratorTypeId to administratorType
           'documentType',
-          'headquarters'
+          'headquarters',
+          'headquarters.institution'
+
         ],
       });
       if (!user) {
