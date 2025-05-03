@@ -31,6 +31,7 @@ export class Administrator {
   @Column({ type: 'varchar', length: 255, nullable: true })
   signature: string;
 
+
   @ManyToOne(() => AdministratorType)
   @JoinColumn({ name: 'administratorTypeId' })
   administratorType: AdministratorType;

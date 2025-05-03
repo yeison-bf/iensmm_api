@@ -413,11 +413,19 @@ export class UsersService {
       };
     }
   }
-
   async findAllAdministrators() {
     try {
       const users = await this.userRepository.find({
-        relations: ['role', 'documentType', 'headquarters', 'administrator'],
+        relations: [
+          'role', 
+          'documentType', 
+          'headquarters',
+          'administrator',
+          'administrator.administratorType'
+        ],
+        where: {
+          role: { name: 'administrator' }  // Only get users with administrator role
+        },
         select: {
           password: false,
         },
@@ -425,17 +433,32 @@ export class UsersService {
 
       return {
         success: true,
-        message: 'Users retrieved successfully',
+        message: 'Administrators retrieved successfully',
         data: users,
       };
     } catch (error) {
       return {
         success: false,
-        message: `Error retrieving users: ${error.message}`,
+        message: `Error retrieving administrators: ${error.message}`,
         data: null,
       };
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   async findOneAdministrator(id: number) {
     try {
