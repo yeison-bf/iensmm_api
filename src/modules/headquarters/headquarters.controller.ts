@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { HeadquartersService } from './headquarters.service';
 import { CreateHeadquartersDto } from './dto/create-headquarters.dto';
 import { UpdateHeadquartersDto } from './dto/update-headquarters.dto';
 
 @Controller('headquarters')
 export class HeadquartersController {
-  constructor(private readonly headquartersService: HeadquartersService) {}
+  constructor(private readonly headquartersService: HeadquartersService) { }
 
   @Post()
   async create(@Body() createHeadquartersDto: CreateHeadquartersDto) {
@@ -13,8 +13,8 @@ export class HeadquartersController {
   }
 
   @Get()
-  async findAll() {
-    return await this.headquartersService.findAll();
+  async findAll(@Query('institutionId', new ParseIntPipe({ optional: true })) institutionId?: number) {
+    return await this.headquartersService.findAll(institutionId);
   }
 
   @Get(':id')

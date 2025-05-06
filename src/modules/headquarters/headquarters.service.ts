@@ -13,7 +13,7 @@ export class HeadquartersService {
     private readonly headquartersRepository: Repository<Headquarters>,
     @InjectRepository(Institution)
     private readonly institutionRepository: Repository<Institution>,
-  ) {}
+  ) { }
 
   async create(createHeadquartersDto: CreateHeadquartersDto) {
     try {
@@ -64,11 +64,21 @@ export class HeadquartersService {
     }
   }
 
-  async findAll() {
+
+  
+  async findAll(institutionId?: number) {
     try {
-      const headquarters = await this.headquartersRepository.find({
-        relations: ['institution'], // Changed from 'institucion' to 'institution'
-      });
+      const queryOptions: any = {
+        relations: ['institution'],
+      };
+
+      if (institutionId) {
+        queryOptions.where = {
+          institution: { id: institutionId }
+        };
+      }
+
+      const headquarters = await this.headquartersRepository.find(queryOptions);
 
       return {
         success: true,
