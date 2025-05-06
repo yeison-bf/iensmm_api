@@ -105,24 +105,28 @@ export class CreateInstitutionDto {
     @IsOptional()
     letterheadImg?: string;
 
+    @IsString()
     @IsOptional()
+    legalProperty?: string;
+
     @IsBoolean()
+    @IsOptional()
     hasSubsidizedQuotas: boolean;
 
-    @IsOptional()
     @IsBoolean()
+    @IsOptional()
     hasExceptionalEducation: boolean;
 
-    @IsOptional()
     @IsBoolean()
+    @IsOptional()
     hasEthnicEducation: boolean;
 
-    @IsOptional()
     @IsBoolean()
+    @IsOptional()
     hasDisabilityEducation: boolean;
 
-    @IsOptional()
     @IsBoolean()
+    @IsOptional()
     hasIndigenousReservation: boolean;
 
 }

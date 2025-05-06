@@ -118,7 +118,11 @@ export class Institution {
     @Column({ type: 'boolean', default: false })
     weekendSchedule: boolean;
 
-    
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    @IsString()
+    @IsOptional()
+    legalProperty: string;
+
     @Column({ type: 'boolean', default: false })
     hasSubsidizedQuotas: boolean;
 
