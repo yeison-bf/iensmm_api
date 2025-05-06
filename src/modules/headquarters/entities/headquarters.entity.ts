@@ -25,6 +25,9 @@ export class Headquarters {
   @Column({ type: 'varchar', length: 255 })
   email: string;
 
+  @Column({ type: 'varchar', length: 2555, nullable: false })
+  avatar: string;
+
   @ManyToOne(() => Institution, (institution) => institution.headquarters, {
     nullable: false,
   })

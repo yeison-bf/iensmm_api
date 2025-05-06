@@ -139,7 +139,16 @@ export class UsersService {
   async findAllStudents() {
     try {
       const users = await this.userRepository.find({
-        relations: ['role', 'documentType', 'headquarters', 'student'],
+        relations: [
+          'role', 
+          'documentType', 
+          'headquarters',
+          'headquarters.institution',
+          'student'
+        ],
+        where: {
+          role: { name: 'Estudent' }  // Filter only users with student role
+        },
         select: {
           password: false,
         },
@@ -147,13 +156,13 @@ export class UsersService {
 
       return {
         success: true,
-        message: 'Users retrieved successfully',
+        message: 'Students retrieved successfully',
         data: users,
       };
     } catch (error) {
       return {
         success: false,
-        message: `Error retrieving users: ${error.message}`,
+        message: `Error retrieving students: ${error.message}`,
         data: null,
       };
     }
@@ -413,6 +422,7 @@ export class UsersService {
       };
     }
   }
+
   async findAllAdministrators() {
     try {
       const users = await this.userRepository.find({
@@ -444,20 +454,6 @@ export class UsersService {
       };
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   async findOneAdministrator(id: number) {
