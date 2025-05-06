@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateHeadquartersDto {
   @IsString()
@@ -22,8 +22,8 @@ export class CreateHeadquartersDto {
   phone: string;
 
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  @IsEmail(undefined, { message: 'Invalid email format' })
+  email: string | null;
 
   @IsNumber()
   @IsNotEmpty()
