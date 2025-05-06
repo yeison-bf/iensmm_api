@@ -118,6 +118,24 @@ export class Institution {
     @Column({ type: 'boolean', default: false })
     weekendSchedule: boolean;
 
+    
+    @Column({ type: 'boolean', default: false })
+    hasSubsidizedQuotas: boolean;
+
+    @Column({ type: 'boolean', default: false })
+    hasExceptionalEducation: boolean;
+
+    @Column({ type: 'boolean', default: false })
+    hasEthnicEducation: boolean;
+
+    @Column({ type: 'boolean', default: false })
+    hasDisabilityEducation: boolean;
+
+    @Column({ type: 'boolean', default: false })
+    hasIndigenousReservation: boolean;
+
+
+    
     @Column({ type: 'varchar', length: 255, nullable: true })
     @IsOptional()
     @IsString()
