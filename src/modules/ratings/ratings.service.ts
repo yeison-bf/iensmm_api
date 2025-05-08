@@ -99,6 +99,38 @@ export class RatingsService {
     }
   }
 
+
+  async findOneName(id: string) {
+    try {
+      const rating = await this.ratingRepository.findOne({
+        where: { letterValue: id },
+      });
+
+      if (!rating) {
+        return {
+          success: false,
+          message: `Rating with name ${id} not found`,  // Updated message to reflect search by name
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Rating retrieved successfully',
+        data: rating,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving rating: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
+
   async update(id: number, updateRatingDto: UpdateRatingDto) {
     try {
       const rating = await this.ratingRepository.findOne({

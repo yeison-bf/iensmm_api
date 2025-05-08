@@ -15,12 +15,20 @@ export class RatingsController {
   @Get()
   findAll() {
     return this.ratingsService.findAll();
-  }
+  }    
 
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.ratingsService.findOne(id);
   }
+
+
+  @Get('name/:id')
+  findOneNam(@Param('id') id: string) {
+    return this.ratingsService.findOneName(id);
+  }
+
+
 
   @Put(':id')
   update(@Param('id') id: number, @Body() updateRatingDto: UpdateRatingDto) {
