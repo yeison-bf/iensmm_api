@@ -126,15 +126,20 @@ export class HeadquartersService {
 
   async findOneDaneCode(id: string, institutionId?: number) {
     try {
+      const whereClause: any = { daneCode: id };
+      
+      if (institutionId) {
+        whereClause.institution = { id: institutionId };
+      }
+
       const headquarters = await this.headquartersRepository.findOne({
-        where: { daneCode: id, institution: { id: institutionId } },
-        relations: ['institution'],
+        where: whereClause,
       });
 
       if (!headquarters) {
         return {
           success: false,
-          message: `Headquarters with ID ${id} not found`,
+          message: `Headquarters with daneCode ${id} not found`,
           data: null,
         };
       }
@@ -153,20 +158,22 @@ export class HeadquartersService {
     }
   }
 
-
-
-
   async findOneEmail(id: string, institutionId?: number) {
     try {
+      const whereClause: any = { email: id };
+      
+      if (institutionId) {
+        whereClause.institution = { id: institutionId };
+      }
+
       const headquarters = await this.headquartersRepository.findOne({
-        where: { email: id, institution: { id: institutionId } },
-        relations: ['institution'],
+        where: whereClause,
       });
 
       if (!headquarters) {
         return {
           success: false,
-          message: `Headquarters with ID ${id} not found`,
+          message: `Headquarters with email ${id} not found`,
           data: null,
         };
       }

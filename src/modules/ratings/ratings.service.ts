@@ -99,17 +99,22 @@ export class RatingsService {
     }
   }
 
-
-  async findOneName(id: string, institutions:number) {
+  async findOneName(id: string, institutionId?: number) {
     try {
+      const whereClause: any = { letterValue: id };
+      
+      if (institutionId) {
+        whereClause.institution = { id: institutionId };
+      }
+
       const rating = await this.ratingRepository.findOne({
-        where: { letterValue: id, institution: { id: institutions } },
+        where: whereClause,
       });
 
       if (!rating) {
         return {
           success: false,
-          message: `Rating with name ${id} not found`,  // Updated message to reflect search by name
+          message: `Rating with letterValue ${id} not found`,
           data: null,
         };
       }
@@ -127,7 +132,6 @@ export class RatingsService {
       };
     }
   }
-
 
 
 
