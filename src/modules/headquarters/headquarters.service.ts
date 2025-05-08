@@ -65,7 +65,7 @@ export class HeadquartersService {
   }
 
 
-  
+
   async findAll(institutionId?: number) {
     try {
       const queryOptions: any = {
@@ -124,10 +124,10 @@ export class HeadquartersService {
   }
 
 
-  async findOneDaneCode(id: string) {
+  async findOneDaneCode(id: string, institutionId?: number) {
     try {
       const headquarters = await this.headquartersRepository.findOne({
-        where: { daneCode: id },
+        where: { daneCode: id, institution: { id: institutionId } },
         relations: ['institution'],
       });
 
@@ -156,10 +156,10 @@ export class HeadquartersService {
 
 
 
-  async findOneEmail(id: string) {
+  async findOneEmail(id: string, institutionId?: number) {
     try {
       const headquarters = await this.headquartersRepository.findOne({
-        where: { email: id },
+        where: { email: id, institution: { id: institutionId } },
         relations: ['institution'],
       });
 

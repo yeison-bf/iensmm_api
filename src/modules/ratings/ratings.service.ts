@@ -100,10 +100,10 @@ export class RatingsService {
   }
 
 
-  async findOneName(id: string) {
+  async findOneName(id: string, institutions:number) {
     try {
       const rating = await this.ratingRepository.findOne({
-        where: { letterValue: id },
+        where: { letterValue: id, institution: { id: institutions } },
       });
 
       if (!rating) {
