@@ -22,14 +22,14 @@ export class HeadquartersController {
     return await this.headquartersService.findOne(id);
   }
 
-   @Get('daneCode/:id')
+  @Get('daneCode/:id')
   async findOneDaneCode(
     @Param('id') id: string,
-    @Query('institutionId', new ParseIntPipe({ optional: true })) institutionId?: number
+    @Query('institutions', new ParseIntPipe({ optional: true })) institutionId?: number
   ) {
     return await this.headquartersService.findOneDaneCode(id, institutionId);
   }
-
+  
   @Get('email/:id')
   async findOneEmail(
     @Param('id') id: string,
