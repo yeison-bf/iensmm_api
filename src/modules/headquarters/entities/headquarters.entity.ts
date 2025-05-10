@@ -7,6 +7,10 @@ export class Headquarters {
   @PrimaryGeneratedColumn()
   id: number;
 
+  
+  @Column({ type: 'varchar', length: 2000, })
+  icon: string;
+
   @Column({ type: 'varchar', length: 20, unique: true })
   daneCode: string;
 

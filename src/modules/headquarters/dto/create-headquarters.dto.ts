@@ -1,6 +1,11 @@
 import { IsString, IsEmail, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateHeadquartersDto {
+
+  @IsString()
+  @IsNotEmpty()
+  icon: string;
+
   @IsString()
   @IsNotEmpty()
   daneCode: string;
