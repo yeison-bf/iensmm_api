@@ -19,6 +19,7 @@ import { AdministratorsModule } from './modules/administrators/administrators.mo
 import { AdministratorTypeModule } from './modules/administrator-type/administrator-type.module';
 import { AttendantsModule } from './modules/attendants/attendants.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
+import { DegreesModule } from './modules/degrees/degrees.module';
 
 
 @Module({
@@ -83,6 +84,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
     AdministratorTypeModule,
     AttendantsModule,
     TransfersModule,
+    DegreesModule,
 
   ],
   controllers: [AppController],
