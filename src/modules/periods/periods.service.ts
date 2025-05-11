@@ -148,6 +148,38 @@ async create(createPeriodDto: CreatePeriodDto) {
     }
   }
 
+  async findOneYear(year: number, institutionId: number) {
+    try {
+      const period = await this.periodRepository.findOne({
+        where: {
+          year: year,
+          institution: { id: institutionId }
+        },
+      });
+
+      if (!period) {
+        return {
+          success: false,
+          message: `Period with year ${year} and institution ID ${institutionId} not found`,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Period retrieved successfully',
+        data: period,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving period: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
   async findByInstitution(institutionId: number) {
     try {
       const periods = await this.periodRepository.find({

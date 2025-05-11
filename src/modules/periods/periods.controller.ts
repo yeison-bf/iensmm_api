@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
 import { PeriodsService } from './periods.service';
 import { CreatePeriodDto } from './dto/create-period.dto';
 import { UpdatePeriodDto } from './dto/update-period.dto';
@@ -21,6 +21,15 @@ export class PeriodsController {
   findOne(@Param('id') id: number) {
     return this.periodsService.findOne(id);
   }
+
+  @Get('year/:id')
+  findOneYear(
+    @Param('id') id: number,
+    @Query('institutions', new ParseIntPipe({ optional: true })) institutionId?: number
+  ) {
+    return this.periodsService.findOneYear(id, institutionId);
+  }
+
 
   @Get('institution/:institutionId')
   findByInstitution(@Param('institutionId') institutionId: number) {
