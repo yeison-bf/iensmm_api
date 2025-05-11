@@ -57,12 +57,13 @@ async create(createPeriodDto: CreatePeriodDto) {
       // Save the period first
       const savedPeriod = await this.periodRepository.save(period);
 
-      // Create period details
+      // Create period details with new validation
       if (createPeriodDto.periodDetails && createPeriodDto.periodDetails.length > 0) {
-        if (createPeriodDto.periodDetails.length > createPeriodDto.periodsQuantity) {
+        const expectedLength = createPeriodDto.periodsQuantity + 1;
+        if (createPeriodDto.periodDetails.length !== expectedLength) {
           return {
             success: false,
-            message: 'Number of period details exceeds the specified quantity',
+            message: `Number of period details must be exactly ${expectedLength} (periodsQuantity + 1)`,
             data: null,
           };
         }

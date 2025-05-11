@@ -1,12 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('degree')
-export class Degree {
+@Entity('group')
+export class Group {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'int' })
-  value: Number;
 
   @Column({ type: 'varchar', length: 100 })
   name: string;

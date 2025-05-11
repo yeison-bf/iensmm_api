@@ -20,6 +20,7 @@ import { AdministratorTypeModule } from './modules/administrator-type/administra
 import { AttendantsModule } from './modules/attendants/attendants.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 import { DegreesModule } from './modules/degrees/degrees.module';
+import { GroupModule } from './modules/group/group.module';
 
 
 @Module({
@@ -85,6 +86,7 @@ import { DegreesModule } from './modules/degrees/degrees.module';
     AttendantsModule,
     TransfersModule,
     DegreesModule,
+    GroupModule,
 
   ],
   controllers: [AppController],
