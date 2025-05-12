@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsString, IsBoolean, IsOptional, ValidateNested } from 'class-validator';
+import { IsDate, IsString, IsBoolean, IsOptional, ValidateNested, IsNumber } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
+
 
 export class CreateStudentInfoDto {
   @Type(() => Date)
@@ -32,7 +33,36 @@ export class CreateStudentInfoDto {
   @IsString()
   @IsOptional()
   observations?: string;
+
+  @IsString()
+  @IsOptional()
+  expeditionDepartment?: string;
+
+  @IsString()
+  @IsOptional()
+  expeditionCity?: string;
+
+  @IsString()
+  @IsOptional()
+  zone?: string;
+
+  @IsNumber()
+  @IsOptional()
+  stratum?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  sisben?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  sisbenScore?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  armedConflictVictim?: boolean;
 }
+
 
 export class CreateUserWithStudentDto {
   @ValidateNested()
