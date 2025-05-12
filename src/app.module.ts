@@ -21,6 +21,7 @@ import { AttendantsModule } from './modules/attendants/attendants.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 import { DegreesModule } from './modules/degrees/degrees.module';
 import { GroupModule } from './modules/group/group.module';
+import { StudentEnrollmentModule } from './modules/student-enrollment/student-enrollment.module';
 
 
 @Module({
@@ -87,6 +88,7 @@ import { GroupModule } from './modules/group/group.module';
     TransfersModule,
     DegreesModule,
     GroupModule,
+    StudentEnrollmentModule,
 
   ],
   controllers: [AppController],

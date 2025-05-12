@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Attendant } from 'src/modules/attendants/entities/attendant.entity';
+import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
 
 @Entity('student')
 export class Student {
@@ -54,7 +55,7 @@ export class Student {
   armedConflictVictim: boolean;
 
 
-  
+
   @Column({ type: 'text', nullable: true })
   observations: string;
 
@@ -66,6 +67,10 @@ export class Student {
 
   @OneToMany(() => Attendant, attendant => attendant.student)
   attendants: Attendant[];
+
+  @OneToMany(() => StudentEnrollment, enrollment => enrollment.student)
+  enrollments: StudentEnrollment[];
+
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('degree')
 export class Degree {
@@ -10,6 +11,10 @@ export class Degree {
 
   @Column({ type: 'varchar', length: 100 })
   name: string;
+
+
+  @OneToMany(() => StudentEnrollment, enrollment => enrollment.degree)
+enrollments: StudentEnrollment[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
