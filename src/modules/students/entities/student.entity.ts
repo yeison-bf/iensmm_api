@@ -31,8 +31,34 @@ export class Student {
   @Column({ type: 'varchar', length: 100 })
   healthProvider: string;
 
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  expeditionDepartment: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  expeditionCity: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  zone: string;
+
+  @Column({ type: 'int', nullable: true })
+  stratum: number;
+
+  @Column({ type: 'boolean', nullable: true, default: null })
+  sisben: boolean;
+
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  sisbenScore: number;
+
+  @Column({ type: 'boolean', nullable: true, default: null })
+  armedConflictVictim: boolean;
+
+
+  
   @Column({ type: 'text', nullable: true })
   observations: string;
+
+
 
   @OneToOne(() => User)
   @JoinColumn({ name: 'userId' })

@@ -1,4 +1,4 @@
-import { IsDate, IsString, IsBoolean, IsOptional, IsNumber, IsNotEmpty } from 'class-validator';
+import { IsDate, IsString, IsBoolean, IsOptional, IsNumber, IsNotEmpty, Min, Max, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateStudentDto {
@@ -33,6 +33,43 @@ export class CreateStudentDto {
   @IsString()
   @IsNotEmpty()
   healthProvider: string;
+
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  expeditionDepartment?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  expeditionCity?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  zone?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(6)
+  stratum?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  sisben?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  sisbenScore?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  armedConflictVictim?: boolean;
+
 
   @IsString()
   @IsOptional()
