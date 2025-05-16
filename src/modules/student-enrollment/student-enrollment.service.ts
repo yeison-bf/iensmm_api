@@ -3,12 +3,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StudentEnrollment } from './entities/student-enrollment.entity';
 import { CreateStudentEnrollmentDto } from './dto/create-student-enrollment.dto';
+import { Student } from '../students/entities/student.entity';
+import { Group } from '../group/entities/group.entity';
+import { Degree } from '../degrees/entities/degree.entity';
 
 @Injectable()
 export class StudentEnrollmentService {
   constructor(
     @InjectRepository(StudentEnrollment)
     private readonly enrollmentRepository: Repository<StudentEnrollment>,
+    @InjectRepository(Student)
+    private readonly studentRepository: Repository<Student>,
+    @InjectRepository(Group)
+    private readonly groupRepository: Repository<Group>,
+    @InjectRepository(Degree)
+    private readonly degreeRepository: Repository<Degree>,
   ) {}
 
   async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
@@ -33,8 +42,17 @@ export class StudentEnrollmentService {
   async findAll() {
     try {
       const enrollments = await this.enrollmentRepository.find({
-        relations: ['student', 'group', 'degree'],
+        relations: [
+          'student',
+          'student.user',
+          'group',
+          'degree'
+        ],
+        order: {
+          createdAt: 'DESC'
+        }
       });
+      
       return {
         success: true,
         message: 'Enrollments retrieved successfully',

@@ -48,13 +48,11 @@ export class Student {
   @Column({ type: 'boolean', nullable: true, default: null })
   sisben: boolean;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  sisbenScore: number;
+  @Column({ type: 'varchar',  nullable: true })
+  sisbenScore: string;
 
   @Column({ type: 'boolean', nullable: true, default: null })
   armedConflictVictim: boolean;
-
-
 
   @Column({ type: 'text', nullable: true })
   observations: string;

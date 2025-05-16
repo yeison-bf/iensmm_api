@@ -61,15 +61,12 @@ export class CreateStudentDto {
   sisben?: boolean;
 
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  sisbenScore?: number;
+  @IsString()
+  sisbenScore?: string;
 
   @IsOptional()
   @IsBoolean()
   armedConflictVictim?: boolean;
-
 
   @IsString()
   @IsOptional()
