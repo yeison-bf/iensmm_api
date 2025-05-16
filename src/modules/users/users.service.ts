@@ -355,7 +355,8 @@ export class UsersService {
       }
 
       // Create the student with the new user
-      const student = this.studentRepository.create({
+      const student = new Student(); // Create a new instance of Student
+      Object.assign(student, {
         ...studentInfo,
         user: userResult.data,
       });
