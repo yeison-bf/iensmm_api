@@ -54,9 +54,9 @@ export class CreateStudentInfoDto {
   @IsOptional()
   sisben?: boolean;
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  sisbenScore?: number;
+  sisbenScore?: string;
 
   @IsBoolean()
   @IsOptional()
