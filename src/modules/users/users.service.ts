@@ -172,7 +172,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOne({
         where: { id },
-        relations: ['role', 'documentType', 'headquarters', 'student', 'student.enrollments'],
+        relations: ['role', 'documentType', 'headquarters', 'student', 'student.enrollments', 'student.enrollments.group', 'student.enrollments.degree'],
         select: {
           password: false,
         },
