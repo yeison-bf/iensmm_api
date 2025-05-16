@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { StudentEnrollmentService } from './student-enrollment.service';
 import { CreateStudentEnrollmentDto } from './dto/create-student-enrollment.dto';
 
 @Controller('student-enrollment')
 export class StudentEnrollmentController {
-  constructor(private readonly enrollmentService: StudentEnrollmentService) {}
+  constructor(private readonly enrollmentService: StudentEnrollmentService) { }
 
   @Post()
   create(@Body() createEnrollmentDto: CreateStudentEnrollmentDto) {
@@ -16,5 +16,16 @@ export class StudentEnrollmentController {
     return this.enrollmentService.findAll();
   }
 
-  // Add other endpoints as needed
+  @Put(':id')
+  update(
+    @Param('id') id: number,
+    @Body() updateEnrollmentDto: CreateStudentEnrollmentDto,
+  ) {
+    return this.enrollmentService.update(id, updateEnrollmentDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.enrollmentService.remove(id);
+  }
 }

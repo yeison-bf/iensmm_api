@@ -87,7 +87,7 @@ export class StudentEnrollmentService {
 
 
 
-  
+
   async findAll() {
     try {
       const enrollments = await this.enrollmentRepository.find({
@@ -116,5 +116,121 @@ export class StudentEnrollmentService {
     }
   }
 
-  // Add other CRUD methods as needed
+   async update(id: number, updateEnrollmentDto: CreateStudentEnrollmentDto) {
+    try {
+      const enrollment = await this.enrollmentRepository.findOne({
+        where: { id },
+        relations: ['student', 'group', 'degree']
+      });
+
+      if (!enrollment) {
+        return {
+          success: false,
+          message: 'Enrollment not found',
+          data: null,
+        };
+      }
+
+      // Verify if related entities exist if they are being updated
+      if (updateEnrollmentDto.studentId) {
+        const student = await this.studentRepository.findOne({
+          where: { id: updateEnrollmentDto.studentId }
+        });
+        if (!student) {
+          return {
+            success: false,
+            message: 'Student not found',
+            data: null,
+          };
+        }
+        enrollment.student = student;
+      }
+
+      if (updateEnrollmentDto.groupId) {
+        const group = await this.groupRepository.findOne({
+          where: { id: updateEnrollmentDto.groupId }
+        });
+        if (!group) {
+          return {
+            success: false,
+            message: 'Group not found',
+            data: null,
+          };
+        }
+        enrollment.group = group;
+      }
+
+      if (updateEnrollmentDto.degreeId) {
+        const degree = await this.degreeRepository.findOne({
+          where: { id: updateEnrollmentDto.degreeId }
+        });
+        if (!degree) {
+          return {
+            success: false,
+            message: 'Degree not found',
+            data: null,
+          };
+        }
+        enrollment.degree = degree;
+      }
+
+      // Update basic fields
+      enrollment.schedule = updateEnrollmentDto.schedule ?? enrollment.schedule;
+      enrollment.folio = updateEnrollmentDto.folio ?? enrollment.folio;
+      enrollment.registrationDate = updateEnrollmentDto.registrationDate ?? enrollment.registrationDate;
+      enrollment.type = updateEnrollmentDto.type ?? enrollment.type;
+      enrollment.observations = updateEnrollmentDto.observations ?? enrollment.observations;
+
+      const updatedEnrollment = await this.enrollmentRepository.save(enrollment);
+
+      // Fetch complete updated data
+      const completeEnrollment = await this.enrollmentRepository.findOne({
+        where: { id: updatedEnrollment.id },
+        relations: ['student', 'student.user', 'group', 'degree']
+      });
+
+      return {
+        success: true,
+        message: 'Enrollment updated successfully',
+        data: completeEnrollment,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error updating enrollment: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+  async remove(id: number) {
+    try {
+      const enrollment = await this.enrollmentRepository.findOne({
+        where: { id },
+        relations: ['student', 'student.user', 'group', 'degree']
+      });
+
+      if (!enrollment) {
+        return {
+          success: false,
+          message: 'Enrollment not found',
+          data: null,
+        };
+      }
+
+      await this.enrollmentRepository.remove(enrollment);
+
+      return {
+        success: true,
+        message: 'Enrollment deleted successfully',
+        data: enrollment,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error deleting enrollment: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 }
