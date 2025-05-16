@@ -14,5 +14,6 @@ import { Degree } from '../degrees/entities/degree.entity';
     Degree])],
   controllers: [StudentEnrollmentController],
   providers: [StudentEnrollmentService],
+  exports: [StudentEnrollmentService]  // Add this line
 })
 export class StudentEnrollmentModule {}

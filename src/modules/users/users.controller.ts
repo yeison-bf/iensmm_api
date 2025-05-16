@@ -5,6 +5,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserWithStudentDto } from './dto/create-user-with-student.dto';
 import { UpdateUserWithStudentDto } from './dto/update-user-with-student.dto';
 import { CreateUserWithAdministratorDto } from './dto/create-user-with-administrator.dto';
+import { BulkCreateStudentDto } from './dto/bulk-create-students.dto';
 
 @Controller('users')
 export class UsersController {
@@ -32,6 +33,10 @@ export class UsersController {
     return this.usersService.login(loginDto.username, loginDto.password);
   }
 
+  @Post('bulk-create')
+  bulkCreateStudents(@Body() students: BulkCreateStudentDto[]) {
+    return this.usersService.bulkCreateStudents(students);
+  }
 
 
   @Get()

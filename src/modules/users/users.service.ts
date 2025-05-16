@@ -13,6 +13,8 @@ import { CreateUserWithStudentDto } from './dto/create-user-with-student.dto';
 import { CreateUserWithAdministratorDto } from './dto/create-user-with-administrator.dto';
 import { Administrator } from '../administrators/entities/administrator.entity';
 import * as jwt from 'jsonwebtoken';
+import { BulkCreateStudentDto } from './dto/bulk-create-students.dto';
+import { StudentEnrollmentService } from '../student-enrollment/student-enrollment.service';
 
 
 @Injectable()
@@ -35,6 +37,8 @@ export class UsersService {
 
     @InjectRepository(Administrator)
     private readonly administratorRepository: Repository<Administrator>,
+
+    private readonly enrollmentService: StudentEnrollmentService,
 
   ) { }
 
@@ -777,6 +781,304 @@ export class UsersService {
     }
   }
 
-  // ... rest of the code ...
-
+  async bulkCreateStudents(students: BulkCreateStudentDto[]) {
+    const results = {
+      success: [],
+      errors: [],
+      retryableErrors: []
+    };
+  
+    // Configuration
+    const CHUNK_SIZE = 100; // Increased from 50 to 100
+    const MAX_CONCURRENT_CHUNKS = 5; // Control parallel execution
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000; // 1 second
+  
+    try {
+      console.log(`Starting bulk upload of ${students.length} students`);
+      
+      // Divide all students into chunks
+      const chunks = [];
+      for (let i = 0; i < students.length; i += CHUNK_SIZE) {
+        chunks.push(students.slice(i, i + CHUNK_SIZE));
+      }
+      
+      // Process chunks with controlled concurrency
+      for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += MAX_CONCURRENT_CHUNKS) {
+        const currentChunks = chunks.slice(chunkIndex, chunkIndex + MAX_CONCURRENT_CHUNKS);
+        console.log(`Processing batch ${chunkIndex / MAX_CONCURRENT_CHUNKS + 1} of ${Math.ceil(chunks.length / MAX_CONCURRENT_CHUNKS)}`);
+        
+        // Process each chunk in parallel
+        const chunkPromises = currentChunks.map(async (chunk, i) => {
+          return this.processChunk(
+            chunk, 
+            results, 
+            chunkIndex + i, 
+            MAX_RETRIES
+          );
+        });
+        
+        await Promise.all(chunkPromises);
+        
+        // Progress report every 5 batches
+        if (chunkIndex % (5 * MAX_CONCURRENT_CHUNKS) === 0 || chunkIndex + MAX_CONCURRENT_CHUNKS >= chunks.length) {
+          console.log(`Progress: ${Math.min((chunkIndex + MAX_CONCURRENT_CHUNKS) * CHUNK_SIZE, students.length)} of ${students.length} records processed`);
+          console.log(`Success: ${results.success.length}, Errors: ${results.errors.length}`);
+        }
+      }
+      
+      // Process retryable errors with increased backoff and fewer concurrent operations
+      if (results.retryableErrors.length > 0) {
+        console.log(`Retrying ${results.retryableErrors.length} records with transient errors`);
+        const retryResults = await this.processRetries(results.retryableErrors, MAX_RETRIES);
+        
+        // Add retry results to the final results
+        results.success.push(...retryResults.success);
+        results.errors.push(...retryResults.errors);
+        
+        // Clear retryable errors as they've been processed
+        results.retryableErrors = [];
+      }
+  
+      return {
+        success: true,
+        message: 'Bulk upload processed',
+        data: {
+          totalProcessed: students.length,
+          successful: results.success.length,
+          failed: results.errors.length,
+          successDetails: results.success,
+          errorDetails: results.errors
+        }
+      };
+  
+    } catch (error) {
+      console.error(`Critical error in bulk upload: ${error.message}`, error);
+      return {
+        success: false,
+        message: `Error in bulk upload: ${error.message}`,
+        data: {
+          ...results,
+          criticalError: error.message
+        }
+      };
+    }
+  }
+  
+  /**
+   * Process a chunk of student records
+   */
+  private async processChunk(
+    chunk: BulkCreateStudentDto[], 
+    results: { success: any[], errors: any[], retryableErrors: any[] },
+    chunkIndex: number,
+    maxRetries: number,
+    retryCount = 0
+  ): Promise<void> {
+    try {
+      // Process each student in the chunk
+      const promises = chunk.map(async (studentData) => {
+        try {
+          await this.processStudentWithRetry(studentData, results, maxRetries);
+        } catch (error) {
+          // Final error handling if all retries failed
+          this.handleStudentError(studentData, error, results);
+        }
+      });
+  
+      // Wait for all operations in the current chunk to complete
+      await Promise.all(promises);
+      
+    } catch (chunkError) {
+      // If the entire chunk fails (unlikely but possible), retry the whole chunk
+      if (retryCount < maxRetries) {
+        console.warn(`Chunk ${chunkIndex} failed, retrying (${retryCount + 1}/${maxRetries}): ${chunkError.message}`);
+        await this.delay(Math.pow(2, retryCount) * 1000); // Exponential backoff
+        return this.processChunk(chunk, results, chunkIndex, maxRetries, retryCount + 1);
+      } else {
+        // If chunk fails after all retries, mark all students in chunk as errors
+        chunk.forEach(studentData => {
+          results.errors.push({
+            document: studentData.user.document,
+            error: `Chunk processing failed after ${maxRetries} attempts: ${chunkError.message}`
+          });
+        });
+      }
+    }
+  }
+  
+  /**
+   * Process a single student with retry logic
+   */
+  private async processStudentWithRetry(
+    studentData: BulkCreateStudentDto,
+    results: { success: any[], errors: any[], retryableErrors: any[] },
+    maxRetries: number,
+    retryCount = 0
+  ): Promise<void> {
+    try {
+      // Create user with student
+      const userResult = await this.createWithStudent({
+        user: studentData.user,
+        studentInfo: studentData.studentInfo
+      });
+  
+      if (!userResult.success) {
+        throw new Error(userResult.message);
+      }
+  
+      // If enrollment data is provided and valid, create enrollment
+      if (studentData.enrollment?.groupId && studentData.enrollment?.degreeId) {
+        const enrollmentResult = await this.enrollmentService.create({
+          ...studentData.enrollment,
+          studentId: userResult.data.id
+        });
+  
+        if (!enrollmentResult.success) {
+          throw new Error(`Enrollment failed: ${enrollmentResult.message}`);
+        }
+      }
+  
+      results.success.push({
+        document: studentData.user.document,
+        message: 'Student created successfully',
+        userId: userResult.data.id
+      });
+  
+    } catch (error) {
+      // Check if error is retryable (network issues, deadlocks, etc.)
+      if (this.isRetryableError(error) && retryCount < maxRetries) {
+        // Wait using exponential backoff before retrying
+        await this.delay(Math.pow(2, retryCount) * 1000);
+        return this.processStudentWithRetry(studentData, results, maxRetries, retryCount + 1);
+      } else if (retryCount >= maxRetries) {
+        // Max retries reached, add to errors
+        this.handleStudentError(studentData, error, results);
+      } else {
+        // Add to retryable errors queue to be processed later
+        results.retryableErrors.push({
+          studentData,
+          error: error.message,
+          attempts: retryCount + 1
+        });
+      }
+    }
+  }
+  
+  /**
+   * Process records that had transient errors with more careful retry logic
+   */
+  private async processRetries(
+    retryableErrors: any[],
+    maxRetries: number
+  ): Promise<{ success: any[], errors: any[] }> {
+    const retryResults = {
+      success: [],
+      errors: []
+    };
+    
+    // Process with much smaller chunks and more delay between operations
+    const RETRY_CHUNK_SIZE = 20;
+    
+    for (let i = 0; i < retryableErrors.length; i += RETRY_CHUNK_SIZE) {
+      const chunk = retryableErrors.slice(i, i + RETRY_CHUNK_SIZE);
+      
+      // Process each student in the retry chunk with sequential execution
+      for (const item of chunk) {
+        try {
+          // Create user with student
+          const userResult = await this.createWithStudent({
+            user: item.studentData.user,
+            studentInfo: item.studentData.studentInfo
+          });
+  
+          if (!userResult.success) {
+            throw new Error(userResult.message);
+          }
+  
+          // If enrollment data is provided and valid, create enrollment
+          if (item.studentData.enrollment?.groupId && item.studentData.enrollment?.degreeId) {
+            const enrollmentResult = await this.enrollmentService.create({
+              ...item.studentData.enrollment,
+              studentId: userResult.data.id
+            });
+  
+            if (!enrollmentResult.success) {
+              throw new Error(`Enrollment failed: ${enrollmentResult.message}`);
+            }
+          }
+  
+          retryResults.success.push({
+            document: item.studentData.user.document,
+            message: 'Student created successfully after retry',
+            userId: userResult.data.id,
+            retriesNeeded: item.attempts
+          });
+        } catch (error) {
+          retryResults.errors.push({
+            document: item.studentData.user.document,
+            error: `Failed after ${item.attempts + 1} attempts: ${error.message}`
+          });
+        }
+        
+        // Add delay between retry operations to reduce database pressure
+        await this.delay(500);
+      }
+    }
+    
+    return retryResults;
+  }
+  
+  /**
+   * Determine if an error is retryable
+   */
+  private isRetryableError(error: any): boolean {
+    // Check for known retryable error patterns
+    const retryablePatterns = [
+      /deadlock/i,
+      /lock timeout/i,
+      /too many connections/i,
+      /connection reset/i,
+      /ECONNRESET/,
+      /timeout/i,
+      /rate limit/i,
+      /temporarily unavailable/i,
+      /try again/i,
+      /network/i,
+      /concurrent/i,
+      /ETIMEDOUT/,
+      /ECONNREFUSED/,
+      /socket hang up/i,
+      /database is busy/i
+    ];
+    
+    const errorString = error.message || error.toString();
+    return retryablePatterns.some(pattern => pattern.test(errorString));
+  }
+  
+  /**
+   * Handle student record error
+   */
+  private handleStudentError(
+    studentData: BulkCreateStudentDto,
+    error: any,
+    results: { success: any[], errors: any[], retryableErrors: any[] }
+  ): void {
+    results.errors.push({
+      document: studentData.user.document,
+      error: error.message || 'Unknown error',
+      data: {
+        firstName: studentData.user.firstName,
+        lastName: studentData.user.lastName,
+        email: studentData.user.notificationEmail
+      }
+    });
+  }
+  
+  /**
+   * Utility method to create a delay
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 }

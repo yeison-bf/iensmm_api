@@ -11,10 +11,12 @@ import { Role } from '../roles/entities/role.entity';
 import { DocumentType } from '../document-type/entities/document-type.entity';
 import { Student } from '../students/entities/student.entity';
 import { Administrator } from '../administrators/entities/administrator.entity';
+import { StudentEnrollmentModule } from '../student-enrollment/student-enrollment.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Headquarters, Role, DocumentType, Student, Administrator]),
+    StudentEnrollmentModule,
     RolesModule,
     DocumentTypeModule,
     HeadquartersModule
