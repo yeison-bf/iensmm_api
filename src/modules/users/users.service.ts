@@ -172,7 +172,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOne({
         where: { id },
-        relations: ['role', 'documentType', 'headquarters', 'student'],
+        relations: ['role', 'documentType', 'headquarters', 'student', 'student.enrollments'],
         select: {
           password: false,
         },
@@ -200,6 +200,26 @@ export class UsersService {
     }
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   async updateWithStudent(id: number, updateDto: any) {
     try {
       const user = await this.userRepository.findOne({
