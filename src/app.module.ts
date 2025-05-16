@@ -22,6 +22,8 @@ import { TransfersModule } from './modules/transfers/transfers.module';
 import { DegreesModule } from './modules/degrees/degrees.module';
 import { GroupModule } from './modules/group/group.module';
 import { StudentEnrollmentModule } from './modules/student-enrollment/student-enrollment.module';
+import { TrainingCoresModule } from './modules/training-cores/training-cores.module';
+import { TrainingAreasModule } from './modules/training-areas/training-areas.module';
 
 
 @Module({
@@ -89,6 +91,8 @@ import { StudentEnrollmentModule } from './modules/student-enrollment/student-en
     DegreesModule,
     GroupModule,
     StudentEnrollmentModule,
+    TrainingCoresModule,
+    TrainingAreasModule,
 
   ],
   controllers: [AppController],
