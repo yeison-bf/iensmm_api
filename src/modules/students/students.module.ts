@@ -5,10 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/users.module';
 import { Student } from './entities/student.entity';
 import { Attendant } from '../attendants/entities/attendant.entity';
+import { Degree } from '../degrees/entities/degree.entity';
+import { Group } from '../group/entities/group.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Student, Attendant]),
+    TypeOrmModule.forFeature([Student, Attendant, Degree, Group]),
     UsersModule
   ],
   controllers: [StudentsController],

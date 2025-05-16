@@ -11,8 +11,8 @@ export class BulkCreateStudentDto {
     username: string;
     password: string;
     roleId: number;
-    documentTypeId: number;
-    headquarterIds: number[];
+    documentTypeId: string;
+    headquarterIds: string;
   };
   studentInfo: {
     birthDate: Date;
@@ -31,7 +31,7 @@ export class BulkCreateStudentDto {
     registrationDate: Date;
     type: string;
     observations: string;
-    groupId: number;
-    degreeId: number;
+    groupId: string;
+    degreeId: string;
   };
 }

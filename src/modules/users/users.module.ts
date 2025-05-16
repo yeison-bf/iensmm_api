@@ -12,10 +12,12 @@ import { DocumentType } from '../document-type/entities/document-type.entity';
 import { Student } from '../students/entities/student.entity';
 import { Administrator } from '../administrators/entities/administrator.entity';
 import { StudentEnrollmentModule } from '../student-enrollment/student-enrollment.module';
+import { Degree } from '../degrees/entities/degree.entity';
+import { Group } from '../group/entities/group.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Headquarters, Role, DocumentType, Student, Administrator]),
+    TypeOrmModule.forFeature([User, Headquarters, Role, DocumentType, Student, Administrator, Degree, Group]),
     StudentEnrollmentModule,
     RolesModule,
     DocumentTypeModule,
