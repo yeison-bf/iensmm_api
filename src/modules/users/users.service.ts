@@ -928,7 +928,7 @@ export class UsersService {
     try {
       // Find actual IDs based on provided strings
       const documentType = await this.documentTypeRepository.findOne({
-        where: { name: studentData.user.documentTypeId }
+        where: { siglas: studentData.user.documentTypeId }
       });
 
       if (!documentType) {
