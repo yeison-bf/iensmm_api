@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
 import { StudentEnrollmentService } from './student-enrollment.service';
 import { CreateStudentEnrollmentDto } from './dto/create-student-enrollment.dto';
 
@@ -12,10 +12,9 @@ export class StudentEnrollmentController {
   }
 
   @Get()
-  findAll() {
-    return this.enrollmentService.findAll();
+  findAll(@Query('sede') headquarterId?: number, @Query('year') year?: string) {
+    return this.enrollmentService.findAll(headquarterId, year);
   }
-
   @Put(':id')
   update(
     @Param('id') id: number,

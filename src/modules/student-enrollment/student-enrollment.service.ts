@@ -91,29 +91,35 @@ export class StudentEnrollmentService {
 
 
 
-  async findAll() {
+  async findAll(headquarterId?: number, year?: string) {
     try {
-      const enrollments = await this.enrollmentRepository.find({
-        relations: [
-          'student',
-          'student.user',
-          'group',
-          'degree'
-        ],
-        order: {
-          createdAt: 'DESC'
-        }
-      });
+      const queryBuilder = this.enrollmentRepository
+        .createQueryBuilder('enrollment')
+        .leftJoinAndSelect('enrollment.student', 'student')
+        .leftJoinAndSelect('student.user', 'user')
+        .leftJoinAndSelect('enrollment.group', 'group')
+        .leftJoinAndSelect('enrollment.degree', 'degree')
+        .orderBy('enrollment.createdAt', 'DESC');
+
+      if (headquarterId) {
+        queryBuilder.andWhere('enrollment.headquarterId = :headquarterId', { headquarterId });
+      }
+
+      if (year) {
+        queryBuilder.andWhere('YEAR(enrollment.registrationDate) = :year', { year });
+      }
+
+      const enrollments = await queryBuilder.getMany();
 
       return {
         success: true,
-        message: 'Enrollments retrieved successfully',
+        message: 'Matrículas recuperadas exitosamente',
         data: enrollments,
       };
     } catch (error) {
       return {
         success: false,
-        message: `Error retrieving enrollments: ${error.message}`,
+        message: `Error al recuperar las matrículas: ${error.message}`,
         data: null,
       };
     }
