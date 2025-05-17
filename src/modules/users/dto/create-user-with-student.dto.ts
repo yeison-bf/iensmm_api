@@ -61,6 +61,10 @@ export class CreateStudentInfoDto {
   @IsBoolean()
   @IsOptional()
   armedConflictVictim?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  headquarterId?: number;
 }
 
 
