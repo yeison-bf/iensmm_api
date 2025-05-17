@@ -17,7 +17,7 @@ export class CreateStudentEnrollmentDto {
   
   @IsBoolean()
   @IsOptional()
-  status?: boolean = true;  // Default value set to true
+  status?: boolean = true;
 
   @IsString()
   @IsOptional()

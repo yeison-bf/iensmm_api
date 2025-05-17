@@ -75,4 +75,9 @@ export class CreateStudentDto {
   @IsNumber()
   @IsNotEmpty()
   userId: number;
+
+  @IsOptional()
+  @IsNumber()
+  headquarterId: number;
+  
 }

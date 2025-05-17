@@ -149,37 +149,74 @@ export class UsersService {
     }
   }
 
-  async findAllStudents() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   async findAllStudents(headquarterId?: number) {
+    console.log(headquarterId);
     try {
-      const users = await this.userRepository.find({
-        relations: [
-          'role',
-          'documentType',
-          'headquarters',
-          'headquarters.institution',
-          'student'
-        ],
-        where: {
-          role: { name: 'Estudent' }  // Filter only users with student role
-        },
-        select: {
-          password: false,
-        },
-      });
+      const queryBuilder = this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.student', 'student')
+        .leftJoinAndSelect('user.role', 'role')
+        .leftJoinAndSelect('user.documentType', 'documentType')
+        .leftJoinAndSelect('user.headquarters', 'headquarters')
+        .leftJoinAndSelect('headquarters.institution', 'institution')
+        .where('role.name = :roleName', { roleName: 'Estudent' });
+
+      if (headquarterId) {
+        queryBuilder.andWhere('student.headquarter_id = :headquarterId', { headquarterId });
+      }
+      const users = await queryBuilder.getMany();
 
       return {
         success: true,
-        message: 'Students retrieved successfully',
+        message: 'Estudiantes recuperados exitosamente',
         data: users,
       };
     } catch (error) {
       return {
         success: false,
-        message: `Error retrieving students: ${error.message}`,
+        message: `Error al recuperar estudiantes: ${error.message}`,
         data: null,
       };
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   async findOneStudents(id: number) {
     try {

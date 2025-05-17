@@ -57,7 +57,8 @@ export class Student {
   @Column({ type: 'text', nullable: true })
   observations: string;
 
-
+  @Column({ name: 'headquarter_id', type: 'int', nullable: false })
+  headquarterId: number;
 
   @OneToOne(() => User)
   @JoinColumn({ name: 'userId' })

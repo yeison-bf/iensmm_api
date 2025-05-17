@@ -57,10 +57,11 @@ export class StudentsService {
     }
   }
 
-  async findAll() {
+  async findAll(headquarterId: number) {
     try {
       const students = await this.studentRepository.find({
-        relations: ['user'],
+        where: { headquarterId:headquarterId},
+        relations: ['user', 'enrollments'],
       });
 
       return {
@@ -72,6 +73,31 @@ export class StudentsService {
       return {
         success: false,
         message: `Error retrieving students: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+  async findAllWithoutEnrollments(headquarterId: number) {
+    try {
+      const queryBuilder = this.studentRepository
+        .createQueryBuilder('student')
+        .leftJoinAndSelect('student.user', 'user')
+        .leftJoinAndSelect('student.enrollments', 'enrollments')
+        .where('student.headquarterId = :headquarterId', { headquarterId })
+        .andWhere('enrollments.id IS NULL');
+
+      const students = await queryBuilder.getMany();
+
+      return {
+        success: true,
+        message: 'Estudiantes sin matrícula recuperados exitosamente',
+        data: students,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al recuperar estudiantes sin matrícula: ${error.message}`,
         data: null,
       };
     }
