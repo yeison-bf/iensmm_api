@@ -1020,16 +1020,23 @@ export class UsersService {
       }
 
       // Modify user data with found IDs
+      // Modify user data with found IDs
       const modifiedUserData = {
         ...studentData.user,
         documentTypeId: documentType.id,
         headquarterIds: [headquarters.id]
       };
 
+      // Add headquarterId to studentInfo
+      const modifiedStudentInfo = {
+        ...studentData.studentInfo,
+        headquarterId: headquarters.id
+      };
+
       // Create user with student
       const userResult = await this.createWithStudent({
         user: modifiedUserData,
-        studentInfo: studentData.studentInfo
+        studentInfo: modifiedStudentInfo
       });
 
 
