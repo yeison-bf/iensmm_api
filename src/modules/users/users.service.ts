@@ -338,40 +338,78 @@ export class UsersService {
     }
   }
 
-  async removeStudent(id: number) {
+      async removeStudent(id: number) {
     try {
       const user = await this.userRepository.findOne({
         where: { id },
-        relations: ['student', 'headquarters'],
+        relations: ['student', 'student.enrollments', 'headquarters'],
       });
 
       if (!user) {
         return {
           success: false,
-          message: `User with ID ${id} not found`,
+          message: `Usuario con ID ${id} no encontrado`,
           data: null,
         };
       }
 
-      // If user has student data, remove it first
-      if (user.student) {
-        await this.studentRepository.remove(user.student);
+      // Check if student has enrollments
+      if (user.student?.enrollments?.length > 0) {
+        return {
+          success: false,
+          message: 'No se puede eliminar el estudiante: Existen matrículas asociadas. Por favor, elimine primero las matrículas.',
+          data: {
+            studentId: user.student.id,
+            enrollmentsCount: user.student.enrollments.length
+          }
+        };
       }
 
-      // Remove user and get data before deletion
-      await this.userRepository.remove(user);
-      const { password, ...result } = user;
+      try {
+        // If user has student data, remove it first
+        if (user.student) {
+          await this.studentRepository.remove(user.student);
+        }
 
-      return {
-        success: true,
-        message: 'User and related data deleted successfully',
-        data: result,
-      };
-    } catch (error) {
+        // Remove user and get data before deletion
+        await this.userRepository.remove(user);
+        const { password, ...result } = user;
+
+        return {
+          success: true,
+          message: 'Usuario y datos relacionados eliminados exitosamente',
+          data: result,
+        };
+      } catch (deleteError: any) {
+        // Handle specific database errors
+        if (deleteError.message.includes('foreign key constraint fails')) {
+          return {
+            success: false,
+            message: 'No se puede eliminar el estudiante: Existen registros relacionados en el sistema. Por favor, elimine primero todos los datos asociados.',
+            data: {
+              error: 'RESTRICCION_CLAVE_FORANEA',
+              details: deleteError.message
+            }
+          };
+        }
+
+        return {
+          success: false,
+          message: `Error en la base de datos durante la eliminación: ${deleteError.message}`,
+          data: {
+            error: 'ERROR_BASE_DATOS',
+            details: deleteError.message
+          }
+        };
+      }
+    } catch (error: any) {
       return {
         success: false,
-        message: `Error deleting user: ${error.message}`,
-        data: null,
+        message: `Error en la operación de eliminación: ${error.message}`,
+        data: {
+          error: 'ERROR_OPERACION',
+          details: error.message
+        }
       };
     }
   }

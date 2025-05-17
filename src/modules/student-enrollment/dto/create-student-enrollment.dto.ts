@@ -29,10 +29,9 @@ export class CreateStudentEnrollmentDto {
   studentId: number;
 
   @IsNumber()
-  headquarterId: number;  // Cambiado de Headquarters a headquarterId
+  headquarterId: number;
 
-  @IsOptional()
   @IsNumber()
-  institutionId: number;  // Cambiado de institution a institutionId
-  
+  @IsOptional()
+  institutionId?: number;
 }
