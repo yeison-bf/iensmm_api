@@ -1,4 +1,4 @@
-import { IsString, IsDate, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsDate, IsNumber, IsOptional, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateStudentEnrollmentDto {
@@ -14,6 +14,10 @@ export class CreateStudentEnrollmentDto {
 
   @IsString()
   type: string;
+  
+  @IsBoolean()
+  @IsOptional()
+  status?: boolean = true;  // Default value set to true
 
   @IsString()
   @IsOptional()

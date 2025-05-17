@@ -83,14 +83,6 @@ export class StudentEnrollmentService {
 
 
 
-
-
-
-
-
-
-
-
   async findAll(headquarterId?: number, year?: string) {
     try {
       const queryBuilder = this.enrollmentRepository
@@ -125,6 +117,8 @@ export class StudentEnrollmentService {
     }
   }
 
+
+  
   async update(id: number, updateEnrollmentDto: CreateStudentEnrollmentDto) {
     try {
       const enrollment = await this.enrollmentRepository.findOne({

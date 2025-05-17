@@ -20,6 +20,9 @@ export class StudentEnrollment {
   @Column({ type: 'varchar', length: 50 })
   type: string;
 
+  @Column({ type: 'boolean', default: true })
+  status: boolean;
+
   @Column({ type: 'text', nullable: true })
   observations: string;
 
