@@ -936,11 +936,12 @@ export class UsersService {
       }
 
       const headquarters = await this.headquarterRepository.findOne({
-        where: { name: studentData.user.headquarterIds }
+        where: { name: studentData.user.headquarterIds }, relations: ['institution']
       });
 
       if (!headquarters) {
-        throw new Error(`Headquarters "${studentData.user.headquarterIds}" not found`);
+        throw new
+          Error(`Headquarters "${studentData.user.headquarterIds}" not found`);
       }
 
       // Modify user data with found IDs
@@ -956,12 +957,13 @@ export class UsersService {
         studentInfo: studentData.studentInfo
       });
 
+
       if (!userResult.success) {
         throw new Error(userResult.message);
       }
 
       // If enrollment data is provided, find actual group and degree IDs
-      if (studentData.enrollment?.groupId && studentData.enrollment?.degreeId) {
+      if (studentData.enrollment) {
         const group = await this.groupRepository.findOne({
           where: { name: studentData.enrollment.groupId }
         });
@@ -976,12 +978,25 @@ export class UsersService {
           );
         }
 
-        const enrollmentResult = await this.enrollmentService.create({
-          ...studentData.enrollment,
-          groupId: group.id,
-          degreeId: degree.id,
-          studentId: userResult.data.id
-        });
+
+        // Asegurarse de que los IDs sean números
+        const enrollmentData = {
+          schedule: studentData.enrollment.schedule,
+          folio: studentData.enrollment.folio,
+          registrationDate: studentData.enrollment.registrationDate,
+          type: studentData.enrollment.type,
+          observations: studentData.enrollment.observations,
+          groupId: Number(group.id),
+          degreeId: Number(degree.id),
+          studentId: Number(userResult.data.id),
+          headquarterId: Number(headquarters.id),
+          institutionId: Number(headquarters.institution.id)
+        };
+
+        console.log("enrollmentData before create: ", enrollmentData);
+
+        const enrollmentResult = await this.enrollmentService.create(enrollmentData);
+        console.log("enrollmentResult : ", enrollmentResult)
 
         if (!enrollmentResult.success) {
           throw new Error(`Enrollment failed: ${enrollmentResult.message}`);

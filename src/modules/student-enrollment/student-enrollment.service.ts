@@ -18,9 +18,9 @@ export class StudentEnrollmentService {
     private readonly groupRepository: Repository<Group>,
     @InjectRepository(Degree)
     private readonly degreeRepository: Repository<Degree>,
-  ) {}
+  ) { }
 
-    async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
+  async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
     try {
       // First verify if all related entities exist
       const student = await this.studentRepository.findOne({
@@ -43,6 +43,7 @@ export class StudentEnrollmentService {
         };
       }
 
+
       // Create enrollment with relations
       const enrollment = this.enrollmentRepository.create({
         schedule: createEnrollmentDto.schedule,
@@ -52,7 +53,9 @@ export class StudentEnrollmentService {
         observations: createEnrollmentDto.observations,
         student: student,
         group: group,
-        degree: degree
+        degree: degree,
+        headquarterId: Number(createEnrollmentDto.headquarterId),    // Agregado
+        institutionId: Number(createEnrollmentDto.institutionId)     // Agregado
       });
 
       const savedEnrollment = await this.enrollmentRepository.save(enrollment);
@@ -101,7 +104,7 @@ export class StudentEnrollmentService {
           createdAt: 'DESC'
         }
       });
-      
+
       return {
         success: true,
         message: 'Enrollments retrieved successfully',
@@ -116,7 +119,7 @@ export class StudentEnrollmentService {
     }
   }
 
-   async update(id: number, updateEnrollmentDto: CreateStudentEnrollmentDto) {
+  async update(id: number, updateEnrollmentDto: CreateStudentEnrollmentDto) {
     try {
       const enrollment = await this.enrollmentRepository.findOne({
         where: { id },

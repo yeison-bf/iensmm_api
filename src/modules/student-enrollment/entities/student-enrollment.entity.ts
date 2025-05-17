@@ -35,6 +35,14 @@ export class StudentEnrollment {
   @JoinColumn({ name: 'studentId' })
   student: Student;
 
+// ... existing code ...
+  @Column({ name: 'headquarter_id', type: 'int', nullable: false })
+  headquarterId: number;
+
+  @Column({ name: 'institution_id', type: 'int', nullable: false })
+  institutionId: number;
+// ... existing code ...
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 

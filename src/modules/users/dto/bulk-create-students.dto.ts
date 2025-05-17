@@ -33,5 +33,7 @@ export class BulkCreateStudentDto {
     observations: string;
     groupId: string;
     degreeId: string;
+    headquarterId: number;    // Agregado
+    institutionId: number;    // Agregado
   };
 }
