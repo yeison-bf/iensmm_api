@@ -1024,7 +1024,8 @@ export class UsersService {
       const modifiedUserData = {
         ...studentData.user,
         documentTypeId: documentType.id,
-        headquarterIds: [headquarters.id]
+        headquarterIds: [headquarters.id],
+        institution: headquarters.institution.id 
       };
 
       // Add headquarterId to studentInfo

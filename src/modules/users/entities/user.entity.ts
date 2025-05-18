@@ -76,4 +76,7 @@ export class User {
 
   @Column({ type: 'varchar', length: 50 })
   birthDate: string;
+
+  @Column({ type: 'int' })
+  institution: number;
 }

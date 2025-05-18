@@ -64,4 +64,8 @@ export class CreateUserDto {
   @IsOptional()
   birthDate?: string;
 
+  @IsNumber()
+  @IsNotEmpty()
+  institution: number;
+  
 }
