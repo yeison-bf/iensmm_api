@@ -5,9 +5,9 @@ import { CreateAttendantDto } from './dto/create-attendant.dto';
 @Controller('attendants')
 export class AttendantsController {
   constructor(private readonly attendantsService: AttendantsService) {}
-
+  
   @Post()
-  create(@Body() createAttendantDto: CreateAttendantDto) {
+  create(@Body() createAttendantDto: CreateAttendantDto | CreateAttendantDto[]) {
     return this.attendantsService.create(createAttendantDto);
   }
 

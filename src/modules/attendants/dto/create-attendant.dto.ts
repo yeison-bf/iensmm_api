@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsString, IsNumber, IsEmail, IsOptional } from 'class-validator';
 
 export class CreateAttendantDto {
   @IsString()
@@ -11,10 +11,6 @@ export class CreateAttendantDto {
 
   @IsString()
   @IsNotEmpty()
-  relationship: string;
-
-  @IsString()
-  @IsNotEmpty()
   document: string;
 
   @IsString()
@@ -22,16 +18,24 @@ export class CreateAttendantDto {
   documentType: string;
 
   @IsString()
-  @IsOptional()
-  phone: string;
-
-  @IsOptional()
-  @IsEmail(undefined, { message: 'Invalid email format' })
-  email: string | null;
+  @IsNotEmpty()
+  relationship: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
+  occupation: string;
+
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
+
+  @IsString()
+  @IsNotEmpty()
   address: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
 
   @IsNumber()
   @IsNotEmpty()
