@@ -42,22 +42,61 @@ export class AttendantsService {
 
       for (const attendantData of attendantsToProcess) {
         try {
-          // Check if attendant already exists by document
-          const existingAttendant = await this.attendantRepository.findOne({
+          // Check if attendant exists in multiple records
+          const existingAttendants = await this.attendantRepository.find({
             where: { document: attendantData.document },
             relations: ['student']
           });
 
-          if (existingAttendant) {
-            // Update existing attendant and associate with current student
-            const updatedAttendant = await this.attendantRepository.save({
-              ...existingAttendant,
-              ...attendantData,
-              student,
-            });
-            results.updated.push(updatedAttendant);
+          if (existingAttendants.length > 0) {
+            // Check if already has relationship with current student
+            const hasCurrentStudent = existingAttendants.some(
+              att => att.student.id === attendantData.studentId
+            );
+
+            if (hasCurrentStudent) {
+              // Update existing record for current student
+              const currentAttendant = existingAttendants.find(
+                att => att.student.id === attendantData.studentId
+              );
+              const updatedAttendant = await this.attendantRepository.save({
+                ...currentAttendant,
+                ...attendantData,
+                student,
+              });
+              results.updated.push(updatedAttendant);
+            } else {
+              // Create new record with same data for new student
+              const newAttendant = this.attendantRepository.create({
+                ...attendantData,
+                student,
+              });
+              const savedAttendant = await this.attendantRepository.save(newAttendant);
+              results.created.push(savedAttendant);
+            }
+
+            // Update all other existing records with new data (except student relation)
+            for (const existingAttendant of existingAttendants) {
+              if (existingAttendant.student.id !== attendantData.studentId) {
+                const updatedAttendant = await this.attendantRepository.save({
+                  ...existingAttendant,
+                  firstName: attendantData.firstName,
+                  lastName: attendantData.lastName,
+                  phone: attendantData.phone,
+                  address: attendantData.address,
+                  relationship: attendantData.relationship,
+                  occupation: attendantData.occupation,
+                  email: attendantData.email,
+                  documentType: attendantData.documentType,
+                  document: attendantData.document,
+                  // Mantiene su estudiante original
+                  student: existingAttendant.student,
+                });
+                results.updated.push(updatedAttendant);
+              }
+            }
           } else {
-            // Create new attendant
+            // Create new attendant if doesn't exist
             const newAttendant = this.attendantRepository.create({
               ...attendantData,
               student,
