@@ -5,7 +5,7 @@ import { CreateAttendantDto } from './dto/create-attendant.dto';
 @Controller('attendants')
 export class AttendantsController {
   constructor(private readonly attendantsService: AttendantsService) {}
-  
+
   @Post()
   create(@Body() createAttendantDto: CreateAttendantDto | CreateAttendantDto[]) {
     return this.attendantsService.create(createAttendantDto);
@@ -19,6 +19,11 @@ export class AttendantsController {
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.attendantsService.findOne(id);
+  }
+
+  @Get('document/:id')
+  findOneDocument(@Param('id') id: string) {
+    return this.attendantsService.findOneDocument(id);
   }
 
   @Get('student/:studentId')

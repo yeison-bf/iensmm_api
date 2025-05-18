@@ -181,6 +181,34 @@ export class AttendantsService {
     }
   }
 
+  async findOneDocument(id: string) {
+    try {
+      const attendant = await this.attendantRepository.find({
+        where: { document: id },
+        relations: ['student'],
+      });
+
+      if (!attendant) {
+        return {
+          success: false,
+          message: `Attendant with ID ${id} not found`,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Attendant retrieved successfully',
+        data: attendant,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving attendant: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
  
 
