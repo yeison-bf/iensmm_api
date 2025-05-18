@@ -163,7 +163,7 @@ export class UsersService {
 
 
 
-   async findAllStudents(headquarterId?: number) {
+  async findAllStudents(headquarterId?: number) {
     console.log(headquarterId);
     try {
       const queryBuilder = this.userRepository
@@ -375,7 +375,7 @@ export class UsersService {
     }
   }
 
-      async removeStudent(id: number) {
+  async removeStudent(id: number) {
     try {
       const user = await this.userRepository.findOne({
         where: { id },
@@ -1222,5 +1222,72 @@ export class UsersService {
    */
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+
+
+
+    async removeAdministrator(id: number) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id },
+        relations: ['administrator', 'headquarters'],
+      });
+
+      if (!user) {
+        return {
+          success: false,
+          message: `Usuario con ID ${id} no encontrado`,
+          data: null,
+        };
+      }
+
+      try {
+        // If user has administrator data, remove it first
+        if (user.administrator) {
+          await this.administratorRepository.remove(user.administrator);
+        }
+
+        // Remove user and get data before deletion
+        await this.userRepository.remove(user);
+        const { password, ...result } = user;
+
+        return {
+          success: true,
+          message: 'Usuario y datos del administrador eliminados exitosamente',
+          data: result,
+        };
+      } catch (deleteError: any) {
+        // Handle specific database errors
+        if (deleteError.message.includes('foreign key constraint fails')) {
+          return {
+            success: false,
+            message: 'No se puede eliminar el administrador: Existen registros relacionados en el sistema.',
+            data: {
+              error: 'RESTRICCION_CLAVE_FORANEA',
+              details: deleteError.message
+            }
+          };
+        }
+
+        return {
+          success: false,
+          message: `Error en la base de datos durante la eliminación: ${deleteError.message}`,
+          data: {
+            error: 'ERROR_BASE_DATOS',
+            details: deleteError.message
+          }
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `Error en la operación de eliminación: ${error.message}`,
+        data: {
+          error: 'ERROR_OPERACION',
+          details: error.message
+        }
+      };
+    }
   }
 }

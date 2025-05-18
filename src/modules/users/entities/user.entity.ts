@@ -65,7 +65,6 @@ export class User {
   @OneToOne(() => Student, student => student.user)
   student: Student;
 
-
   @OneToOne(() => Administrator, administrator => administrator.user)
   administrator: Administrator;
 

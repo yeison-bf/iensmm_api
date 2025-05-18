@@ -95,4 +95,9 @@ export class UsersController {
   }
 
 
+  @Delete('administrators/:id')
+  removeAdministrator(@Param('id') id: number) {
+    return this.usersService.removeAdministrator(id);
+  }
+
 }
