@@ -183,7 +183,7 @@ export class AttendantsService {
 
   async findOneDocument(id: string) {
     try {
-      const attendant = await this.attendantRepository.find({
+      const attendant = await this.attendantRepository.findOne({
         where: { document: id },
         relations: ['student'],
       });
