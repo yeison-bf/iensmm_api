@@ -14,36 +14,63 @@ export class AttendantsService {
     private readonly studentRepository: Repository<Student>,
   ) {}
 
-  async create(createAttendantDto: CreateAttendantDto) {
+  
+  async create(createAttendantDto: CreateAttendantDto | CreateAttendantDto[]) {
     try {
-      const student = await this.studentRepository.findOne({
-        where: { id: createAttendantDto.studentId },
-      });
+      // Convert single object to array if necessary
+      const attendantsToCreate = Array.isArray(createAttendantDto) 
+        ? createAttendantDto 
+        : [createAttendantDto];
 
-      if (!student) {
-        return {
-          success: false,
-          message: 'Student not found',
-          data: null,
-        };
+      const results = {
+        success: [],
+        errors: []
+      };
+
+      // Process each attendant
+      for (const attendantData of attendantsToCreate) {
+        try {
+          const student = await this.studentRepository.findOne({
+            where: { id: attendantData.studentId },
+          });
+
+          if (!student) {
+            results.errors.push({
+              data: attendantData,
+              message: `Student with ID ${attendantData.studentId} not found`
+            });
+            continue;
+          }
+
+          const attendant = this.attendantRepository.create({
+            ...attendantData,
+            student,
+          });
+
+          const savedAttendant = await this.attendantRepository.save(attendant);
+          results.success.push(savedAttendant);
+
+        } catch (individualError) {
+          results.errors.push({
+            data: attendantData,
+            message: `Error saving attendant: ${individualError.message}`
+          });
+        }
       }
 
-      const attendant = this.attendantRepository.create({
-        ...createAttendantDto,
-        student,
-      });
-
-      const savedAttendant = await this.attendantRepository.save(attendant);
-
       return {
-        success: true,
-        message: 'Attendant created successfully',
-        data: savedAttendant,
+        success: results.errors.length === 0,
+        message: `Processed ${attendantsToCreate.length} attendants. Success: ${results.success.length}, Errors: ${results.errors.length}`,
+        data: {
+          successful: results.success,
+          failed: results.errors
+        }
       };
+
     } catch (error) {
       return {
         success: false,
-        message: `Error creating attendant: ${error.message}`,
+        message: `Error processing attendants: ${error.message}`,
         data: null,
       };
     }
