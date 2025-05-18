@@ -17,52 +17,69 @@ export class AttendantsService {
   
   async create(createAttendantDto: CreateAttendantDto | CreateAttendantDto[]) {
     try {
-      // Convert single object to array if necessary
-      const attendantsToCreate = Array.isArray(createAttendantDto) 
+      const attendantsToProcess = Array.isArray(createAttendantDto) 
         ? createAttendantDto 
         : [createAttendantDto];
 
       const results = {
-        success: [],
+        created: [],
+        updated: [],
         errors: []
       };
 
-      // Process each attendant
-      for (const attendantData of attendantsToCreate) {
+      // First, validate if student exists
+      const student = await this.studentRepository.findOne({
+        where: { id: attendantsToProcess[0].studentId },
+      });
+
+      if (!student) {
+        return {
+          success: false,
+          message: `Student with ID ${attendantsToProcess[0].studentId} not found`,
+          data: null
+        };
+      }
+
+      for (const attendantData of attendantsToProcess) {
         try {
-          const student = await this.studentRepository.findOne({
-            where: { id: attendantData.studentId },
+          // Check if attendant already exists by document
+          const existingAttendant = await this.attendantRepository.findOne({
+            where: { document: attendantData.document },
+            relations: ['student']
           });
 
-          if (!student) {
-            results.errors.push({
-              data: attendantData,
-              message: `Student with ID ${attendantData.studentId} not found`
+          if (existingAttendant) {
+            // Update existing attendant and associate with current student
+            const updatedAttendant = await this.attendantRepository.save({
+              ...existingAttendant,
+              ...attendantData,
+              student,
             });
-            continue;
+            results.updated.push(updatedAttendant);
+          } else {
+            // Create new attendant
+            const newAttendant = this.attendantRepository.create({
+              ...attendantData,
+              student,
+            });
+            const savedAttendant = await this.attendantRepository.save(newAttendant);
+            results.created.push(savedAttendant);
           }
-
-          const attendant = this.attendantRepository.create({
-            ...attendantData,
-            student,
-          });
-
-          const savedAttendant = await this.attendantRepository.save(attendant);
-          results.success.push(savedAttendant);
 
         } catch (individualError) {
           results.errors.push({
             data: attendantData,
-            message: `Error saving attendant: ${individualError.message}`
+            message: `Error processing attendant: ${individualError.message}`
           });
         }
       }
 
       return {
         success: results.errors.length === 0,
-        message: `Processed ${attendantsToCreate.length} attendants. Success: ${results.success.length}, Errors: ${results.errors.length}`,
+        message: `Processed ${attendantsToProcess.length} attendants. Created: ${results.created.length}, Updated: ${results.updated.length}, Errors: ${results.errors.length}`,
         data: {
-          successful: results.success,
+          created: results.created,
+          updated: results.updated,
           failed: results.errors
         }
       };
