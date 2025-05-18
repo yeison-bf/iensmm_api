@@ -35,4 +35,15 @@ export class CreateAdministratorDto {
 
   @IsNumber()
   userId: number;
+
+  @IsString()
+  scalafon: string;
+
+  @IsString()
+  @IsOptional()
+  appointmentResolution?: string;
+
+  @IsNumber()
+  status: boolean;
+
 }

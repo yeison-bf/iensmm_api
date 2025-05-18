@@ -74,4 +74,7 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+
+  @Column({ type: 'varchar', length: 50 })
+  birthDate: string;
 }

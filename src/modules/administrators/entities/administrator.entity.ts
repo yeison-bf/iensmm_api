@@ -11,7 +11,7 @@ export class Administrator {
   academicTitle: string;
 
   @Column({ type: 'varchar', length: 100 })
-  trainingArea: string;
+  trainingArea: string; 
 
   @Column({ type: 'varchar', length: 50 })
   maritalStatus: string;
@@ -31,17 +31,24 @@ export class Administrator {
   @Column({ type: 'varchar', length: 255, nullable: true })
   signature: string;
 
-
   @ManyToOne(() => AdministratorType)
   @JoinColumn({ name: 'administratorTypeId' })
   administratorType: AdministratorType;
-
 
   @OneToOne(() => User, user => user.administrator)
   @JoinColumn()
   user: User;
 
-
   @Column()
   administratorTypeId: number;
+
+ @Column({ type: 'varchar', length: 50 })
+  scalafon: string;  // Grado de escalafón
+
+  @Column({ type: 'varchar', length: 100 })
+  appointmentResolution: string;  // Resolución de nombramiento
+
+  @Column({ type: 'boolean', default: true })
+  status: boolean;
+
 }

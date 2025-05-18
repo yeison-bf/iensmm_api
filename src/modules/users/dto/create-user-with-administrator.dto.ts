@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, ValidateNested, IsString, IsDate, IsNumber, IsOptional } from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsString, IsDate, IsNumber, IsOptional, IsBoolean } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
 
 export class CreateAdministratorInfoDto {
@@ -40,6 +40,18 @@ export class CreateAdministratorInfoDto {
   @IsNumber()
   @IsNotEmpty()
   administratorTypeId: number;
+
+  @IsString()
+  scalafon: string;
+
+  @IsString()
+  @IsOptional()
+  appointmentResolution?: string;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  status: boolean;
+
 }
 
 export class CreateUserWithAdministratorDto {

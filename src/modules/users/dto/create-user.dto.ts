@@ -59,4 +59,9 @@ export class CreateUserDto {
   @IsNumber({}, { each: true })
   @IsOptional()
   headquarterIds?: number[];
+
+  @IsString()
+  @IsOptional()
+  birthDate?: string;
+
 }
