@@ -12,10 +12,13 @@ export class TrainingArea {
   @Column({ name: 'institution_id' })
   institution: number;
 
-  @ManyToOne(() => TrainingCore)  // Removemos { eager: true }
+  @Column({ name: 'training_core_id', nullable: true })
+  trainingCoreId: number;
+
+  @ManyToOne(() => TrainingCore, trainingCore => trainingCore.trainingAreas, { eager: true })
   @JoinColumn({ name: 'training_core_id' })
   trainingCore: TrainingCore;
-  
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 

@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { TrainingArea } from 'src/modules/training-areas/entities/training-area.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
 @Entity('training_cores')
 export class TrainingCore {
@@ -10,7 +11,10 @@ export class TrainingCore {
 
   @Column({ name: 'institution_id' })
   institution: number;
-  
+
+  @OneToMany(() => TrainingArea, trainingArea => trainingArea.trainingCore)
+  trainingAreas: TrainingArea[];
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 

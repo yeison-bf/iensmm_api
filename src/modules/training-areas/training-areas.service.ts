@@ -17,25 +17,35 @@ export class TrainingAreasService {
 
   async create(createTrainingAreaDto: CreateTrainingAreaDto) {
     try {
-      const trainingCore = await this.trainingCoreRepository.findOne({
-        where: { id: createTrainingAreaDto.trainingCoreId },
+      const trainingCore = await this.trainingCoreRepository.findOneBy({ 
+        id: createTrainingAreaDto.trainingCoreId 
       });
 
       if (!trainingCore) {
         return {
           success: false,
-          message: 'Training core not found',
+          message: `Training core with ID ${createTrainingAreaDto.trainingCoreId} not found`,
           data: null,
         };
       }
 
-      const trainingArea = this.trainingAreaRepository.create(createTrainingAreaDto);
+      const trainingArea = new TrainingArea();
+      trainingArea.name = createTrainingAreaDto.name;
+      trainingArea.institution = createTrainingAreaDto.institution;
+      trainingArea.trainingCoreId = createTrainingAreaDto.trainingCoreId;
+      trainingArea.trainingCore = trainingCore;
+
       const savedTrainingArea = await this.trainingAreaRepository.save(trainingArea);
+
+      const result = await this.trainingAreaRepository.findOne({
+        where: { id: savedTrainingArea.id },
+        relations: ['trainingCore']
+      });
 
       return {
         success: true,
         message: 'Training area created successfully',
-        data: savedTrainingArea,
+        data: result,
       };
     } catch (error) {
       return {
@@ -153,7 +163,7 @@ export class TrainingAreasService {
   }
 
 
-  
+
   async remove(id: number) {
     try {
       const trainingArea = await this.trainingAreaRepository.findOne({
