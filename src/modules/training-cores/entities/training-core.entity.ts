@@ -8,6 +8,9 @@ export class TrainingCore {
   @Column({ type: 'varchar', length: 100, unique: true })
   name: string;
 
+  @Column({ name: 'institution_id' })
+  institution: number;
+  
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
