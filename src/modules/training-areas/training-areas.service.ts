@@ -96,29 +96,31 @@ export class TrainingAreasService {
     }
   }
 
-  async update(id: number, updateTrainingAreaDto: UpdateTrainingAreaDto) {
+   async update(id: number, updateTrainingAreaDto: UpdateTrainingAreaDto) {
     try {
       const trainingArea = await this.trainingAreaRepository.findOne({
         where: { id },
+        relations: ['trainingCore']
       });
 
       if (!trainingArea) {
         return {
           success: false,
-          message: 'Training area not found',
+          message: `Training Area with ID ${id} not found`,
           data: null,
         };
       }
 
+      let trainingCore = null;
       if (updateTrainingAreaDto.trainingCoreId) {
-        const trainingCore = await this.trainingCoreRepository.findOne({
+        trainingCore = await this.trainingCoreRepository.findOne({
           where: { id: updateTrainingAreaDto.trainingCoreId },
         });
 
         if (!trainingCore) {
           return {
             success: false,
-            message: 'Training core not found',
+            message: `Training Core with ID ${updateTrainingAreaDto.trainingCoreId} not found`,
             data: null,
           };
         }
@@ -127,12 +129,19 @@ export class TrainingAreasService {
       const updatedTrainingArea = await this.trainingAreaRepository.save({
         ...trainingArea,
         ...updateTrainingAreaDto,
+        trainingCore: trainingCore || trainingArea.trainingCore,
+      });
+
+      // Fetch fresh data to return
+      const result = await this.trainingAreaRepository.findOne({
+        where: { id: updatedTrainingArea.id },
+        relations: ['trainingCore']
       });
 
       return {
         success: true,
         message: 'Training area updated successfully',
-        data: updatedTrainingArea,
+        data: result,
       };
     } catch (error) {
       return {
@@ -143,6 +152,8 @@ export class TrainingAreasService {
     }
   }
 
+
+  
   async remove(id: number) {
     try {
       const trainingArea = await this.trainingAreaRepository.findOne({

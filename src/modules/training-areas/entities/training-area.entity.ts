@@ -9,13 +9,13 @@ export class TrainingArea {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ name: 'training_core_id' })
-  trainingCoreId: number;
+  @Column({ name: 'institution_id' })
+  institution: number;
 
-  @ManyToOne(() => TrainingCore, { eager: true })
+  @ManyToOne(() => TrainingCore)  // Removemos { eager: true }
   @JoinColumn({ name: 'training_core_id' })
   trainingCore: TrainingCore;
-
+  
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 

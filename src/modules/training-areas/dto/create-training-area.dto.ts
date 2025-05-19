@@ -1,11 +1,15 @@
-import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateTrainingAreaDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
+  institution: number;
+
+  @IsNumber()
+  @IsOptional()
   trainingCoreId: number;
 }
