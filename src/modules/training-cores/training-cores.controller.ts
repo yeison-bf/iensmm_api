@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
 import { TrainingCoresService } from './training-cores.service';
 import { CreateTrainingCoreDto } from './dto/create-training-core.dto';
 import { UpdateTrainingCoreDto } from './dto/update-training-core.dto';
@@ -13,8 +13,8 @@ export class TrainingCoresController {
   }
 
   @Get()
-  findAll() {
-    return this.trainingCoresService.findAll();
+  findAll(@Query('institution') institution?: number) {
+    return this.trainingCoresService.findAll(institution);
   }
 
   @Get(':id')

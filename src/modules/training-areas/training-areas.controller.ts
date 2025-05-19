@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
 import { TrainingAreasService } from './training-areas.service';
 import { CreateTrainingAreaDto } from './dto/create-training-area.dto';
 import { UpdateTrainingAreaDto } from './dto/update-training-area.dto';
@@ -12,9 +12,9 @@ export class TrainingAreasController {
     return this.trainingAreasService.create(createTrainingAreaDto);
   }
 
-  @Get()
-  findAll() {
-    return this.trainingAreasService.findAll();
+    @Get()
+  findAll(@Query('institution') institution?: number) {
+    return this.trainingAreasService.findAll(institution);
   }
 
   @Get(':id')

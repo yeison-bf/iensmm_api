@@ -31,9 +31,12 @@ export class TrainingCoresService {
     }
   }
 
-  async findAll() {
+  async findAll(institution?: number) {
     try {
+      const where = institution ? { institution } : {};
+
       const trainingCores = await this.trainingCoreRepository.find({
+        where,
         order: { name: 'ASC' },
       });
 
