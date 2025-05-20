@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { AdministratorType } from '../../administrator-type/entities/administrator-type.entity';
+import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 
 @Entity('administrators')
 export class Administrator {
@@ -11,7 +12,7 @@ export class Administrator {
   academicTitle: string;
 
   @Column({ type: 'varchar', length: 100 })
-  trainingArea: string; 
+  trainingArea: string;
 
   @Column({ type: 'varchar', length: 50 })
   maritalStatus: string;
@@ -42,7 +43,7 @@ export class Administrator {
   @Column()
   administratorTypeId: number;
 
- @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', length: 50 })
   scalafon: string;  // Grado de escalafón
 
   @Column({ type: 'varchar', length: 100 })
@@ -50,5 +51,8 @@ export class Administrator {
 
   @Column({ type: 'boolean', default: true })
   status: boolean;
+
+  @OneToMany(() => AcademicAssignment, assignment => assignment.administrator)
+  academicAssignments: AcademicAssignment[];
 
 }

@@ -1,7 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Student } from '../../students/entities/student.entity';
 import { Group } from '../../group/entities/group.entity';
 import { Degree } from '../../degrees/entities/degree.entity';
+import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 
 @Entity('student_enrollment')
 export class StudentEnrollment {
@@ -38,13 +39,14 @@ export class StudentEnrollment {
   @JoinColumn({ name: 'studentId' })
   student: Student;
 
-// ... existing code ...
   @Column({ name: 'headquarter_id', type: 'int', nullable: false })
   headquarterId: number;
 
   @Column({ name: 'institution_id', type: 'int', nullable: false })
   institutionId: number;
-// ... existing code ...
+
+  @OneToMany(() => AcademicAssignment, assignment => assignment.studentEnrollment)
+  academicAssignments: AcademicAssignment[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

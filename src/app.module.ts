@@ -24,6 +24,8 @@ import { GroupModule } from './modules/group/group.module';
 import { StudentEnrollmentModule } from './modules/student-enrollment/student-enrollment.module';
 import { TrainingCoresModule } from './modules/training-cores/training-cores.module';
 import { TrainingAreasModule } from './modules/training-areas/training-areas.module';
+import { AcademicThinkingModule } from './modules/academic-thinking/academic-thinking.module';
+import { AcademicAssignmentModule } from './modules/academic-assignment/academic-assignment.module';
 
 
 @Module({
@@ -93,6 +95,8 @@ import { TrainingAreasModule } from './modules/training-areas/training-areas.mod
     StudentEnrollmentModule,
     TrainingCoresModule,
     TrainingAreasModule,
+    AcademicThinkingModule,
+    AcademicAssignmentModule,
 
   ],
   controllers: [AppController],

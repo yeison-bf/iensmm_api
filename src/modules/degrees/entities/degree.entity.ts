@@ -1,3 +1,4 @@
+import { AcademicThinking } from 'src/modules/academic-thinking/entities/academic-thinking.entity';
 import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
@@ -14,7 +15,11 @@ export class Degree {
 
 
   @OneToMany(() => StudentEnrollment, enrollment => enrollment.degree)
-enrollments: StudentEnrollment[];
+  enrollments: StudentEnrollment[];
+
+
+  @OneToMany(() => AcademicThinking, academicThinking => academicThinking.degree)
+  academicThinkings: AcademicThinking[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

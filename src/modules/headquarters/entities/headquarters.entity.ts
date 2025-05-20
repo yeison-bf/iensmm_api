@@ -1,6 +1,8 @@
 import { User } from 'src/modules/users/entities/user.entity';
 import { Institution } from '../../../modules/institutions/entities/institution.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, OneToMany } from 'typeorm';
+import { AcademicThinking } from 'src/modules/academic-thinking/entities/academic-thinking.entity';
+import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 
 @Entity('headquarters')
 export class Headquarters {
@@ -40,6 +42,13 @@ export class Headquarters {
 
   @ManyToMany(() => User, (user) => user.headquarters)
   users: User[];
+
+  @OneToMany(() => AcademicThinking, academicThinking => academicThinking.headquarters)
+  academicThinkings: AcademicThinking[];
+
+  
+  @OneToMany(() => AcademicAssignment, assignment => assignment.headquarters)
+  academicAssignments: AcademicAssignment[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
