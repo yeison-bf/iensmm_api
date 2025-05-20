@@ -166,7 +166,6 @@ export class TrainingAreasService {
   }
 
 
-
   async remove(id: number) {
     try {
       const trainingArea = await this.trainingAreaRepository.findOne({
@@ -177,7 +176,7 @@ export class TrainingAreasService {
       if (!trainingArea) {
         return {
           success: false,
-          message: 'Training area not found',
+          message: 'Área de formación no encontrada',
           data: null,
         };
       }
@@ -186,13 +185,13 @@ export class TrainingAreasService {
 
       return {
         success: true,
-        message: 'Training area deleted successfully',
+        message: 'Área de formación eliminada exitosamente',
         data: trainingArea,
       };
     } catch (error) {
       return {
         success: false,
-        message: `Error deleting training area: ${error.message}`,
+        message: 'Error al eliminar el área de formación',
         data: null,
       };
     }

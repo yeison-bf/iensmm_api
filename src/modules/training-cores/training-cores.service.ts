@@ -114,17 +114,26 @@ export class TrainingCoresService {
       };
     }
   }
-
   async remove(id: number) {
     try {
       const trainingCore = await this.trainingCoreRepository.findOne({
         where: { id },
+        relations: ['trainingAreas']
       });
 
       if (!trainingCore) {
         return {
           success: false,
-          message: 'Training core not found',
+          message: 'Núcleo de formación no encontrado',
+          data: null,
+        };
+      }
+
+      // Verificar si tiene áreas asociadas
+      if (trainingCore.trainingAreas && trainingCore.trainingAreas.length > 0) {
+        return {
+          success: false,
+          message: 'No se puede eliminar el núcleo de formación porque tiene áreas asociadas',
           data: null,
         };
       }
@@ -133,13 +142,13 @@ export class TrainingCoresService {
 
       return {
         success: true,
-        message: 'Training core deleted successfully',
+        message: 'Núcleo de formación eliminado exitosamente',
         data: trainingCore,
       };
     } catch (error) {
       return {
         success: false,
-        message: `Error deleting training core: ${error.message}`,
+        message: 'Error al eliminar el núcleo de formación. Verifique que no tenga áreas asociadas',
         data: null,
       };
     }
