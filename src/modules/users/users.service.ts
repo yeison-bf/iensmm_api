@@ -1049,10 +1049,9 @@ export class UsersService {
       }
 
       // If enrollment data is provided, find actual group and degree IDs
-      if (studentData.enrollment &&
-        studentData.enrollment.groupId?.trim() &&
-        studentData.enrollment.degreeId?.trim()) {
-          
+      if (studentData.enrollment?.groupId && studentData.enrollment?.degreeId) {
+        console.log("Processing enrollment data:", studentData.enrollment);
+        
         const group = await this.groupRepository.findOne({
           where: { name: studentData.enrollment.groupId }
         });
@@ -1067,14 +1066,12 @@ export class UsersService {
           );
         }
 
-
-        // Asegurarse de que los IDs sean números
         const enrollmentData = {
-          schedule: studentData.enrollment.schedule,
-          folio: studentData.enrollment.folio,
-          registrationDate: studentData.enrollment.registrationDate,
-          type: studentData.enrollment.type,
-          observations: studentData.enrollment.observations,
+          schedule: studentData.enrollment.schedule || '',
+          folio: studentData.enrollment.folio || '',
+          registrationDate: studentData.enrollment.registrationDate || null,
+          type: studentData.enrollment.type || 'Nueva',
+          observations: studentData.enrollment.observations || '',
           groupId: Number(group.id),
           degreeId: Number(degree.id),
           studentId: Number(userResult.data.id),
@@ -1082,10 +1079,10 @@ export class UsersService {
           institutionId: Number(headquarters.institution.id)
         };
 
-        console.log("enrollmentData before create: ", enrollmentData);
+        console.log("Enrollment data to create:", enrollmentData);
 
         const enrollmentResult = await this.enrollmentService.create(enrollmentData);
-        console.log("enrollmentResult : ", enrollmentResult)
+        console.log("Enrollment result:", enrollmentResult);
 
         if (!enrollmentResult.success) {
           throw new Error(`Enrollment failed: ${enrollmentResult.message}`);
