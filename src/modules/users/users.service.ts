@@ -1001,52 +1001,58 @@ export class UsersService {
     retryCount = 0
   ): Promise<void> {
     try {
-      // Find actual IDs based on provided strings
+      console.log(`Processing student ${studentData.user.document} with document type ${studentData.user.documentTypeId}`);
+
       const documentType = await this.documentTypeRepository.findOne({
         where: { siglas: studentData.user.documentTypeId }
       });
+
+      console.log("Found document type:", documentType);
 
       if (!documentType) {
         throw new Error(`Document type "${studentData.user.documentTypeId}" not found`);
       }
 
       const headquarters = await this.headquarterRepository.findOne({
-        where: { name: studentData.user.headquarterIds }, relations: ['institution']
+        where: { name: studentData.user.headquarterIds },
+        relations: ['institution']
       });
 
       if (!headquarters) {
-        throw new
-          Error(`Headquarters "${studentData.user.headquarterIds}" not found`);
+        throw new Error(`Headquarters "${studentData.user.headquarterIds}" not found`);
       }
 
-      // Modify user data with found IDs
       // Modify user data with found IDs
       const modifiedUserData = {
         ...studentData.user,
         documentTypeId: documentType.id,
         headquarterIds: [headquarters.id],
-        institution: headquarters.institution.id 
+        institution: headquarters.institution.id
       };
 
-      // Add headquarterId to studentInfo
-      const modifiedStudentInfo = {
-        ...studentData.studentInfo,
-        headquarterId: headquarters.id
-      };
+      console.log("Modified user data:", modifiedUserData);
 
       // Create user with student
       const userResult = await this.createWithStudent({
         user: modifiedUserData,
-        studentInfo: modifiedStudentInfo
+        studentInfo: {
+          ...studentData.studentInfo,
+          headquarterId: headquarters.id
+        }
       });
 
-
       if (!userResult.success) {
+        console.error(`Failed to create user: ${userResult.message}`);
+        throw new Error(userResult.message);
+      } if (!userResult.success) {
         throw new Error(userResult.message);
       }
 
       // If enrollment data is provided, find actual group and degree IDs
-      if (studentData.enrollment) {
+      if (studentData.enrollment &&
+        studentData.enrollment.groupId?.trim() &&
+        studentData.enrollment.degreeId?.trim()) {
+          
         const group = await this.groupRepository.findOne({
           where: { name: studentData.enrollment.groupId }
         });
@@ -1093,15 +1099,16 @@ export class UsersService {
       });
 
     } catch (error) {
+      console.error(`Error processing student ${studentData.user.document}: ${error.message}`);
+
       if (this.isRetryableError(error) && retryCount < maxRetries) {
+        console.log(`Retrying student ${studentData.user.document} (attempt ${retryCount + 1}/${maxRetries})`);
         await this.delay(Math.pow(2, retryCount) * 1000);
         return this.processStudentWithRetry(studentData, results, maxRetries, retryCount + 1);
-      } else if (retryCount >= maxRetries) {
-        this.handleStudentError(studentData, error, results);
       } else {
-        results.retryableErrors.push({
-          studentData,
-          error: error.message,
+        results.errors.push({
+          document: studentData.user.document,
+          error: `Error processing student: ${error.message}`,
           attempts: retryCount + 1
         });
       }
@@ -1176,29 +1183,26 @@ export class UsersService {
    * Determine if an error is retryable
    */
   private isRetryableError(error: any): boolean {
-    // Check for known retryable error patterns
+    const errorMessage = error.message || error.toString();
+
+    // Only retry on specific database-related errors
     const retryablePatterns = [
       /deadlock/i,
       /lock timeout/i,
-      /too many connections/i,
       /connection reset/i,
       /ECONNRESET/,
       /timeout/i,
-      /rate limit/i,
-      /temporarily unavailable/i,
-      /try again/i,
-      /network/i,
-      /concurrent/i,
-      /ETIMEDOUT/,
-      /ECONNREFUSED/,
-      /socket hang up/i,
       /database is busy/i
     ];
 
-    const errorString = error.message || error.toString();
-    return retryablePatterns.some(pattern => pattern.test(errorString));
-  }
+    // Don't retry on validation or not found errors
+    if (errorMessage.includes('not found') ||
+      errorMessage.includes('validation failed')) {
+      return false;
+    }
 
+    return retryablePatterns.some(pattern => pattern.test(errorMessage));
+  }
   /**
    * Handle student record error
    */
@@ -1228,7 +1232,7 @@ export class UsersService {
 
 
 
-    async removeAdministrator(id: number) {
+  async removeAdministrator(id: number) {
     try {
       const user = await this.userRepository.findOne({
         where: { id },

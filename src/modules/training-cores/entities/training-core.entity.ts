@@ -6,7 +6,12 @@ export class TrainingCore {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ 
+    type: 'varchar', 
+    length: 1000, 
+    unique: true,
+    nullable: false 
+  })
   name: string;
 
   @Column({ name: 'institution_id' })
