@@ -7,4 +7,8 @@ export class CreateDegreeDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  program: string;
 }
