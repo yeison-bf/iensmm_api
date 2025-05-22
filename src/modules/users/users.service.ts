@@ -595,10 +595,14 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       const users = await this.userRepository.find({
         relations: [
           'role',
+          'student',
+          'administrator',
+          'administrator.administratorTypePrograms',
+          'administrator.administratorTypePrograms.administratorType',
+          'administrator.administratorTypePrograms.program',
           'documentType',
           'headquarters',
-          'administrator',
-          'administrator.administratorType'
+          'headquarters.institution'
         ],
         where: {
           role: { name: 'administrator' }  // Only get users with administrator role
@@ -627,7 +631,17 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
     try {
       const user = await this.userRepository.findOne({
         where: { id },
-        relations: ['role', 'documentType', 'headquarters', 'administrator'],
+        relations: [
+          'role',
+          'student',
+          'administrator',
+          'administrator.administratorTypePrograms',
+          'administrator.administratorTypePrograms.administratorType',
+          'administrator.administratorTypePrograms.program',
+          'documentType',
+          'headquarters',
+          'headquarters.institution'
+        ],
         select: {
           password: false,
         },
