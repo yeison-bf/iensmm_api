@@ -1,4 +1,4 @@
-import { IsNumber, IsArray, ValidateNested, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsArray, ValidateNested, IsNotEmpty, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateAcademicThinkingDetailDto {
@@ -25,8 +25,13 @@ export class CreateAcademicThinkingDto {
   year: number;
 
   @IsNumber()
-  @IsNotEmpty()
-  headquarterId: number;
+  @IsOptional()
+  headquarterId?: number;
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  additionalHeadquarters?: number[];
 
   @IsNumber()
   @IsNotEmpty()

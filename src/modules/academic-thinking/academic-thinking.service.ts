@@ -20,7 +20,7 @@ export class AcademicThinkingService {
 
   async create(createAcademicThinkingDto: CreateAcademicThinkingDto) {
     try {
-      // Verificar que el área de formación exista
+      // Verificar áreas de formación
       for (const detail of createAcademicThinkingDto.details) {
         const trainingArea = await this.trainingAreaRepository.findOne({
           where: { id: detail.trainingAreaId }
@@ -35,40 +35,53 @@ export class AcademicThinkingService {
         }
       }
 
-      const academicThinking = this.academicThinkingRepository.create({
-        year: createAcademicThinkingDto.year,
-        headquarterId: createAcademicThinkingDto.headquarterId,
-        gradeId: createAcademicThinkingDto.gradeId,
-      });
+      // Crear array de sedes a procesar
+      const headquartersToProcess = [
+        createAcademicThinkingDto.headquarterId,
+        ...(createAcademicThinkingDto.additionalHeadquarters || [])
+      ];
 
-      const savedAcademicThinking = await this.academicThinkingRepository.save(academicThinking);
+      const createdRecords = [];
 
-      const details = await Promise.all(
-        createAcademicThinkingDto.details.map(async detail => {
-          const trainingArea = await this.trainingAreaRepository.findOne({
-            where: { id: detail.trainingAreaId }
-          });
-          
-          return this.academicThinkingDetailRepository.create({
-            hourlyIntensity: detail.hourlyIntensity,
-            percentage: detail.percentage,
-            trainingArea: trainingArea,
-            academicThinking: savedAcademicThinking,
-          });
-        })
-      );
+      // Crear registros para cada sede
+      for (const headquarterId of headquartersToProcess) {
+        const academicThinking = this.academicThinkingRepository.create({
+          year: createAcademicThinkingDto.year,
+          headquarterId: headquarterId,
+          gradeId: createAcademicThinkingDto.gradeId,
+        });
 
-      await this.academicThinkingDetailRepository.save(details);
+        const savedAcademicThinking = await this.academicThinkingRepository.save(academicThinking);
 
-      const result = await this.academicThinkingRepository.findOne({
-        where: { id: savedAcademicThinking.id },
-        relations: ['details', 'details.trainingArea', 'details.trainingArea.trainingCore'],
-      });
+        const details = await Promise.all(
+          createAcademicThinkingDto.details.map(async detail => {
+            const trainingArea = await this.trainingAreaRepository.findOne({
+              where: { id: detail.trainingAreaId }
+            });
+            
+            return this.academicThinkingDetailRepository.create({
+              hourlyIntensity: detail.hourlyIntensity,
+              percentage: detail.percentage,
+              trainingArea: trainingArea,
+              academicThinking: savedAcademicThinking,
+            });
+          })
+        );
+
+        await this.academicThinkingDetailRepository.save(details);
+
+        const result = await this.academicThinkingRepository.findOne({
+          where: { id: savedAcademicThinking.id },
+          relations: ['details', 'details.trainingArea', 'details.trainingArea.trainingCore'],
+        });
+
+        createdRecords.push(result);
+      }
 
       return {
         success: true,
-        message: 'Pensamiento académico creado exitosamente',
-        data: result,
+        message: 'Pensamiento académico creado exitosamente para todas las sedes',
+        data: createdRecords,
       };
     } catch (error) {
       return {
@@ -80,9 +93,27 @@ export class AcademicThinkingService {
   }
 
 
-  async findAll() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  async findAll(headquarterId?: number) {
     try {
       const academicThinkings = await this.academicThinkingRepository.find({
+        where: { headquarterId },
         relations: ['details', 'details.trainingArea', 'degree'],
         order: { year: 'DESC' },
       });
@@ -199,7 +230,7 @@ export class AcademicThinkingService {
 
 
 
-  
+
 
   async remove(id: number) {
     try {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
 import { AcademicThinkingService } from './academic-thinking.service';
 import { CreateAcademicThinkingDto } from './dto/create-academic-thinking.dto';
 import { UpdateAcademicThinkingDto } from './dto/update-academic-thinking.dto';
@@ -12,9 +12,9 @@ export class AcademicThinkingController {
     return this.academicThinkingService.create(createAcademicThinkingDto);
   }
 
-  @Get()
-  findAll() {
-    return this.academicThinkingService.findAll();
+   @Get()
+  findAll(@Query('headquarters') headquarters?: string) {
+    return this.academicThinkingService.findAll(headquarters ? +headquarters : null);
   }
 
   @Get(':id')
