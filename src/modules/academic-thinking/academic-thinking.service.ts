@@ -16,7 +16,7 @@ export class AcademicThinkingService {
     private readonly academicThinkingDetailRepository: Repository<AcademicThinkingDetail>,
     @InjectRepository(TrainingArea)
     private readonly trainingAreaRepository: Repository<TrainingArea>,
-  ) {}
+  ) { }
 
   async create(createAcademicThinkingDto: CreateAcademicThinkingDto) {
     try {
@@ -25,7 +25,7 @@ export class AcademicThinkingService {
         const trainingArea = await this.trainingAreaRepository.findOne({
           where: { id: detail.trainingAreaId }
         });
-        
+
         if (!trainingArea) {
           return {
             success: false,
@@ -58,7 +58,7 @@ export class AcademicThinkingService {
             const trainingArea = await this.trainingAreaRepository.findOne({
               where: { id: detail.trainingAreaId }
             });
-            
+
             return this.academicThinkingDetailRepository.create({
               hourlyIntensity: detail.hourlyIntensity,
               percentage: detail.percentage,
@@ -109,7 +109,7 @@ export class AcademicThinkingService {
 
 
 
-  
+
   async findAll(headquarterId?: number) {
     try {
       const academicThinkings = await this.academicThinkingRepository.find({
@@ -259,6 +259,47 @@ export class AcademicThinkingService {
       return {
         success: false,
         message: `Error al eliminar el pensamiento académico: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+  async search(year?: number | string, gradeId?: number | string, headquarterId?: number | string) {
+
+    console.log(year, gradeId, headquarterId);
+    try {
+      const where: any = {};
+      
+      if (year && !isNaN(Number(year))) {
+        where.year = Number(year);
+      }
+      
+      if (gradeId && !isNaN(Number(gradeId))) {
+        where.gradeId = Number(gradeId);
+      }
+      
+      if (headquarterId && !isNaN(Number(headquarterId))) {
+        where.headquarterId = Number(headquarterId);
+      }
+
+      const academicThinkings = await this.academicThinkingRepository.find({
+        where,
+        relations: ['details', 'details.trainingArea', 'degree'],
+        order: { year: 'DESC' },
+      });
+
+      return {
+        success: true,
+        message: academicThinkings.length > 0
+          ? 'Registros encontrados exitosamente'
+          : 'No se encontraron registros con los filtros proporcionados',
+        data: academicThinkings,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al buscar registros: ${error.message}`,
         data: null,
       };
     }
