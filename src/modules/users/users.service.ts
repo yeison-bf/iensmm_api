@@ -17,6 +17,8 @@ import { BulkCreateStudentDto } from './dto/bulk-create-students.dto';
 import { StudentEnrollmentService } from '../student-enrollment/student-enrollment.service';
 import { Group } from '../group/entities/group.entity';
 import { Degree } from '../degrees/entities/degree.entity';
+import { AdministratorTypeProgram } from '../administrator-type/entities/administrator_type_program.entity';
+import { AdministratorType } from '../administrator-type/entities/administrator-type.entity';
 
 
 @Injectable()
@@ -48,6 +50,11 @@ export class UsersService {
     @InjectRepository(Degree)
     private readonly degreeRepository: Repository<Degree>,
 
+    @InjectRepository(AdministratorTypeProgram)
+    private readonly administratorTypeProgramRepository: Repository<AdministratorTypeProgram>,
+
+    @InjectRepository(AdministratorType)
+private readonly administratorTypeRepository: Repository<AdministratorType>,
 
   ) { }
 
@@ -493,29 +500,55 @@ export class UsersService {
 
 
   // Metodos del administrador
-  async createWithAdministrator(createUserWithAdministratorDto: CreateUserWithAdministratorDto) {
+   async createWithAdministrator(createUserWithAdministratorDto: CreateUserWithAdministratorDto) {
     try {
       const { user: userData, administratorInfo } = createUserWithAdministratorDto;
 
       // First create the user
       const userResult = await this.create(userData);
+      if (!userResult.success) return userResult;
 
-      if (!userResult.success) {
-        return userResult;
-      }
-
-      // Create the administrator with the new user
+      // Create the administrator
       const administrator = this.administratorRepository.create({
         ...administratorInfo,
         user: userResult.data,
       });
-
       const savedAdministrator = await this.administratorRepository.save(administrator);
+
+      // Create administrator type program relationships
+      if (administratorInfo.administratorTypePrograms?.length > 0) {
+        // First, create the relationships in administrator_administrator_type table
+        const administratorTypes = await this.administratorTypeRepository.findByIds(
+          administratorInfo.administratorTypePrograms.map(atp => atp.administratorTypeId)
+        );
+        savedAdministrator.administratorTypes = administratorTypes;
+        await this.administratorRepository.save(savedAdministrator);
+
+        // Then create records in administrator_type_program table
+        const typePrograms = administratorInfo.administratorTypePrograms.map(atp => ({
+          administrator: savedAdministrator,
+          administratorType: { id: atp.administratorTypeId },
+          program: { id: atp.programId },
+          startDate: atp.startDate,
+          endDate: atp.endDate
+        }));
+
+        await this.administratorTypeProgramRepository.save(typePrograms);
+      }
 
       // Fetch complete data
       const completeAdministrator = await this.administratorRepository.findOne({
         where: { id: savedAdministrator.id },
-        relations: ['user', 'user.role', 'user.documentType', 'user.headquarters', 'administratorType'],
+        relations: [
+          'user',
+          'user.role',
+          'user.documentType',
+          'user.headquarters',
+          'administratorTypes',
+          'administratorTypePrograms',
+          'administratorTypePrograms.administratorType',
+          'administratorTypePrograms.program'
+        ],
       });
 
       return {
@@ -531,6 +564,31 @@ export class UsersService {
       };
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   async findAllAdministrators() {
     try {
@@ -776,11 +834,12 @@ export class UsersService {
           'role',
           'student',
           'administrator',
-          'administrator.administratorType', // Changed from administratorTypeId to administratorType
+          'administrator.administratorTypePrograms',
+          'administrator.administratorTypePrograms.administratorType',
+          'administrator.administratorTypePrograms.program',
           'documentType',
           'headquarters',
           'headquarters.institution'
-
         ],
       });
       if (!user) {
@@ -839,8 +898,12 @@ export class UsersService {
             teachingLevel: user.administrator.teachingLevel,
             contractType: user.administrator.contractType,
             signature: user.administrator.signature,
-            administratorTypeId: user.administrator.administratorTypeId,
-            administratorType: user.administrator.administratorType
+            administratorTypePrograms: user.administrator.administratorTypePrograms.map(atp => ({
+              administratorType: atp.administratorType,
+              program: atp.program,
+              startDate: atp.startDate,
+              endDate: atp.endDate
+            }))
           }
         };
       }

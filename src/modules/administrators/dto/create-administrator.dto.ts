@@ -1,4 +1,4 @@
-import { IsString, IsDate, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsDate, IsNumber, IsOptional, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateAdministratorDto {
@@ -31,9 +31,6 @@ export class CreateAdministratorDto {
   signature?: string;
 
   @IsNumber()
-  administratorTypeId: number;
-
-  @IsNumber()
   userId: number;
 
   @IsString()
@@ -46,4 +43,25 @@ export class CreateAdministratorDto {
   @IsNumber()
   status: boolean;
 
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AdministratorTypeProgramDto)
+  administratorTypePrograms: AdministratorTypeProgramDto[];
+}
+
+class AdministratorTypeProgramDto {
+  @IsNumber()
+  administratorTypeId: number;
+
+  @IsNumber()
+  programId: number;
+
+  @Type(() => Date)
+  @IsDate()
+  startDate: Date;
+
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  endDate?: Date;
 }

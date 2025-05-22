@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, ValidateNested, IsString, IsDate, IsNumber, IsOptional, IsBoolean } from 'class-validator';
+import { IsNotEmpty, ValidateNested, IsString, IsDate, IsNumber, IsOptional, IsBoolean, IsObject } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
+import { CreateAdministratorDto } from 'src/modules/administrators/dto/create-administrator.dto';
 
 export class CreateAdministratorInfoDto {
   @IsString()
@@ -54,12 +55,24 @@ export class CreateAdministratorInfoDto {
 
 }
 
+// export class CreateUserWithAdministratorDto {
+//   @ValidateNested()
+//   @Type(() => CreateUserDto)
+//   user: CreateUserDto;
+
+//   @ValidateNested()
+//   @Type(() => CreateAdministratorInfoDto)
+//   administratorInfo: CreateAdministratorInfoDto;
+// }
+
 export class CreateUserWithAdministratorDto {
+  @IsObject()
   @ValidateNested()
   @Type(() => CreateUserDto)
   user: CreateUserDto;
 
+  @IsObject()
   @ValidateNested()
-  @Type(() => CreateAdministratorInfoDto)
-  administratorInfo: CreateAdministratorInfoDto;
+  @Type(() => CreateAdministratorDto)
+  administratorInfo: CreateAdministratorDto;
 }
