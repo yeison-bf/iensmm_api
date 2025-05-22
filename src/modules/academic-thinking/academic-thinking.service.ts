@@ -83,7 +83,7 @@ export class AcademicThinkingService {
   async findAll() {
     try {
       const academicThinkings = await this.academicThinkingRepository.find({
-        relations: ['details', 'details.trainingArea'],
+        relations: ['details', 'details.trainingArea', 'degree'],
         order: { year: 'DESC' },
       });
 
@@ -105,7 +105,7 @@ export class AcademicThinkingService {
     try {
       const academicThinking = await this.academicThinkingRepository.findOne({
         where: { id },
-        relations: ['details'],
+        relations: ['details', 'details.trainingArea', 'degree'],
       });
 
       if (!academicThinking) {
