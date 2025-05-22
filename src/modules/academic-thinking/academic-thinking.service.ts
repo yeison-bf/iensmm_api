@@ -134,7 +134,7 @@ export class AcademicThinkingService {
     try {
       const academicThinking = await this.academicThinkingRepository.findOne({
         where: { id },
-        relations: ['details', 'headquarter', 'degree'],
+        relations: ['details'],
       });
 
       if (!academicThinking) {
@@ -145,7 +145,7 @@ export class AcademicThinkingService {
         };
       }
 
-      // Actualizar la entidad principal
+      // Update main entity
       Object.assign(academicThinking, {
         year: updateAcademicThinkingDto.year,
         headquarterId: updateAcademicThinkingDto.headquarterId,
@@ -155,21 +155,32 @@ export class AcademicThinkingService {
       await this.academicThinkingRepository.save(academicThinking);
 
       if (updateAcademicThinkingDto.details) {
+        // Remove old details
         await this.academicThinkingDetailRepository.remove(academicThinking.details);
 
-        const newDetails = updateAcademicThinkingDto.details.map(detail =>
-          this.academicThinkingDetailRepository.create({
-            ...detail,
-            academicThinking,
+        // Create new details with training area references
+        const newDetails = await Promise.all(
+          updateAcademicThinkingDto.details.map(async detail => {
+            const trainingArea = await this.trainingAreaRepository.findOne({
+              where: { id: detail.trainingAreaId }
+            });
+
+            return this.academicThinkingDetailRepository.create({
+              hourlyIntensity: detail.hourlyIntensity,
+              percentage: detail.percentage,
+              trainingArea: trainingArea,
+              academicThinking: academicThinking
+            });
           })
         );
 
         await this.academicThinkingDetailRepository.save(newDetails);
       }
 
+      // Get updated result with relations
       const result = await this.academicThinkingRepository.findOne({
         where: { id },
-        relations: ['details'],
+        relations: ['details', 'details.trainingArea'],
       });
 
       return {
@@ -185,6 +196,10 @@ export class AcademicThinkingService {
       };
     }
   }
+
+
+
+  
 
   async remove(id: number) {
     try {

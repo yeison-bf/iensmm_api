@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { AcademicThinkingService } from './academic-thinking.service';
 import { CreateAcademicThinkingDto } from './dto/create-academic-thinking.dto';
 import { UpdateAcademicThinkingDto } from './dto/update-academic-thinking.dto';
@@ -22,7 +22,7 @@ export class AcademicThinkingController {
     return this.academicThinkingService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateAcademicThinkingDto: UpdateAcademicThinkingDto) {
     return this.academicThinkingService.update(+id, updateAcademicThinkingDto);
   }
