@@ -289,8 +289,9 @@ export class AcademicThinkingService {
         order: { year: 'DESC' },
       });
 
+
       return {
-        success: true,
+        success: academicThinkings.length > 0 ? true : false,
         message: academicThinkings.length > 0
           ? 'Registros encontrados exitosamente'
           : 'No se encontraron registros con los filtros proporcionados',
