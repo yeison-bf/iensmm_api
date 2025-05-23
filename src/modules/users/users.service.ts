@@ -1121,46 +1121,47 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       if (!userResult.success) {
         console.error(`Failed to create user: ${userResult.message}`);
         throw new Error(userResult.message);
+
+        
       } if (!userResult.success) {
         throw new Error(userResult.message);
       }
 
       // If enrollment data is provided, find actual group and degree IDs
-      if (studentData.enrollment?.groupId && studentData.enrollment?.degreeId) {
-        console.log("Processing enrollment data:", studentData.enrollment);
-        
-        const group = await this.groupRepository.findOne({
-          where: { name: studentData.enrollment.groupId }
-        });
-
-        const degree = await this.degreeRepository.findOne({
-          where: { name: studentData.enrollment.degreeId }
-        });
-
-        if (!group || !degree) {
-          throw new Error(
-            `${!group ? `Group "${studentData.enrollment.groupId}"` : ''} ${!degree ? `Degree "${studentData.enrollment.degreeId}"` : ''} not found`
-          );
-        }
-
-        const enrollmentData = {
-          schedule: studentData.enrollment.schedule || '',
-          folio: studentData.enrollment.folio || '',
-          registrationDate: studentData.enrollment.registrationDate || null,
+      if (studentData.enrollment) {
+        const enrollmentData: any = {
+          schedule: studentData.enrollment.schedule || 'Mañana',
+          folio: studentData.enrollment.folio || `${new Date().getFullYear()}-${userResult.data.id}`,
+          registrationDate: studentData.enrollment.registrationDate || new Date(),
           type: studentData.enrollment.type || 'Nueva',
           observations: studentData.enrollment.observations || '',
-          groupId: Number(group.id),
-          degreeId: Number(degree.id),
-          studentId: Number(userResult.data.id),
-          headquarterId: Number(headquarters.id),
-          institutionId: Number(headquarters.institution.id)
+          studentId: userResult.data.id,
+          headquarterId: headquarters.id,
+          institutionId: headquarters.institution.id
         };
 
-        console.log("Enrollment data to create:", enrollmentData);
+        // Only process group and degree if they are provided
+        if (studentData.enrollment.groupId && studentData.enrollment.degreeId) {
+          const group = await this.groupRepository.findOne({
+            where: { name: studentData.enrollment.groupId }
+          });
+
+          const degree = await this.degreeRepository.findOne({
+            where: { name: studentData.enrollment.degreeId }
+          });
+
+          if (!group || !degree) {
+            throw new Error(
+              `${!group ? `Group "${studentData.enrollment.groupId}"` : ''} ${!degree ? `Degree "${studentData.enrollment.degreeId}"` : ''} not found`
+            );
+          }
+
+          enrollmentData.groupId = group.id;
+          enrollmentData.degreeId = degree.id;
+        }
 
         const enrollmentResult = await this.enrollmentService.create(enrollmentData);
-        console.log("Enrollment result:", enrollmentResult);
-
+        
         if (!enrollmentResult.success) {
           throw new Error(`Enrollment failed: ${enrollmentResult.message}`);
         }
