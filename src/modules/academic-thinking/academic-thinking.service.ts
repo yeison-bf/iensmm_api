@@ -18,7 +18,7 @@ export class AcademicThinkingService {
     private readonly trainingAreaRepository: Repository<TrainingArea>,
   ) { }
 
-  async create(createAcademicThinkingDto: CreateAcademicThinkingDto) {
+   async create(createAcademicThinkingDto: CreateAcademicThinkingDto) {
     try {
       // Verificar áreas de formación
       for (const detail of createAcademicThinkingDto.details) {
@@ -35,52 +35,59 @@ export class AcademicThinkingService {
         }
       }
 
-      // Crear array de sedes a procesar
+      // Crear arrays de sedes y grados a procesar
       const headquartersToProcess = [
         createAcademicThinkingDto.headquarterId,
         ...(createAcademicThinkingDto.additionalHeadquarters || [])
       ];
 
+      const gradesToProcess = [
+        createAcademicThinkingDto.gradeId,
+        ...(createAcademicThinkingDto.additionalGrades || [])
+      ];
+
       const createdRecords = [];
 
-      // Crear registros para cada sede
+      // Crear registros para cada combinación de sede y grado
       for (const headquarterId of headquartersToProcess) {
-        const academicThinking = this.academicThinkingRepository.create({
-          year: createAcademicThinkingDto.year,
-          headquarterId: headquarterId,
-          gradeId: createAcademicThinkingDto.gradeId,
-        });
+        for (const gradeId of gradesToProcess) {
+          const academicThinking = this.academicThinkingRepository.create({
+            year: createAcademicThinkingDto.year,
+            headquarterId: headquarterId,
+            gradeId: gradeId,
+          });
 
-        const savedAcademicThinking = await this.academicThinkingRepository.save(academicThinking);
+          const savedAcademicThinking = await this.academicThinkingRepository.save(academicThinking);
 
-        const details = await Promise.all(
-          createAcademicThinkingDto.details.map(async detail => {
-            const trainingArea = await this.trainingAreaRepository.findOne({
-              where: { id: detail.trainingAreaId }
-            });
+          const details = await Promise.all(
+            createAcademicThinkingDto.details.map(async detail => {
+              const trainingArea = await this.trainingAreaRepository.findOne({
+                where: { id: detail.trainingAreaId }
+              });
 
-            return this.academicThinkingDetailRepository.create({
-              hourlyIntensity: detail.hourlyIntensity,
-              percentage: detail.percentage,
-              trainingArea: trainingArea,
-              academicThinking: savedAcademicThinking,
-            });
-          })
-        );
+              return this.academicThinkingDetailRepository.create({
+                hourlyIntensity: detail.hourlyIntensity,
+                percentage: detail.percentage,
+                trainingArea: trainingArea,
+                academicThinking: savedAcademicThinking,
+              });
+            })
+          );
 
-        await this.academicThinkingDetailRepository.save(details);
+          await this.academicThinkingDetailRepository.save(details);
 
-        const result = await this.academicThinkingRepository.findOne({
-          where: { id: savedAcademicThinking.id },
-          relations: ['details', 'details.trainingArea', 'details.trainingArea.trainingCore'],
-        });
+          const result = await this.academicThinkingRepository.findOne({
+            where: { id: savedAcademicThinking.id },
+            relations: ['details', 'details.trainingArea', 'details.trainingArea.trainingCore'],
+          });
 
-        createdRecords.push(result);
+          createdRecords.push(result);
+        }
       }
 
       return {
         success: true,
-        message: 'Pensamiento académico creado exitosamente para todas las sedes',
+        message: 'Pensamiento académico creado exitosamente para todas las sedes y grados',
         data: createdRecords,
       };
     } catch (error) {
@@ -91,7 +98,6 @@ export class AcademicThinkingService {
       };
     }
   }
-
 
 
 

@@ -36,6 +36,12 @@ export class CreateAcademicThinkingDto {
   @IsNumber()
   @IsNotEmpty()
   gradeId: number;
+  
+  @IsArray()
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  additionalGrades?: number[];
+
 
   @IsArray()
   @ValidateNested({ each: true })
