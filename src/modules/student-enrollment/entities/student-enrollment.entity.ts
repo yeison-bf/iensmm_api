@@ -3,6 +3,7 @@ import { Student } from '../../students/entities/student.entity';
 import { Group } from '../../group/entities/group.entity';
 import { Degree } from '../../degrees/entities/degree.entity';
 import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
+import { Program } from 'src/modules/programs/entities/program.entity';
 
 @Entity('student_enrollment')
 export class StudentEnrollment {
@@ -47,6 +48,13 @@ export class StudentEnrollment {
 
   @OneToMany(() => AcademicAssignment, assignment => assignment.studentEnrollment)
   academicAssignments: AcademicAssignment[];
+
+  @ManyToOne(() => Program)
+  @JoinColumn({ name: 'programId' })
+  program: Program;
+
+  @Column({ name: 'program_id', type: 'int', nullable: true })
+  programId: number;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

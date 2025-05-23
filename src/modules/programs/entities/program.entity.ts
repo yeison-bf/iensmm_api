@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { AdministratorType } from '../../administrator-type/entities/administrator-type.entity';
+import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
 
 @Entity('programs')
 export class Program {
@@ -28,4 +29,9 @@ export class Program {
     }
   })
   administratorTypes: AdministratorType[];
+
+
+  @OneToMany(() => StudentEnrollment, enrollment => enrollment.program)
+  enrollments: StudentEnrollment[];
+
 }
