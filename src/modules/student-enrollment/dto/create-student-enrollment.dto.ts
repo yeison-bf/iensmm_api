@@ -38,4 +38,10 @@ export class CreateStudentEnrollmentDto {
   @IsNumber()
   @IsOptional()
   institutionId?: number;
+
+  @IsNumber()
+  @IsOptional()
+  programId?: number;
+
+  
 }
