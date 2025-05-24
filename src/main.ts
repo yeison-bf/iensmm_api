@@ -35,34 +35,22 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`✅ HTTP server running on port: ${port}`);
 
-  // Configurar microservicio solo si está habilitado
-  const enableMicroservice = process.env.ENABLE_MICROSERVICE === 'true';
-  
-  if (enableMicroservice) {
+  // Solo conectar microservicio en desarrollo local
+  if (process.env.NODE_ENV !== 'production') {
     try {
-      const microservicePort = process.env.MICROSERVICE_PORT || 8877;
-      const microserviceHost = process.env.MICROSERVICE_HOST || '0.0.0.0';
-      
       const microservice = app.connectMicroservice<MicroserviceOptions>({
         transport: Transport.TCP,
         options: {
-          host: microserviceHost,
-          port: parseInt(microservicePort.toString()),
+          host: '127.0.0.1',
+          port: 8877,
         },
       });
 
       await microservice.listen();
-      console.log(`✅ Microservice TCP running on ${microserviceHost}:${microservicePort}`);
+      console.log(`✅ Microservice TCP running on port: localhost:8877`);
     } catch (error) {
-      console.error('❌ Failed to start microservice:', error.message);
-      // No fallar toda la aplicación si el microservicio no puede iniciarse
+      console.log('⚠️ Microservice TCP not available in this environment');
     }
-  } else {
-    console.log('🔧 Microservice disabled by configuration');
   }
 }
-
-bootstrap().catch(error => {
-  console.error('❌ Failed to start application:', error);
-  process.exit(1);
-});
+bootstrap();
