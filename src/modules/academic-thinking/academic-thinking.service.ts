@@ -55,6 +55,7 @@ export class AcademicThinkingService {
             year: createAcademicThinkingDto.year,
             headquarterId: headquarterId,
             gradeId: gradeId,
+            programId: createAcademicThinkingDto.programId,
           });
 
           const savedAcademicThinking = await this.academicThinkingRepository.save(academicThinking);
@@ -116,10 +117,10 @@ export class AcademicThinkingService {
 
 
 
-  async findAll(headquarterId?: number) {
+  async findAll(headquarterId?: number, programId?: number) {
     try {
       const academicThinkings = await this.academicThinkingRepository.find({
-        where: { headquarterId },
+        where: { headquarterId, programId },
         relations: ['details', 'details.trainingArea', 'degree'],
         order: { year: 'DESC' },
       });
@@ -187,6 +188,7 @@ export class AcademicThinkingService {
         year: updateAcademicThinkingDto.year,
         headquarterId: updateAcademicThinkingDto.headquarterId,
         gradeId: updateAcademicThinkingDto.gradeId,
+        programId: updateAcademicThinkingDto.programId,
       });
 
       await this.academicThinkingRepository.save(academicThinking);

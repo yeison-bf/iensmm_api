@@ -25,6 +25,15 @@ export class AcademicThinking {
   @JoinColumn({ name: 'grade_id' })
   degree: Degree;
 
+  
+  @Column({ 
+    type: 'int', 
+    nullable: true, 
+    name: 'program_id',
+  })
+  programId: number;
+
+  
   @OneToMany(() => AcademicThinkingDetail, detail => detail.academicThinking)
   details: AcademicThinkingDetail[];
 

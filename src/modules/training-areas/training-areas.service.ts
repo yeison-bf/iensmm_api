@@ -58,6 +58,10 @@ export class TrainingAreasService {
 
   async findAll(institution?: number, programId?: number) {
     try {
+      console.log('institution', institution)
+      console.log('programId', programId)
+
+      
       const where = institution ? { institution, programId } : {};
       
       const trainingAreas = await this.trainingAreaRepository.find({

@@ -13,8 +13,11 @@ export class AcademicThinkingController {
   }
 
   @Get()
-  findAll(@Query('headquarters') headquarters?: string) {
-    return this.academicThinkingService.findAll(headquarters ? +headquarters : null);
+  findAll(
+    @Query('headquarters') headquarters?: string,
+    @Query('programId') programId?: number,
+  ) {
+    return this.academicThinkingService.findAll(headquarters ? +headquarters : null, programId);
   }
 
   @Get('search')
