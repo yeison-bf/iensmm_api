@@ -10,6 +10,8 @@ export class AdministratorType {
   @Column({ type: 'varchar', length: 100, unique: true })
   name: string;
 
+  @Column({ type: 'boolean', default: true })
+  status: boolean;
   
   @ManyToMany(() => Administrator, administrator => administrator.administratorTypes)
   administrators: Administrator[];
