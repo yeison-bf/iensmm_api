@@ -6,6 +6,7 @@ import { CreateStudentEnrollmentDto } from './dto/create-student-enrollment.dto'
 import { Student } from '../students/entities/student.entity';
 import { Group } from '../group/entities/group.entity';
 import { Degree } from '../degrees/entities/degree.entity';
+import { Program } from '../programs/entities/program.entity';
 
 @Injectable()
 export class StudentEnrollmentService {
@@ -18,22 +19,33 @@ export class StudentEnrollmentService {
     private readonly groupRepository: Repository<Group>,
     @InjectRepository(Degree)
     private readonly degreeRepository: Repository<Degree>,
+
+    @InjectRepository(Program)
+    private readonly programRepository: Repository<Program>,
   ) { }
 
   async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
     try {
-      // First verify if all related entities exist
-      const student = await this.studentRepository.findOne({
-        where: { id: createEnrollmentDto.studentId }
-      });
+      // Agregar console.log para debug
+      console.log('ProgramId recibido:', createEnrollmentDto.programId);
 
-      const group = await this.groupRepository.findOne({
-        where: { id: createEnrollmentDto.groupId }
-      });
+      const [student, group, degree, program] = await Promise.all([
+        this.studentRepository.findOne({
+          where: { id: createEnrollmentDto.studentId }
+        }),
+        this.groupRepository.findOne({
+          where: { id: createEnrollmentDto.groupId }
+        }),
+        this.degreeRepository.findOne({
+          where: { id: createEnrollmentDto.degreeId }
+        }),
+        // Modificar esta parte
+        this.programRepository.findOne({
+          where: { id: createEnrollmentDto.programId }
+        })
+      ]);
 
-      const degree = await this.degreeRepository.findOne({
-        where: { id: createEnrollmentDto.degreeId }
-      });
+      console.log('Programa encontrado:', program); // Debug
 
       if (!student || !group || !degree) {
         return {
@@ -43,27 +55,31 @@ export class StudentEnrollmentService {
         };
       }
 
-
       // Create enrollment with relations
       const enrollment = this.enrollmentRepository.create({
         schedule: createEnrollmentDto.schedule,
         folio: createEnrollmentDto.folio,
         registrationDate: createEnrollmentDto.registrationDate,
         type: createEnrollmentDto.type,
+        status: createEnrollmentDto.status,
         observations: createEnrollmentDto.observations,
-        student: student,
-        group: group,
-        degree: degree,
-        headquarterId: Number(createEnrollmentDto.headquarterId),    // Agregado
-        institutionId: Number(createEnrollmentDto.institutionId)     // Agregado
+        student,
+        group,
+        degree,
+        program,
+        programId: createEnrollmentDto.programId, // Agregar explícitamente
+        headquarterId: createEnrollmentDto.headquarterId,
+        institutionId: createEnrollmentDto.institutionId
       });
+
+      console.log('Enrollment antes de guardar:', enrollment); // Debug
 
       const savedEnrollment = await this.enrollmentRepository.save(enrollment);
 
       // Fetch the complete enrollment with all relations
       const completeEnrollment = await this.enrollmentRepository.findOne({
         where: { id: savedEnrollment.id },
-        relations: ['student', 'student.user', 'group', 'degree']
+        relations: ['student', 'student.user', 'group', 'degree', 'program']
       });
 
       return {
@@ -82,16 +98,16 @@ export class StudentEnrollmentService {
 
 
 
-
   async findAll(headquarterId?: number, year?: string) {
     try {
       const queryBuilder = this.enrollmentRepository
-        .createQueryBuilder('enrollment')
-        .leftJoinAndSelect('enrollment.student', 'student')
-        .leftJoinAndSelect('student.user', 'user')
-        .leftJoinAndSelect('enrollment.group', 'group')
-        .leftJoinAndSelect('enrollment.degree', 'degree')
-        .orderBy('enrollment.createdAt', 'DESC');
+      .createQueryBuilder('enrollment')
+      .leftJoinAndSelect('enrollment.student', 'student')
+      .leftJoinAndSelect('student.user', 'user')
+      .leftJoinAndSelect('enrollment.group', 'group')
+      .leftJoinAndSelect('enrollment.degree', 'degree')
+      .leftJoinAndSelect('enrollment.program', 'program')  // Add program relation
+      .orderBy('enrollment.createdAt', 'DESC');
 
       if (headquarterId) {
         queryBuilder.andWhere('enrollment.headquarterId = :headquarterId', { headquarterId });
@@ -118,7 +134,7 @@ export class StudentEnrollmentService {
   }
 
 
-  
+
   async update(id: number, updateEnrollmentDto: CreateStudentEnrollmentDto) {
     try {
       const enrollment = await this.enrollmentRepository.findOne({

@@ -1,5 +1,4 @@
-import { IsString, IsDate, IsNumber, IsOptional, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsNumber, IsBoolean, IsOptional, IsDateString } from 'class-validator';
 
 export class CreateStudentEnrollmentDto {
   @IsString()
@@ -8,16 +7,15 @@ export class CreateStudentEnrollmentDto {
   @IsString()
   folio: string;
 
-  @Type(() => Date)
-  @IsDate()
+  @IsDateString()
   registrationDate: Date;
 
   @IsString()
   type: string;
-  
+
   @IsBoolean()
   @IsOptional()
-  status?: boolean = true;
+  status?: boolean;
 
   @IsString()
   @IsOptional()
@@ -36,12 +34,9 @@ export class CreateStudentEnrollmentDto {
   headquarterId: number;
 
   @IsNumber()
-  @IsOptional()
-  institutionId?: number;
+  institutionId: number;
 
   @IsNumber()
   @IsOptional()
   programId?: number;
-
-  
 }
