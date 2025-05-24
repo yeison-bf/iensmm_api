@@ -43,7 +43,7 @@
     "nodemailer": "^6.10.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.22"
+    "typeorm": "^0.3.24"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.9",
