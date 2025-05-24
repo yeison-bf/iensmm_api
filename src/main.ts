@@ -46,6 +46,6 @@ async function bootstrap() {
   });
 
   await microservice.listen();
-  console.log(`✅ Microservice TCP running on port: 8877`);
+  console.log(`✅ Microservice TCP running on port: localhost:8877`);
 }
 bootstrap();
