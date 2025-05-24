@@ -16,6 +16,14 @@ export class Program {
   @Column({ type: 'boolean', default: true })
   status: boolean;
 
+  @Column({ 
+    type: 'int', 
+    nullable: true, 
+    name: 'institution_id',
+  })
+  institutionId: number;
+
+
   @ManyToMany(() => AdministratorType)
   @JoinTable({
     name: 'program_administrator_type',

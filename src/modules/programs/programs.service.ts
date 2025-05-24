@@ -31,10 +31,15 @@ export class ProgramsService {
     }
   }
 
-  async findAll() {
+  async findAll(institutionId?: number) {
     try {
-      const programs = await this.programRepository.find({
-      });
+      const queryBuilder = this.programRepository.createQueryBuilder('program');
+
+      if (institutionId) {
+        queryBuilder.where('program.institutionId = :institutionId', { institutionId });
+      }
+
+      const programs = await queryBuilder.getMany();
 
       return {
         success: true,

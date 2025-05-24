@@ -23,6 +23,13 @@ export class Degree {
   })
   programId: number;
 
+  @Column({ 
+    type: 'int', 
+    nullable: true, 
+    name: 'institution_id',
+  })
+  institutionId: number;
+
 
   @OneToMany(() => StudentEnrollment, enrollment => enrollment.degree)
   enrollments: StudentEnrollment[];

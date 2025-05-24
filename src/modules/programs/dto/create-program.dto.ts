@@ -11,4 +11,9 @@ export class CreateProgramDto {
   @IsBoolean()
   @IsOptional()
   status?: boolean;
+
+  @IsString()
+  @IsOptional()
+  institutionId?:number
+
 }

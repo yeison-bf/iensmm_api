@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ProgramsService } from './programs.service';
 import { CreateProgramDto } from './dto/create-program.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
@@ -13,8 +13,8 @@ export class ProgramsController {
   }
 
   @Get()
-  findAll() {
-    return this.programsService.findAll();
+  findAll(@Query('institutionId') institutionId?: number) {
+    return this.programsService.findAll(institutionId);
   }
 
   @Get(':id')

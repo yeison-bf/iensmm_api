@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsPositive, IsOptional } from 'class-validator';
 
 export class CreateDegreeDto {
   @IsNumber()
@@ -16,4 +16,9 @@ export class CreateDegreeDto {
   @IsPositive()
   @IsNotEmpty()
   programId: number;
+
+  @IsString()
+  @IsOptional()
+  institutionId?:number
+
 }
