@@ -176,9 +176,10 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
 
 
-  async findAllStudents(headquarterId?: number) {
-    console.log(headquarterId);
+  async findAllStudents(headquarterId?: number, programId?: number) {
     try {
+      console.log('headquarterId', headquarterId);
+      console.log('programId', programId);
       const queryBuilder = this.userRepository
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.student', 'student')
@@ -191,6 +192,11 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       if (headquarterId) {
         queryBuilder.andWhere('student.headquarter_id = :headquarterId', { headquarterId });
       }
+
+      if (programId) {
+        queryBuilder.andWhere('student.program_id = :programId', { programId });
+      }
+
       const users = await queryBuilder.getMany();
 
       return {

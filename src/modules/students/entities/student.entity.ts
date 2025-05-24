@@ -67,9 +67,23 @@ export class Student {
   @OneToMany(() => Attendant, attendant => attendant.student)
   attendants: Attendant[];
 
+  @Column({ 
+    type: 'int', 
+    nullable: true, 
+    name: 'program_id',
+  })
+  programId: number;
+
+  @Column({ 
+    type: 'int', 
+    nullable: true, 
+    name: 'institution_id',
+  })
+  institution: number;
+
+
   @OneToMany(() => StudentEnrollment, enrollment => enrollment.student)
   enrollments: StudentEnrollment[];
-
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

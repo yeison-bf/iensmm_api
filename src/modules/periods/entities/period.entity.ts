@@ -12,7 +12,7 @@ export class Period {
 
   @Column({ type: 'int' })
   periodsQuantity: number;
-
+ 
   @Column({ 
     type: 'int', 
     nullable: true, 

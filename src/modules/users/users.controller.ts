@@ -50,10 +50,12 @@ export class UsersController {
     return this.usersService.findAllAdministrators();
   }
 
-
   @Get('students')
-  findAllStudents(@Query('sede') headquarterId?: number) {
-    return this.usersService.findAllStudents(headquarterId);
+  findAllStudents(
+    @Query('sede') headquarterId?: number,
+    @Query('programId') programId?: number
+  ) {
+    return this.usersService.findAllStudents(headquarterId, programId);
   }
 
   @Get('students/:id')

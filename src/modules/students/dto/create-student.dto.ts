@@ -80,4 +80,12 @@ export class CreateStudentDto {
   @IsNumber()
   headquarterId: number;
   
+  @IsOptional()
+  @IsNumber()
+  programId: number;
+  
+  @IsOptional()
+  @IsNumber()
+  institution: number;
+
 }

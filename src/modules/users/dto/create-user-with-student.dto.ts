@@ -65,6 +65,14 @@ export class CreateStudentInfoDto {
   @IsNumber()
   @IsOptional()
   headquarterId?: number;
+
+  @IsNumber()
+  @IsOptional()
+  programId?: number;
+  
+  @IsNumber()
+  @IsOptional()
+  institution?: number;
 }
 
 
