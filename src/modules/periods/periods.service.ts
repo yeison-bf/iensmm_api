@@ -31,22 +31,6 @@ async create(createPeriodDto: CreatePeriodDto) {
         };
       }
 
-      // Check if period already exists for this year and institution
-      const existingPeriod = await this.periodRepository.findOne({
-        where: {
-          year: createPeriodDto.year,
-          institution: { id: createPeriodDto.institutionId },
-        },
-      });
-
-      if (existingPeriod) {
-        return {
-          success: false,
-          message: 'Period already exists for this year and institution',
-          data: null,
-        };
-      }
-
       // Create period with its details
       const period = this.periodRepository.create({
         year: createPeriodDto.year,
