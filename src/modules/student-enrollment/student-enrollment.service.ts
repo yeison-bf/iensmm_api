@@ -138,7 +138,7 @@ export class StudentEnrollmentService {
     try {
       const enrollment = await this.enrollmentRepository.findOne({
         where: { id },
-        relations: ['student', 'group', 'degree']
+        relations: ['student', 'group', 'degree', 'program']
       });
 
       if (!enrollment) {
@@ -171,7 +171,47 @@ export class StudentEnrollmentService {
         });
       }
 
-      // ... rest of entity validations ...
+      if (updateEnrollmentDto.groupId) {
+        const group = await this.groupRepository.findOne({
+          where: { id: updateEnrollmentDto.groupId }
+        });
+        if (!group) {
+          return {
+            success: false,
+            message: 'Group not found',
+            data: null,
+          };
+        }
+        enrollment.group = group;
+      }
+
+      if (updateEnrollmentDto.degreeId) {
+        const degree = await this.degreeRepository.findOne({
+          where: { id: updateEnrollmentDto.degreeId }
+        });
+        if (!degree) {
+          return {
+            success: false,
+            message: 'Degree not found',
+            data: null,
+          };
+        }
+        enrollment.degree = degree;
+      }
+
+      if (updateEnrollmentDto.programId) {
+        const program = await this.programRepository.findOne({
+          where: { id: updateEnrollmentDto.programId }
+        });
+        if (!program) {
+          return {
+            success: false,
+            message: 'Program not found',
+            data: null,
+          };
+        }
+        enrollment.program = program;
+      }
 
       // Update basic fields
       enrollment.schedule = updateEnrollmentDto.schedule ?? enrollment.schedule;
@@ -181,6 +221,7 @@ export class StudentEnrollmentService {
       enrollment.observations = updateEnrollmentDto.observations ?? enrollment.observations;
       enrollment.programId = updateEnrollmentDto.programId ?? enrollment.programId;
       enrollment.institutionId = updateEnrollmentDto.institutionId ?? enrollment.institutionId;
+      enrollment.headquarterId = updateEnrollmentDto.headquarterId ?? enrollment.headquarterId;
 
       const updatedEnrollment = await this.enrollmentRepository.save(enrollment);
 
