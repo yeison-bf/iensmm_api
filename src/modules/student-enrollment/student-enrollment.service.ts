@@ -162,35 +162,16 @@ export class StudentEnrollmentService {
           };
         }
         enrollment.student = student;
+
+        // Update student with program and institution
+        await this.studentRepository.save({
+          ...student,
+          programId: updateEnrollmentDto.programId,
+          institution: updateEnrollmentDto.institutionId
+        });
       }
 
-      if (updateEnrollmentDto.groupId) {
-        const group = await this.groupRepository.findOne({
-          where: { id: updateEnrollmentDto.groupId }
-        });
-        if (!group) {
-          return {
-            success: false,
-            message: 'Group not found',
-            data: null,
-          };
-        }
-        enrollment.group = group;
-      }
-
-      if (updateEnrollmentDto.degreeId) {
-        const degree = await this.degreeRepository.findOne({
-          where: { id: updateEnrollmentDto.degreeId }
-        });
-        if (!degree) {
-          return {
-            success: false,
-            message: 'Degree not found',
-            data: null,
-          };
-        }
-        enrollment.degree = degree;
-      }
+      // ... rest of entity validations ...
 
       // Update basic fields
       enrollment.schedule = updateEnrollmentDto.schedule ?? enrollment.schedule;
@@ -198,13 +179,15 @@ export class StudentEnrollmentService {
       enrollment.registrationDate = updateEnrollmentDto.registrationDate ?? enrollment.registrationDate;
       enrollment.type = updateEnrollmentDto.type ?? enrollment.type;
       enrollment.observations = updateEnrollmentDto.observations ?? enrollment.observations;
+      enrollment.programId = updateEnrollmentDto.programId ?? enrollment.programId;
+      enrollment.institutionId = updateEnrollmentDto.institutionId ?? enrollment.institutionId;
 
       const updatedEnrollment = await this.enrollmentRepository.save(enrollment);
 
       // Fetch complete updated data
       const completeEnrollment = await this.enrollmentRepository.findOne({
         where: { id: updatedEnrollment.id },
-        relations: ['student', 'student.user', 'group', 'degree']
+        relations: ['student', 'student.user', 'group', 'degree', 'program']
       });
 
       return {
