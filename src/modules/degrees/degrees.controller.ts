@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpException, HttpStatus, Query } from '@nestjs/common';
 import { DegreesService } from './degrees.service';
 import { CreateDegreeDto } from './dto/create-degree.dto';
 import { UpdateDegreeDto } from './dto/update-degree.dto';
@@ -24,9 +24,12 @@ export class DegreesController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(
+    @Query('institutionId') institutionId?: number,
+    @Query('programId') programId?: number
+  ) {
     try {
-      const result:any = await this.degreesService.findAll();
+      const result:any = await this.degreesService.findAll(institutionId, programId);
       if (!result.success) {
         throw new HttpException(result.message, HttpStatus.NOT_FOUND);
       }

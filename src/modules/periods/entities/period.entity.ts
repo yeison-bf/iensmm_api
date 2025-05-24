@@ -7,11 +7,18 @@ export class Period {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'int', unique: true })
+  @Column({ type: 'int', unique: false })
   year: number;
 
   @Column({ type: 'int' })
   periodsQuantity: number;
+
+  @Column({ 
+    type: 'int', 
+    nullable: true, 
+    name: 'program_number',
+  })
+  programId: number;
 
   @ManyToOne(() => Institution, institution => institution.periods)
   @JoinColumn({ name: 'institutionId' })

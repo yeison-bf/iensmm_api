@@ -30,9 +30,13 @@ export class DegreesService {
       };
     }
   }
-  async findAll() {
+   async findAll(institutionId?: number, programId?: number) {
     try {
-      const degrees = await this.degreeRepository.find();
+      const where = institutionId ? { institutionId, programId } : {};
+      const degrees = await this.degreeRepository.find({
+        where: where
+      });
+
       return {
         success: true,
         message: 'Degrees retrieved successfully',

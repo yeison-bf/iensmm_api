@@ -99,10 +99,21 @@ async create(createPeriodDto: CreatePeriodDto) {
     }
 }
 
-  async findAll() {
+  async findAll(institutionId?: number, programId?: number) {
     try {
+      let where: any = {};
+      
+      if (institutionId) {
+        where.institution = { id: institutionId };
+      }
+      
+      if (programId) {
+        where.programId = programId ;
+      }
+
       const periods = await this.periodRepository.find({
-        relations: ['institution', 'periodDetails'],
+        where: where,
+        relations: ['institution', 'periodDetails']
       });
 
       return {

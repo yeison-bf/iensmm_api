@@ -46,6 +46,10 @@ export class CreatePeriodDto {
   @IsNumber()
   @IsNotEmpty()
   institutionId: number;
+  
+  @IsString()
+  @IsOptional()
+  programId?:number
 
   @IsArray()
   @ValidateNested({ each: true })
