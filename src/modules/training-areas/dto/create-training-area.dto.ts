@@ -11,5 +11,9 @@ export class CreateTrainingAreaDto {
 
   @IsNumber()
   @IsOptional()
+  programId?: number
+
+  @IsNumber()
+  @IsOptional()
   trainingCoreId: number;
 }

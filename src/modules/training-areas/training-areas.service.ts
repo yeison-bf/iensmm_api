@@ -56,9 +56,9 @@ export class TrainingAreasService {
     }
   }
 
-  async findAll(institution?: number) {
+  async findAll(institution?: number, programId?: number) {
     try {
-      const where = institution ? { institution } : {};
+      const where = institution ? { institution, programId } : {};
       
       const trainingAreas = await this.trainingAreaRepository.find({
         where,

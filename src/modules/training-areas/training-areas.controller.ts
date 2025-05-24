@@ -13,8 +13,11 @@ export class TrainingAreasController {
   }
 
     @Get()
-  findAll(@Query('institution') institution?: number) {
-    return this.trainingAreasService.findAll(institution);
+  findAll(
+    @Query('institution') institution?: number,
+    @Query('programId') programId?: number,
+  ) {
+    return this.trainingAreasService.findAll(institution, programId);
   }
 
   @Get(':id')

@@ -16,6 +16,14 @@ export class TrainingArea {
   @Column({ name: 'training_core_id', nullable: true })
   trainingCoreId: number;
 
+  @Column({ 
+    type: 'int', 
+    nullable: true, 
+    name: 'program_id',
+  })
+  programId: number;
+
+  
   @ManyToOne(() => TrainingCore, trainingCore => trainingCore.trainingAreas, { eager: true })
   @JoinColumn({ name: 'training_core_id' })
   trainingCore: TrainingCore;
