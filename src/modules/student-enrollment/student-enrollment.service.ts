@@ -24,11 +24,8 @@ export class StudentEnrollmentService {
     private readonly programRepository: Repository<Program>,
   ) { }
 
-  async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
+   async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
     try {
-      // Agregar console.log para debug
-      console.log('ProgramId recibido:', createEnrollmentDto.programId);
-
       const [student, group, degree, program] = await Promise.all([
         this.studentRepository.findOne({
           where: { id: createEnrollmentDto.studentId }
@@ -39,13 +36,10 @@ export class StudentEnrollmentService {
         this.degreeRepository.findOne({
           where: { id: createEnrollmentDto.degreeId }
         }),
-        // Modificar esta parte
         this.programRepository.findOne({
           where: { id: createEnrollmentDto.programId }
         })
       ]);
-
-      console.log('Programa encontrado:', program); // Debug
 
       if (!student || !group || !degree) {
         return {
@@ -54,6 +48,13 @@ export class StudentEnrollmentService {
           data: null,
         };
       }
+
+      // Update student with program and institution
+      await this.studentRepository.save({
+        ...student,
+        programId: createEnrollmentDto.programId,
+        institution: createEnrollmentDto.institutionId
+      });
 
       // Create enrollment with relations
       const enrollment = this.enrollmentRepository.create({
@@ -67,12 +68,10 @@ export class StudentEnrollmentService {
         group,
         degree,
         program,
-        programId: createEnrollmentDto.programId, // Agregar explícitamente
+        programId: createEnrollmentDto.programId,
         headquarterId: createEnrollmentDto.headquarterId,
         institutionId: createEnrollmentDto.institutionId
       });
-
-      console.log('Enrollment antes de guardar:', enrollment); // Debug
 
       const savedEnrollment = await this.enrollmentRepository.save(enrollment);
 
