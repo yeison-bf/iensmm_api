@@ -36,6 +36,7 @@ async create(createPeriodDto: CreatePeriodDto) {
         year: createPeriodDto.year,
         periodsQuantity: createPeriodDto.periodsQuantity,
         institution,
+        programId:createPeriodDto.programId,
       });
 
       // Save the period first
