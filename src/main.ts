@@ -3,10 +3,23 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
-// Fix para crypto en Node.js 18
-import { webcrypto } from 'crypto';
+// CRÍTICO: Fix para crypto antes que cualquier otra cosa
+const nodeCrypto = require('crypto');
 if (!globalThis.crypto) {
-  globalThis.crypto = webcrypto as any;
+  globalThis.crypto = {
+    randomUUID: nodeCrypto.randomUUID,
+    getRandomValues: (arr: any) => {
+      const bytes = nodeCrypto.randomBytes(arr.length);
+      arr.set(bytes);
+      return arr;
+    },
+    subtle: nodeCrypto.webcrypto?.subtle,
+  };
+}
+
+// También definir en global namespace para compatibilidad
+if (!global.crypto) {
+  global.crypto = globalThis.crypto;
 }
 
 async function bootstrap() {
@@ -20,16 +33,13 @@ async function bootstrap() {
 
   // CORS general
   app.enableCors({
-    origin: true, // Permite cualquier origen (para ambientes de desarrollo o pruebas)
+    origin: true, 
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
   const port = process.env.PORT || 3000;
-
-  // Filtro de excepciones personalizado (descomentar si está implementado)
-  // app.useGlobalFilters(new AllExceptionsFilter());
 
   // Validaciones globales
   app.useGlobalPipes(new ValidationPipe({
@@ -41,7 +51,7 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`✅ HTTP server running on port: ${port}`);
 
-  // Solo conectar microservicio en desarrollo local
+  // Solo microservicio en desarrollo
   if (process.env.NODE_ENV !== 'production') {
     try {
       const microservice = app.connectMicroservice<MicroserviceOptions>({
@@ -59,4 +69,8 @@ async function bootstrap() {
     }
   }
 }
-bootstrap();
+
+bootstrap().catch(error => {
+  console.error('❌ Failed to start application:', error);
+  process.exit(1);
+});
