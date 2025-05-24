@@ -16,10 +16,16 @@ export class Degree {
   @Column({ type: 'varchar', length: 100 })
   program: string;
 
+  @Column({ 
+    type: 'int', 
+    nullable: true, 
+    name: 'program_number',
+  })
+  programId: number;
+
 
   @OneToMany(() => StudentEnrollment, enrollment => enrollment.degree)
   enrollments: StudentEnrollment[];
-
 
   @OneToMany(() => AcademicThinking, academicThinking => academicThinking.degree)
   academicThinkings: AcademicThinking[];

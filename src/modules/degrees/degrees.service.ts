@@ -12,25 +12,24 @@ export class DegreesService {
     private readonly degreeRepository: Repository<Degree>,
   ) {}
 
-  async create(createDegreeDto: CreateDegreeDto) {
+   async create(createDegreeDto: CreateDegreeDto) {
     try {
       const degree = this.degreeRepository.create(createDegreeDto);
-      const savedDegree = await this.degreeRepository.save(degree);
+      const saved = await this.degreeRepository.save(degree);
 
       return {
         success: true,
         message: 'Degree created successfully',
-        data: savedDegree,
+        data: saved
       };
     } catch (error) {
       return {
         success: false,
         message: `Error creating degree: ${error.message}`,
-        data: null,
+        data: null
       };
     }
   }
-
   async findAll() {
     try {
       const degrees = await this.degreeRepository.find();

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 
 export class CreateDegreeDto {
   @IsNumber()
@@ -11,4 +11,9 @@ export class CreateDegreeDto {
   @IsString()
   @IsNotEmpty()
   program: string;
+
+  @IsNumber()
+  @IsPositive()
+  @IsNotEmpty()
+  programId: number;
 }
