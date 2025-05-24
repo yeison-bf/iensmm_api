@@ -97,7 +97,7 @@ export class StudentEnrollmentService {
 
 
 
-  async findAll(headquarterId?: number, year?: string) {
+  async findAll(headquarterId?: number, year?: string, programId?: number) {
     try {
       const queryBuilder = this.enrollmentRepository
       .createQueryBuilder('enrollment')
@@ -114,6 +114,10 @@ export class StudentEnrollmentService {
 
       if (year) {
         queryBuilder.andWhere('YEAR(enrollment.registrationDate) = :year', { year });
+      }
+
+      if (programId) {
+        queryBuilder.andWhere('enrollment.program_id = :programId', { programId });
       }
 
       const enrollments = await queryBuilder.getMany();

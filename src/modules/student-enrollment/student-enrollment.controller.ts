@@ -12,9 +12,15 @@ export class StudentEnrollmentController {
   }
 
   @Get()
-  findAll(@Query('sede') headquarterId?: number, @Query('year') year?: string) {
-    return this.enrollmentService.findAll(headquarterId, year);
+  findAll(
+    @Query('sede') headquarterId?: number, 
+    @Query('year') year?: string,
+    @Query('programId') programId?: number
+  ) {
+    return this.enrollmentService.findAll(headquarterId, year, programId);
   }
+
+
   @Put(':id')
   update(
     @Param('id') id: number,
