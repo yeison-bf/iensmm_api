@@ -34,6 +34,7 @@ export class TrainingAreasService {
       trainingArea.institution = createTrainingAreaDto.institution;
       trainingArea.trainingCoreId = createTrainingAreaDto.trainingCoreId;
       trainingArea.trainingCore = trainingCore;
+      trainingArea.programId = createTrainingAreaDto.programId;
 
       const savedTrainingArea = await this.trainingAreaRepository.save(trainingArea);
 
