@@ -27,6 +27,7 @@ import { TrainingAreasModule } from './modules/training-areas/training-areas.mod
 import { AcademicThinkingModule } from './modules/academic-thinking/academic-thinking.module';
 import { AcademicAssignmentModule } from './modules/academic-assignment/academic-assignment.module';
 import { ProgramsModule } from './modules/programs/programs.module';
+import { AssistanceModule } from './modules/assistance/assistance.module';
 
 
 @Module({
@@ -99,6 +100,7 @@ import { ProgramsModule } from './modules/programs/programs.module';
     AcademicThinkingModule,
     AcademicAssignmentModule,
     ProgramsModule,
+    AssistanceModule,
 
   ],
   controllers: [AppController],
