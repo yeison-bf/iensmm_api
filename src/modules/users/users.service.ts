@@ -176,13 +176,12 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
 
 
-  async findAllStudents(headquarterId?: number, programId?: number) {
+    async findAllStudents(headquarterId?: number, programId?: number) {
     try {
-      console.log('headquarterId', headquarterId);
-      console.log('programId', programId);
       const queryBuilder = this.userRepository
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.student', 'student')
+        .leftJoinAndSelect('student.enrollments', 'enrollments')
         .leftJoinAndSelect('user.role', 'role')
         .leftJoinAndSelect('user.documentType', 'documentType')
         .leftJoinAndSelect('user.headquarters', 'headquarters')
@@ -199,10 +198,16 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
       const users = await queryBuilder.getMany();
 
+      // Map the results to include hasEnrollment
+      const enrichedUsers = users.map(user => ({
+        ...user,
+        hasEnrollment: user.student?.enrollments?.length > 0 || false
+      }));
+
       return {
         success: true,
         message: 'Estudiantes recuperados exitosamente',
-        data: users,
+        data: enrichedUsers,
       };
     } catch (error) {
       return {
