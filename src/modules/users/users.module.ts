@@ -16,10 +16,11 @@ import { Degree } from '../degrees/entities/degree.entity';
 import { Group } from '../group/entities/group.entity';
 import { AdministratorTypeProgram } from '../administrator-type/entities/administrator_type_program.entity';
 import { AdministratorType } from '../administrator-type/entities/administrator-type.entity';
+import { Program } from '../programs/entities/program.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Headquarters, Role, DocumentType, Student, Administrator, Degree, Group, AdministratorTypeProgram, AdministratorType]),
+    TypeOrmModule.forFeature([User, Headquarters, Role, DocumentType, Student, Administrator, Degree, Group, AdministratorTypeProgram, AdministratorType, Program]),
     StudentEnrollmentModule,
     RolesModule,
     DocumentTypeModule,

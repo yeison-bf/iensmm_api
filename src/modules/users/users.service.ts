@@ -19,6 +19,7 @@ import { Group } from '../group/entities/group.entity';
 import { Degree } from '../degrees/entities/degree.entity';
 import { AdministratorTypeProgram } from '../administrator-type/entities/administrator_type_program.entity';
 import { AdministratorType } from '../administrator-type/entities/administrator-type.entity';
+import { Program } from '../programs/entities/program.entity';
 
 
 @Injectable()
@@ -52,6 +53,11 @@ export class UsersService {
 
     @InjectRepository(AdministratorTypeProgram)
     private readonly administratorTypeProgramRepository: Repository<AdministratorTypeProgram>,
+
+    @InjectRepository(Program)
+    private readonly programRepository: Repository<Program>,
+
+
 
     @InjectRepository(AdministratorType)
 private readonly administratorTypeRepository: Repository<AdministratorType>,
@@ -1128,27 +1134,36 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       }
 
       // If enrollment data is provided, find actual group and degree IDs
-      if (studentData.enrollment) {
-        const enrollmentData: any = {
-          schedule: studentData.enrollment.schedule || 'Mañana',
-          folio: studentData.enrollment.folio || `${new Date().getFullYear()}-${userResult.data.id}`,
-          registrationDate: studentData.enrollment.registrationDate || new Date(),
-          type: studentData.enrollment.type || 'Nueva',
-          observations: studentData.enrollment.observations || '',
-          studentId: userResult.data.id,
-          headquarterId: headquarters.id,
-          institutionId: headquarters.institution.id
-        };
+      if (studentData.enrollment && studentData.enrollment.type) {
+        const hasEnrollmentData = studentData.enrollment.groupId && 
+                                 studentData.enrollment.degreeId && 
+                                 studentData.enrollment.schedule && 
+                                 studentData.enrollment.folio;
 
-        // Only process group and degree if they are provided
-        if (studentData.enrollment.groupId && studentData.enrollment.degreeId) {
-          const group = await this.groupRepository.findOne({
-            where: { name: studentData.enrollment.groupId }
-          });
+        if (hasEnrollmentData) {
+          const enrollmentData: any = {
+            schedule: studentData.enrollment.schedule,
+            folio: studentData.enrollment.folio,
+            registrationDate: studentData.enrollment.registrationDate || new Date(),
+            type: studentData.enrollment.type,
+            observations: studentData.enrollment.observations || '',
+            studentId: userResult.data.id,
+            headquarterId: headquarters.id,
+            institutionId: headquarters.institution.id
+          };
 
-          const degree = await this.degreeRepository.findOne({
-            where: { name: studentData.enrollment.degreeId }
-          });
+          const [group, degree, program] = await Promise.all([
+            this.groupRepository.findOne({
+              where: { name: studentData.enrollment.groupId }
+            }),
+            this.degreeRepository.findOne({
+              where: { name: studentData.enrollment.degreeId }
+            }),
+            studentData.enrollment.programId ? 
+              this.programRepository.findOne({
+                where: { name: studentData.enrollment.programId }
+              }) : null
+          ]);
 
           if (!group || !degree) {
             throw new Error(
@@ -1158,12 +1173,16 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
           enrollmentData.groupId = group.id;
           enrollmentData.degreeId = degree.id;
-        }
+          if (program) {
+            enrollmentData.programId = program.id;
+          }
 
-        const enrollmentResult = await this.enrollmentService.create(enrollmentData);
-        
-        if (!enrollmentResult.success) {
-          throw new Error(`Enrollment failed: ${enrollmentResult.message}`);
+          console.log("matricula : ", enrollmentData)
+          const enrollmentResult = await this.enrollmentService.create(enrollmentData);
+          
+          if (!enrollmentResult.success) {
+            throw new Error(`Enrollment failed: ${enrollmentResult.message}`);
+          }
         }
       }
 
