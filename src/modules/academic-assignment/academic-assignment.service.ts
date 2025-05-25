@@ -8,6 +8,9 @@ import { Headquarters } from '../headquarters/entities/headquarters.entity';
 import { Administrator } from '../administrators/entities/administrator.entity';
 import { AcademicThinkingDetail } from '../academic-thinking/entities/academic-thinking-detail.entity';
 import { StudentEnrollment } from '../student-enrollment/entities/student-enrollment.entity';
+import { AcademicAssignmentDetail } from './entities/academic-assignment-detail.entity';
+import { Degree } from '../degrees/entities/degree.entity';
+import { Program } from '../programs/entities/program.entity';
 
 @Injectable()
 export class AcademicAssignmentService {
@@ -15,92 +18,91 @@ export class AcademicAssignmentService {
   constructor(
     @InjectRepository(AcademicAssignment)
     private readonly academicAssignmentRepository: Repository<AcademicAssignment>,
-
+    @InjectRepository(AcademicAssignmentDetail)
+    private readonly academicAssignmentDetailRepository: Repository<AcademicAssignmentDetail>,
+    @InjectRepository(Degree)
+    private readonly degreeRepository: Repository<Degree>,
     @InjectRepository(Headquarters)
     private readonly headquartersRepository: Repository<Headquarters>,
-    @InjectRepository(Administrator)
-    private readonly administratorRepository: Repository<Administrator>,
     @InjectRepository(AcademicThinkingDetail)
     private readonly academicThinkingDetailRepository: Repository<AcademicThinkingDetail>,
     @InjectRepository(StudentEnrollment)
     private readonly studentEnrollmentRepository: Repository<StudentEnrollment>,
+    @InjectRepository(Administrator)
+    private readonly administratorRepository: Repository<Administrator>,
+    @InjectRepository(Program)
+    private readonly programRepository: Repository<Program>,
+  ) { }
 
-  ) {}
-
-  async create(createAcademicAssignmentDto: CreateAcademicAssignmentDto) {
+  async create(createDto: CreateAcademicAssignmentDto) {
     try {
-      // Verificar que headquarters existe
-      const headquarters = await this.headquartersRepository.findOne({
-        where: { id: createAcademicAssignmentDto.headquartersId }
-      });
-      if (!headquarters) {
+      const [degree, headquarters, program] = await Promise.all([
+        this.degreeRepository.findOne({ where: { id: createDto.degreeId } }),
+        this.headquartersRepository.findOne({ where: { id: createDto.headquarterId } }),
+        this.programRepository.findOne({ where: { id: createDto.programId } })
+      ]);
+
+      if (!degree || !headquarters || !program) {
         return {
           success: false,
-          message: `La sede con ID ${createAcademicAssignmentDto.headquartersId} no existe`,
+          message: !degree 
+            ? `Degree with ID ${createDto.degreeId} not found`
+            : !headquarters
+            ? `Headquarters with ID ${createDto.headquarterId} not found`
+            : `Program with ID ${createDto.programId} not found`,
           data: null
         };
       }
 
-      // Verificar que administrator existe
-      const administrator = await this.administratorRepository.findOne({
-        where: { id: createAcademicAssignmentDto.administratorId }
-      });
-      if (!administrator) {
-        return {
-          success: false,
-          message: `El administrador con ID ${createAcademicAssignmentDto.administratorId} no existe`,
-          data: null
-        };
-      }
-
-      // Verificar que academicThinkingDetail existe
-      const academicThinkingDetail = await this.academicThinkingDetailRepository.findOne({
-        where: { id: createAcademicAssignmentDto.academicThinkingDetailId }
-      });
-      if (!academicThinkingDetail) {
-        return {
-          success: false,
-          message: `El detalle de pensamiento académico con ID ${createAcademicAssignmentDto.academicThinkingDetailId} no existe`,
-          data: null
-        };
-      }
-
-      // Verificar que studentEnrollment existe
-      const studentEnrollment = await this.studentEnrollmentRepository.findOne({
-        where: { id: createAcademicAssignmentDto.studentEnrollmentId }
-      });
-      if (!studentEnrollment) {
-        return {
-          success: false,
-          message: `La matrícula con ID ${createAcademicAssignmentDto.studentEnrollmentId} no existe`,
-          data: null
-        };
-      }
-
-      const academicAssignment = this.academicAssignmentRepository.create({
-        ...createAcademicAssignmentDto,
-        headquarters,
-        administrator,
-        academicThinkingDetail,
-        studentEnrollment
+      // Create main assignment using IDs
+      const assignment = this.academicAssignmentRepository.create({
+        year: createDto.year,
+        degreeId: createDto.degreeId,
+        headquarterId: createDto.headquarterId,
+        programId: createDto.programId
       });
 
-      const saved = await this.academicAssignmentRepository.save(academicAssignment);
+      const savedAssignment = await this.academicAssignmentRepository.save(assignment);
 
-      const result = await this.academicAssignmentRepository.findOne({
-        where: { id: saved.id },
+      // Create details using IDs
+      const details = await Promise.all(
+        createDto.details.map(async detail => {
+          const [thinkingDetail, admin] = await Promise.all([
+            this.academicThinkingDetailRepository.findOne({ where: { id: detail.academicThinkingDetailId } }),
+            this.administratorRepository.findOne({ where: { id: detail.administratorId } })
+          ]);
+
+          if (!thinkingDetail || !admin) {
+            throw new Error(`Required relation not found for detail`);
+          }
+
+          return this.academicAssignmentDetailRepository.create({
+            academicAssignmentId: savedAssignment.id,
+            academicThinkingDetailId: detail.academicThinkingDetailId,
+            administratorId: detail.administratorId
+          });
+        })
+      );
+
+      await this.academicAssignmentDetailRepository.save(details);
+
+      // Fetch complete assignment with relations
+      const completeAssignment = await this.academicAssignmentRepository.findOne({
+        where: { id: savedAssignment.id },
         relations: [
+          'degree',
           'headquarters',
-          'administrator',
-          'academicThinkingDetail',
-          'studentEnrollment'
+          'program',
+          'details',
+          'details.academicThinkingDetail',
+          'details.administrator'
         ]
       });
 
       return {
         success: true,
         message: 'Asignación académica creada exitosamente',
-        data: result
+        data: completeAssignment
       };
     } catch (error) {
       return {
@@ -111,39 +113,153 @@ export class AcademicAssignmentService {
     }
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   async findAll() {
-    return this.academicAssignmentRepository.find({
+    const assignments = await this.academicAssignmentRepository.find({
       relations: [
-        'administrator',
-        'academicThinkingDetail',
-        'academicThinkingDetail.trainingArea',
-        'studentEnrollment',
-        'studentEnrollment.student'
-      ],
+        'degree',
+        'headquarters',
+        'program',
+        'details',
+        'details.academicThinkingDetail',
+        'details.administrator'
+      ]
     });
+
+    return {
+      success: true,
+      message: 'Asignaciones académicas recuperadas exitosamente',
+      data: assignments
+    };
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   async findOne(id: number) {
-    return this.academicAssignmentRepository.findOne({
+    const assignment = await this.academicAssignmentRepository.findOne({
       where: { id },
       relations: [
-        'attendant',
-        'administrator',
-        'academicThinkingDetail',
-        'academicThinkingDetail.trainingArea',
-        'studentEnrollment',
-        'studentEnrollment.student'
-      ],
+        'degree',
+        'headquarters',
+        'program',
+        'details',
+        'details.academicThinkingDetail',
+        'details.administrator'
+      ]
     });
+
+    if (!assignment) {
+      return {
+        success: false,
+        message: `Asignación académica con ID ${id} no encontrada`,
+        data: null
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Asignación académica recuperada exitosamente',
+      data: assignment
+    };
   }
 
 
 
-  update(id: number, updateAcademicAssignmentDto: UpdateAcademicAssignmentDto) {
-    return `This action updates a #${id} academicAssignment`;
+
+
+
+
+
+
+
+
+
+
+  async update(id: number, updateDto: UpdateAcademicAssignmentDto) {
+    const assignment = await this.academicAssignmentRepository.findOne({
+      where: { id }
+    });
+
+    if (!assignment) {
+      return {
+        success: false,
+        message: `Asignación académica con ID ${id} no encontrada`,
+        data: null
+      };
+    }
+
+    const updated = await this.academicAssignmentRepository.save({
+      ...assignment,
+      ...updateDto
+    });
+
+    return {
+      success: true,
+      message: 'Asignación académica actualizada exitosamente',
+      data: updated
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} academicAssignment`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+  async remove(id: number) {
+    const result = await this.academicAssignmentRepository.delete(id);
+
+    if (result.affected === 0) {
+      return {
+        success: false,
+        message: `Asignación académica con ID ${id} no encontrada`,
+        data: null
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Asignación académica eliminada exitosamente',
+      data: null
+    };
   }
 }

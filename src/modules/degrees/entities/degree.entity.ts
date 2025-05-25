@@ -1,3 +1,4 @@
+import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 import { AcademicThinking } from 'src/modules/academic-thinking/entities/academic-thinking.entity';
 import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
@@ -30,6 +31,8 @@ export class Degree {
   })
   institutionId: number;
 
+  @OneToMany(() => AcademicAssignment, assignment => assignment.degree)
+  academicAssignments: AcademicAssignment[];
 
   @OneToMany(() => StudentEnrollment, enrollment => enrollment.degree)
   enrollments: StudentEnrollment[];

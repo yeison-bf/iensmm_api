@@ -1,26 +1,31 @@
-import { IsNumber, IsBoolean, IsOptional, IsDateString } from 'class-validator';
+import { IsNumber, IsBoolean, IsOptional, IsDateString, IsArray, ValidateNested, IsInt, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class CreateAcademicAssignmentDto {
-  @IsNumber()
-  year: number;
-
-  @IsNumber()
-  headquartersId: number;
-
-  @IsNumber()
-  administratorId: number;
-
-  @IsNumber()
+class AcademicAssignmentDetailDto {
+  @IsInt()
   academicThinkingDetailId: number;
 
-  @IsNumber()
-  studentEnrollmentId: number;
+  @IsInt()
+  administratorId: number;
+}
 
-  @IsBoolean()
-  @IsOptional()
-  status?: boolean;
 
-  @IsDateString()
-  @IsOptional()
-  closingDate?: Date;
+
+export class CreateAcademicAssignmentDto {
+  @IsInt()
+  year: number;
+
+  @IsInt()
+  degreeId: number;
+
+  @IsInt()
+  headquarterId: number;
+
+  @IsInt()
+  programId: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AcademicAssignmentDetailDto)
+  details: AcademicAssignmentDetailDto[];
 }

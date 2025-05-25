@@ -46,10 +46,9 @@ export class Headquarters {
   @OneToMany(() => AcademicThinking, academicThinking => academicThinking.headquarters)
   academicThinkings: AcademicThinking[];
 
-  
   @OneToMany(() => AcademicAssignment, assignment => assignment.headquarters)
   academicAssignments: AcademicAssignment[];
-
+  
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 

@@ -46,9 +46,6 @@ export class StudentEnrollment {
   @Column({ name: 'institution_id', type: 'int', nullable: false })
   institutionId: number;
 
-  @OneToMany(() => AcademicAssignment, assignment => assignment.studentEnrollment)
-  academicAssignments: AcademicAssignment[];
-
   @ManyToOne(() => Program)
   @JoinColumn({ name: 'programId' })
   program: Program;

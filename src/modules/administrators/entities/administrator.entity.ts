@@ -3,6 +3,7 @@ import { User } from '../../users/entities/user.entity';
 import { AdministratorType } from '../../administrator-type/entities/administrator-type.entity';
 import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 import { AdministratorTypeProgram } from 'src/modules/administrator-type/entities/administrator_type_program.entity';
+import { AcademicAssignmentDetail } from 'src/modules/academic-assignment/entities/academic-assignment-detail.entity';
 
 @Entity('administrators')
 export class Administrator {
@@ -62,9 +63,14 @@ export class Administrator {
   @Column({ type: 'varchar', length: 100 })
   appointmentResolution: string;
 
+  @OneToMany(() => AcademicAssignmentDetail, detail => detail.administrator)
+  academicAssignments: AcademicAssignmentDetail[];
+
+  @OneToMany(() => AcademicAssignmentDetail, detail => detail.administrator)
+  academicAssignmentDetails: AcademicAssignmentDetail[];
+
+
   @Column({ type: 'boolean', default: true })
   status: boolean;
 
-  @OneToMany(() => AcademicAssignment, assignment => assignment.administrator)
-  academicAssignments: AcademicAssignment[];
 }

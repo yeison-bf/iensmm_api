@@ -7,6 +7,9 @@ import { Administrator } from '../administrators/entities/administrator.entity';
 import { AcademicThinkingDetail } from '../academic-thinking/entities/academic-thinking-detail.entity';
 import { StudentEnrollment } from '../student-enrollment/entities/student-enrollment.entity';
 import { Headquarters } from '../headquarters/entities/headquarters.entity';
+import { AcademicAssignmentDetail } from './entities/academic-assignment-detail.entity';
+import { Degree } from '../degrees/entities/degree.entity';
+import { Program } from '../programs/entities/program.entity';
 
 @Module({
   imports: [
@@ -15,7 +18,10 @@ import { Headquarters } from '../headquarters/entities/headquarters.entity';
       Headquarters,
       Administrator,
       AcademicThinkingDetail,
-      StudentEnrollment
+      StudentEnrollment,
+      AcademicAssignmentDetail,
+      Degree,
+      Program
     ])
   ],
   controllers: [AcademicAssignmentController],
