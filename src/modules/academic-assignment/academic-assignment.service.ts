@@ -64,7 +64,8 @@ export class AcademicAssignmentService {
         degreeId: createDto.degreeId,
         headquarterId: createDto.headquarterId,
         programId: createDto.programId,
-        groupId: createDto.groupId
+        groupId: createDto.groupId,
+        directorGroupId: createDto.directorGroupId,
       });
 
       const savedAssignment = await this.academicAssignmentRepository.save(assignment);
