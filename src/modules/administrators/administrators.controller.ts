@@ -11,12 +11,12 @@ export class AdministratorsController {
   create(@Body() createAdministratorDto: CreateAdministratorDto) {
     return this.administratorsService.create(createAdministratorDto);
   }
-
   @Get()
-  findAll() {
-    return this.administratorsService.findAll();
+  findAll(@Query('institution') institution?: number) {
+    return this.administratorsService.findAll(institution);
   }
 
+  
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.administratorsService.findOne(id);

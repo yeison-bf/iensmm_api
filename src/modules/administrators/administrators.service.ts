@@ -35,12 +35,18 @@ export class AdministratorsService {
       };
     }
   }
-
-  async findAll() {
+  async findAll(institutionId?: number) {
     try {
-      const administrators = await this.administratorRepository.find({
-        relations: ['user', 'administratorTypes'],
-      });
+      const queryBuilder = this.administratorRepository
+        .createQueryBuilder('administrator')
+        .leftJoinAndSelect('administrator.user', 'user')
+        .leftJoinAndSelect('administrator.administratorTypes', 'administratorTypes');
+
+      if (institutionId) {
+        queryBuilder.where('user.institution = :institutionId', { institutionId });
+      }
+
+      const administrators = await queryBuilder.getMany();
 
       return {
         success: true,
@@ -55,7 +61,6 @@ export class AdministratorsService {
       };
     }
   }
-
   async findOne(id: number) {
     try {
       const administrator = await this.administratorRepository.findOne({
