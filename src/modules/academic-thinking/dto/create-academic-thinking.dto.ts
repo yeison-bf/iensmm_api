@@ -28,6 +28,10 @@ export class CreateAcademicThinkingDto {
   @IsOptional()
   headquarterId?: number;
 
+  @IsNumber()
+  @IsOptional()
+  directorGroupId?: number;
+
   @IsArray()
   @IsNumber({}, { each: true })
   @IsOptional()

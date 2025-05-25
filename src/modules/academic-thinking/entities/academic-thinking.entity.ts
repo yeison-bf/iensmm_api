@@ -14,6 +14,9 @@ export class AcademicThinking {
   @Column({ name: 'headquarters_id' })
   headquarterId: number;
 
+  @Column({ name: 'directorGroupId' })
+  directorGroupId: number;
+
   @Column({ name: 'grade_id' })
   gradeId: number;
 
