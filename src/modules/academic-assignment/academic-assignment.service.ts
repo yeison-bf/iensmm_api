@@ -332,23 +332,41 @@ export class AcademicAssignmentService {
 
 
 
-
-
   async remove(id: number) {
-    const result = await this.academicAssignmentRepository.delete(id);
+    try {
+      // First find the assignment with its details
+      const assignment = await this.academicAssignmentRepository.findOne({
+        where: { id },
+        relations: ['details']
+      });
 
-    if (result.affected === 0) {
+      if (!assignment) {
+        return {
+          success: false,
+          message: `Asignación académica con ID ${id} no encontrada`,
+          data: null
+        };
+      }
+
+      // First remove all details
+      if (assignment.details?.length) {
+        await this.academicAssignmentDetailRepository.remove(assignment.details);
+      }
+
+      // Then remove the main assignment
+      await this.academicAssignmentRepository.remove(assignment);
+
+      return {
+        success: true,
+        message: 'Asignación académica y sus detalles eliminados exitosamente',
+        data: assignment
+      };
+    } catch (error) {
       return {
         success: false,
-        message: `Asignación académica con ID ${id} no encontrada`,
+        message: `Error al eliminar la asignación académica: ${error.message}`,
         data: null
       };
     }
-
-    return {
-      success: true,
-      message: 'Asignación académica eliminada exitosamente',
-      data: null
-    };
   }
 }
