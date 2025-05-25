@@ -138,15 +138,16 @@ export class AcademicAssignmentService {
 
 
 
-  async findAll() {
+  async findAll(headquarterId?:number, programId?:number) {
     const assignments = await this.academicAssignmentRepository.find({
+      where: {
+        headquarterId: headquarterId,
+        programId: programId
+      },
       relations: [
         'degree',
         'headquarters',
-        'program',
-        'details',
-        'details.academicThinkingDetail',
-        'details.administrator'
+        'program'
       ]
     });
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { AcademicAssignmentService } from './academic-assignment.service';
 import { CreateAcademicAssignmentDto } from './dto/create-academic-assignment.dto';
 import { UpdateAcademicAssignmentDto } from './dto/update-academic-assignment.dto';
@@ -12,11 +12,13 @@ export class AcademicAssignmentController {
     return this.academicAssignmentService.create(createAcademicAssignmentDto);
   }
 
-  @Get()
-  findAll() {
-    return this.academicAssignmentService.findAll();
+   @Get()
+  findAll(
+    @Query('headquarterId') headquarterId?: number,
+    @Query('programId') programId?: number,
+  ) {
+    return this.academicAssignmentService.findAll(headquarterId, programId);
   }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.academicAssignmentService.findOne(+id);
