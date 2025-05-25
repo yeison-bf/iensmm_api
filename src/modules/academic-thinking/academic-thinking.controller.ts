@@ -20,6 +20,21 @@ export class AcademicThinkingController {
     return this.academicThinkingService.findAll(headquarters ? +headquarters : null, programId);
   }
 
+
+  @Get('degree')
+  findAllByDegree(
+    @Query('headquarters') headquarters?: string,
+    @Query('programId') programId?: number,
+    @Query('degree') degree?: number,
+  ) {
+    return this.academicThinkingService.findAllByDegree(headquarters ? +headquarters : null, programId, degree);
+  }
+
+
+
+
+
+
   @Get('search')
   search(
     @Query('year') year?: string,

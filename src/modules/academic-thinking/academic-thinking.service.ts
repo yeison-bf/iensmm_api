@@ -139,6 +139,72 @@ export class AcademicThinkingService {
     }
   }
 
+
+
+
+
+
+
+
+
+
+  async findAllByDegree(headquarterId?: number, programId?: number, degreeId?: number) {
+    try {
+      // Construimos el objeto where según los parámetros recibidos
+      const where: any = {};
+      
+      if (headquarterId !== undefined) {
+        where.headquarterId = headquarterId;
+      }
+      
+      if (programId !== undefined) {
+        where.programId = programId;
+      }
+      
+      if (degreeId !== undefined) {
+        // Usamos gradeId que es el nombre real de la columna en la entidad
+        where.gradeId = degreeId;
+      }
+  
+      const academicThinkings = await this.academicThinkingRepository.find({
+        where: where,
+        relations: ['details', 'details.trainingArea', 'degree'],
+        order: { year: 'DESC' },
+      });
+  
+      return {
+        success: true,
+        message: 'Pensums académicos recuperados exitosamente',
+        data: academicThinkings,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al recuperar los Pensums académicos: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   async findOne(id: number) {
     try {
       const academicThinking = await this.academicThinkingRepository.findOne({
