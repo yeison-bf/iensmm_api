@@ -854,45 +854,6 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
   }
 
 
-  async findAllAdministratorsByRole(headquarterId: number, administratorTypeName?: string) {
-    try {
-      const queryBuilder = this.userRepository
-        .createQueryBuilder('user')
-        .leftJoinAndSelect('user.role', 'role')
-        .leftJoinAndSelect('user.administrator', 'administrator')
-        .leftJoinAndSelect('user.headquarters', 'headquarters')
-        .leftJoinAndSelect('administrator.administratorTypePrograms', 'administratorTypePrograms')
-        .leftJoinAndSelect('administratorTypePrograms.administratorType', 'administratorType')
-        .leftJoinAndSelect('administratorTypePrograms.program', 'program')
-        .leftJoinAndSelect('user.documentType', 'documentType')
-        .where('role.name = :roleName', { roleName: 'administrator' })
-        .andWhere('headquarters.id = :headquarterId', { headquarterId });
-
-      if (administratorTypeName) {
-        queryBuilder
-          .andWhere('EXISTS (SELECT 1 FROM administrator_type_program atp ' +
-            'INNER JOIN administrator_type at ON at.id = atp.administratorTypeId ' +
-            'WHERE atp.administratorId = administrator.id ' +
-            'AND at.name = :administratorTypeName ' +
-            'AND atp.status = true)', 
-            { administratorTypeName });
-      }
-
-      const users = await queryBuilder.getMany();
-
-      return {
-        success: true,
-        message: 'Administrators retrieved successfully',
-        data: users,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: `Error retrieving administrators: ${error.message}`,
-        data: null,
-      };
-    }
-  }
 
 
 

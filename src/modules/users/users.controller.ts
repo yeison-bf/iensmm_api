@@ -63,14 +63,6 @@ export class UsersController {
     return this.usersService.findOneStudents(id);
   }
 
-  @Get('/administrators/headquarters/:headquarterId')
-  findAllAdministratorsByRole(
-    @Param('headquarterId') headquarterId: number,
-    @Query('administratorType') administratorType?: string
-  ) {
-    return this.usersService.findAllAdministratorsByRole(headquarterId, administratorType);
-  }
-
   @Get('administrators/:id')
   findOneAdministrator(@Param('id') id: number) {
     return this.usersService.findOneAdministrator(id);

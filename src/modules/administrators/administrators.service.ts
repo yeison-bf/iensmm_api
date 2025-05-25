@@ -85,6 +85,14 @@ export class AdministratorsService {
     }
   }
 
+
+
+  
+
+
+
+
+  
   async update(id: number, updateAdministratorDto: UpdateAdministratorDto) {
     try {
       const administrator = await this.administratorRepository.findOne({
