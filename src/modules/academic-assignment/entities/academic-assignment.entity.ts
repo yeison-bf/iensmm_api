@@ -29,6 +29,9 @@ export class AcademicAssignment {
   @JoinColumn({ name: 'degree_id' })
   degree: Degree;
 
+  @Column({ name: 'directorGroupId' })
+  directorGroupId: number;
+  
   @ManyToOne(() => Headquarters)
   @JoinColumn({ name: 'headquarter_id' })
   headquarters: Headquarters;

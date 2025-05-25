@@ -27,6 +27,9 @@ export class CreateAcademicAssignmentDto {
   @IsInt()
   groupId: number;
 
+  @IsNumber()
+  @IsOptional()
+  directorGroupId?: number;
 
   @IsArray()
   @ValidateNested({ each: true })
