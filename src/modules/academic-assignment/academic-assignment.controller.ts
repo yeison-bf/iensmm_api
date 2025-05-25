@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put } from '@nestjs/common';
 import { AcademicAssignmentService } from './academic-assignment.service';
 import { CreateAcademicAssignmentDto } from './dto/create-academic-assignment.dto';
 import { UpdateAcademicAssignmentDto } from './dto/update-academic-assignment.dto';
@@ -24,7 +24,7 @@ export class AcademicAssignmentController {
     return this.academicAssignmentService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateAcademicAssignmentDto: UpdateAcademicAssignmentDto) {
     return this.academicAssignmentService.update(+id, updateAcademicAssignmentDto);
   }

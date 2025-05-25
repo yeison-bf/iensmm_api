@@ -214,29 +214,111 @@ export class AcademicAssignmentService {
 
 
 
-  async update(id: number, updateDto: UpdateAcademicAssignmentDto) {
-    const assignment = await this.academicAssignmentRepository.findOne({
-      where: { id }
-    });
+    async update(id: number, updateDto: UpdateAcademicAssignmentDto) {
+    try {
+      const assignment = await this.academicAssignmentRepository.findOne({
+        where: { id },
+        relations: ['details']
+      });
 
-    if (!assignment) {
+      if (!assignment) {
+        return {
+          success: false,
+          message: `Asignación académica con ID ${id} no encontrada`,
+          data: null
+        };
+      }
+
+      // Verify and get related entities
+      const [degree, headquarters, program, group] = await Promise.all([
+        this.degreeRepository.findOne({ where: { id: updateDto.degreeId } }),
+        this.headquartersRepository.findOne({ where: { id: updateDto.headquarterId } }),
+        this.programRepository.findOne({ where: { id: updateDto.programId } }),
+        this.groupRepository.findOne({ where: { id: updateDto.groupId } })
+      ]);
+
+      if (!degree || !headquarters || !program) {
+        return {
+          success: false,
+          message: !degree 
+            ? `Degree with ID ${updateDto.degreeId} not found`
+            : !headquarters
+            ? `Headquarters with ID ${updateDto.headquarterId} not found`
+            : `Program with ID ${updateDto.programId} not found`,
+          data: null
+        };
+      }
+
+      // Update main assignment
+      Object.assign(assignment, {
+        year: updateDto.year,
+        degreeId: updateDto.degreeId,
+        headquarterId: updateDto.headquarterId,
+        programId: updateDto.programId,
+        groupId: updateDto.groupId,
+        directorGroupId: updateDto.directorGroupId,
+      });
+
+      await this.academicAssignmentRepository.save(assignment);
+
+      // Remove old details
+      if (assignment.details?.length) {
+        await this.academicAssignmentDetailRepository.remove(assignment.details);
+      }
+
+      // Create new details
+      if (updateDto.details?.length) {
+        const details = await Promise.all(
+          updateDto.details.map(async detail => {
+            const [thinkingDetail, admin] = await Promise.all([
+              this.academicThinkingDetailRepository.findOne({ 
+                where: { id: detail.academicThinkingDetailId } 
+              }),
+              this.administratorRepository.findOne({ 
+                where: { id: detail.administratorId } 
+              })
+            ]);
+
+            if (!thinkingDetail || !admin) {
+              throw new Error(`Required relation not found for detail`);
+            }
+
+            return this.academicAssignmentDetailRepository.create({
+              academicAssignmentId: assignment.id,
+              academicThinkingDetailId: detail.academicThinkingDetailId,
+              administratorId: detail.administratorId
+            });
+          })
+        );
+
+        await this.academicAssignmentDetailRepository.save(details);
+      }
+
+      // Fetch updated assignment with all relations
+      const updatedAssignment = await this.academicAssignmentRepository.findOne({
+        where: { id },
+        relations: [
+          'degree',
+          'headquarters',
+          'program',
+          'details',
+          'details.academicThinkingDetail',
+          'details.administrator'
+        ]
+      });
+
+      return {
+        success: true,
+        message: 'Asignación académica actualizada exitosamente',
+        data: updatedAssignment
+      };
+    } catch (error) {
       return {
         success: false,
-        message: `Asignación académica con ID ${id} no encontrada`,
+        message: `Error al actualizar la asignación académica: ${error.message}`,
         data: null
       };
     }
-
-    const updated = await this.academicAssignmentRepository.save({
-      ...assignment,
-      ...updateDto
-    });
-
-    return {
-      success: true,
-      message: 'Asignación académica actualizada exitosamente',
-      data: updated
-    };
   }
 
 
