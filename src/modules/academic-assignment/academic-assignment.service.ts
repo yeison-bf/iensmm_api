@@ -11,6 +11,7 @@ import { StudentEnrollment } from '../student-enrollment/entities/student-enroll
 import { AcademicAssignmentDetail } from './entities/academic-assignment-detail.entity';
 import { Degree } from '../degrees/entities/degree.entity';
 import { Program } from '../programs/entities/program.entity';
+import { Group } from '../group/entities/group.entity';
 
 @Injectable()
 export class AcademicAssignmentService {
@@ -32,14 +33,17 @@ export class AcademicAssignmentService {
     private readonly administratorRepository: Repository<Administrator>,
     @InjectRepository(Program)
     private readonly programRepository: Repository<Program>,
+    @InjectRepository(Group)
+    private readonly groupRepository: Repository<Group>,
   ) { }
 
   async create(createDto: CreateAcademicAssignmentDto) {
     try {
-      const [degree, headquarters, program] = await Promise.all([
+      const [degree, headquarters, program, group] = await Promise.all([
         this.degreeRepository.findOne({ where: { id: createDto.degreeId } }),
         this.headquartersRepository.findOne({ where: { id: createDto.headquarterId } }),
-        this.programRepository.findOne({ where: { id: createDto.programId } })
+        this.programRepository.findOne({ where: { id: createDto.programId } }),
+        this.groupRepository.findOne({ where: { id: createDto.groupId } })
       ]);
 
       if (!degree || !headquarters || !program) {
@@ -59,7 +63,8 @@ export class AcademicAssignmentService {
         year: createDto.year,
         degreeId: createDto.degreeId,
         headquarterId: createDto.headquarterId,
-        programId: createDto.programId
+        programId: createDto.programId,
+        groupId: createDto.groupId
       });
 
       const savedAssignment = await this.academicAssignmentRepository.save(assignment);

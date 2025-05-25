@@ -1,3 +1,4 @@
+import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
@@ -13,6 +14,9 @@ export class Group {
     @OneToMany(() => StudentEnrollment, enrollment => enrollment.group)
     enrollments: StudentEnrollment[];
 
+    
+  @OneToMany(() => AcademicAssignment, assignment => assignment.group)
+  academicAssignments: AcademicAssignment[];
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;

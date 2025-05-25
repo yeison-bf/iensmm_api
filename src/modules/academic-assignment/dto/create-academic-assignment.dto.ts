@@ -24,6 +24,10 @@ export class CreateAcademicAssignmentDto {
   @IsInt()
   programId: number;
 
+  @IsInt()
+  groupId: number;
+
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AcademicAssignmentDetailDto)

@@ -10,6 +10,7 @@ import { Headquarters } from '../headquarters/entities/headquarters.entity';
 import { AcademicAssignmentDetail } from './entities/academic-assignment-detail.entity';
 import { Degree } from '../degrees/entities/degree.entity';
 import { Program } from '../programs/entities/program.entity';
+import { Group } from '../group/entities/group.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { Program } from '../programs/entities/program.entity';
       StudentEnrollment,
       AcademicAssignmentDetail,
       Degree,
-      Program
+      Program,
+      Group
     ])
   ],
   controllers: [AcademicAssignmentController],

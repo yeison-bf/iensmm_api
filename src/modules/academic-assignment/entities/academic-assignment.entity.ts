@@ -3,6 +3,7 @@ import { Degree } from '../../degrees/entities/degree.entity';
 import { Headquarters } from '../../headquarters/entities/headquarters.entity';
 import { AcademicAssignmentDetail } from './academic-assignment-detail.entity';
 import { Program } from 'src/modules/programs/entities/program.entity';
+import { Group } from 'src/modules/group/entities/group.entity';
 
 @Entity('academic_assignments')
 export class AcademicAssignment {
@@ -17,10 +18,12 @@ export class AcademicAssignment {
 
   @Column({ name: 'headquarter_id' })
   headquarterId: number;
-
   
   @Column({ name: 'program_id' })
   programId: number;
+
+  @Column({ name: 'group_id' })
+  groupId: number;
 
   @ManyToOne(() => Degree)
   @JoinColumn({ name: 'degree_id' })
@@ -33,6 +36,10 @@ export class AcademicAssignment {
   @ManyToOne(() => Program)
   @JoinColumn({ name: 'program_id' })
   program: Program;
+
+  @ManyToOne(() => Group)
+  @JoinColumn({ name: 'group_id' })
+  group: Group;
 
   @OneToMany(() => AcademicAssignmentDetail, detail => detail.academicAssignment)
   details: AcademicAssignmentDetail[];

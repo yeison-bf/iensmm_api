@@ -39,7 +39,7 @@ export class AdministratorsService {
   async findAll() {
     try {
       const administrators = await this.administratorRepository.find({
-        relations: ['user', 'administratorType'],
+        relations: ['user', 'administratorTypes'],
       });
 
       return {
