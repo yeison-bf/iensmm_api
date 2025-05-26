@@ -21,6 +21,17 @@ export class StudentEnrollmentController {
   }
 
 
+  @Get('raitng')
+  findAllDegree(
+    @Query('sede') headquarterId?: number, 
+    @Query('year') year?: string,
+    @Query('programId') programId?: number
+  ) {
+    return this.enrollmentService.findAllDegree(headquarterId, year, programId);
+  }
+
+
+
   @Put(':id')
   update(
     @Param('id') id: number,

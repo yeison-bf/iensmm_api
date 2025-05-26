@@ -24,7 +24,7 @@ export class StudentEnrollmentService {
     private readonly programRepository: Repository<Program>,
   ) { }
 
-   async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
+  async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
     try {
       const [student, group, degree, program] = await Promise.all([
         this.studentRepository.findOne({
@@ -100,13 +100,13 @@ export class StudentEnrollmentService {
   async findAll(headquarterId?: number, year?: string, programId?: number) {
     try {
       const queryBuilder = this.enrollmentRepository
-      .createQueryBuilder('enrollment')
-      .leftJoinAndSelect('enrollment.student', 'student')
-      .leftJoinAndSelect('student.user', 'user')
-      .leftJoinAndSelect('enrollment.group', 'group')
-      .leftJoinAndSelect('enrollment.degree', 'degree')
-      .leftJoinAndSelect('enrollment.program', 'program')  // Add program relation
-      .orderBy('enrollment.createdAt', 'DESC');
+        .createQueryBuilder('enrollment')
+        .leftJoinAndSelect('enrollment.student', 'student')
+        .leftJoinAndSelect('student.user', 'user')
+        .leftJoinAndSelect('enrollment.group', 'group')
+        .leftJoinAndSelect('enrollment.degree', 'degree')
+        .leftJoinAndSelect('enrollment.program', 'program')  // Add program relation
+        .orderBy('enrollment.createdAt', 'DESC');
 
       if (headquarterId) {
         queryBuilder.andWhere('enrollment.headquarterId = :headquarterId', { headquarterId });
@@ -135,6 +135,83 @@ export class StudentEnrollmentService {
       };
     }
   }
+
+
+
+
+
+
+
+  async findAllDegree(headquarterId?: number, year?: string, programId?: number) {
+    try {
+      const queryBuilder = this.enrollmentRepository
+        .createQueryBuilder('enrollment')
+        .select([
+          'degree.id',
+          'degree.name',
+          'program.id',
+          'program.name',
+          'COUNT(DISTINCT enrollment.id) as studentCount',
+          'GROUP_CONCAT(DISTINCT CONCAT(group.id, ":", group.name)) as groups'
+        ])
+        .leftJoin('enrollment.degree', 'degree')
+        .leftJoin('enrollment.program', 'program')
+        .leftJoin('enrollment.group', 'group')
+        .groupBy('degree.id')
+        .addGroupBy('program.id')
+        .orderBy('degree.name', 'ASC');
+
+      if (headquarterId) {
+        queryBuilder.andWhere('enrollment.headquarterId = :headquarterId', { headquarterId });
+      }
+
+      if (year) {
+        queryBuilder.andWhere('YEAR(enrollment.registrationDate) = :year', { year });
+      }
+
+      if (programId) {
+        queryBuilder.andWhere('enrollment.program_id = :programId', { programId });
+      }
+
+      const enrollments = await queryBuilder.getRawMany();
+
+      const formattedResult = enrollments.map(item => ({
+        degree: {
+          id: item.degree_id,
+          name: item.degree_name
+        },
+        program: {
+          id: item.program_id,
+          name: item.program_name
+        },
+        groups: item.groups ? item.groups.split(',').map(group => {
+          const [id, name] = group.split(':');
+          return {
+            id: parseInt(id),
+            name: name
+          };
+        }) : [],
+        studentCount: parseInt(item.studentCount)
+      }));
+
+      return {
+        success: true,
+        message: 'Matrículas agrupadas por grado recuperadas exitosamente',
+        data: formattedResult,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al recuperar las matrículas: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
+
+
 
 
 
