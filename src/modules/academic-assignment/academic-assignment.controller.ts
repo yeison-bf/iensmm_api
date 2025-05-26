@@ -5,20 +5,34 @@ import { UpdateAcademicAssignmentDto } from './dto/update-academic-assignment.dt
 
 @Controller('academic-assignment')
 export class AcademicAssignmentController {
-  constructor(private readonly academicAssignmentService: AcademicAssignmentService) {}
+  constructor(private readonly academicAssignmentService: AcademicAssignmentService) { }
 
   @Post()
   create(@Body() createAcademicAssignmentDto: CreateAcademicAssignmentDto) {
     return this.academicAssignmentService.create(createAcademicAssignmentDto);
   }
 
-   @Get()
+  @Get()
   findAll(
     @Query('headquarterId') headquarterId?: number,
     @Query('programId') programId?: number,
   ) {
     return this.academicAssignmentService.findAll(headquarterId, programId);
   }
+
+  @Get('rating')
+  findAllByRatign(
+    @Query('headquarterId') headquarterId?: number,
+    @Query('programId') programId?: number,
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+  ) {
+    return this.academicAssignmentService.findAllByRatign(headquarterId, programId, groupId, degreeId);
+  }
+
+
+
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.academicAssignmentService.findOne(+id);

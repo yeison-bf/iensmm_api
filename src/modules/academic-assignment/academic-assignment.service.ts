@@ -163,6 +163,41 @@ export class AcademicAssignmentService {
 
 
 
+  
+  async findAllByRatign(headquarterId?:number, programId?:number, groupId?:number, degreeId?:number) {
+    console.log("--")
+    const assignments = await this.academicAssignmentRepository.find({
+      where: {
+        headquarterId: headquarterId,
+        programId: programId,
+        groupId: groupId,
+        degreeId: degreeId
+      },
+      relations: [
+        'degree',
+        'headquarters',
+        'program',
+        'details',
+        'details.academicThinkingDetail',
+        'details.academicThinkingDetail.trainingArea',
+      ]
+    });
+
+    return {
+      success: true,
+      message: 'Asignaciones académicas recuperadas exitosamente',
+      data: assignments
+    };
+  }
+
+
+
+
+
+
+
+
+
 
 
 
