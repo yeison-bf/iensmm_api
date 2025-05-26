@@ -97,7 +97,13 @@ export class StudentEnrollmentService {
 
 
 
-  async findAll(headquarterId?: number, year?: string, programId?: number) {
+  async findAll(
+    headquarterId?: number, 
+    year?: string, 
+    programId?: number,
+    page?: number,
+    limit?: number
+  ) {
     try {
       const queryBuilder = this.enrollmentRepository
         .createQueryBuilder('enrollment')
@@ -105,7 +111,7 @@ export class StudentEnrollmentService {
         .leftJoinAndSelect('student.user', 'user')
         .leftJoinAndSelect('enrollment.group', 'group')
         .leftJoinAndSelect('enrollment.degree', 'degree')
-        .leftJoinAndSelect('enrollment.program', 'program')  // Add program relation
+        .leftJoinAndSelect('enrollment.program', 'program')
         .orderBy('enrollment.createdAt', 'DESC');
 
       if (headquarterId) {
@@ -120,12 +126,35 @@ export class StudentEnrollmentService {
         queryBuilder.andWhere('enrollment.program_id = :programId', { programId });
       }
 
-      const enrollments = await queryBuilder.getMany();
+      // Si se proporcionan parámetros de paginación
+      if (page && limit) {
+        const skip = (page - 1) * limit;
+        const [enrollments, total] = await queryBuilder
+          .skip(skip)
+          .take(limit)
+          .getManyAndCount();
 
+        return {
+          success: true,
+          message: 'Matrículas recuperadas exitosamente',
+          data: {
+            items: enrollments,
+            meta: {
+              currentPage: page,
+              itemsPerPage: limit,
+              totalItems: total,
+              totalPages: Math.ceil(total / limit)
+            }
+          }
+        };
+      }
+
+      // Si no hay paginación, devolver todos los resultados
+      const enrollments = await queryBuilder.getMany();
       return {
         success: true,
         message: 'Matrículas recuperadas exitosamente',
-        data: enrollments,
+        data: enrollments
       };
     } catch (error) {
       return {
@@ -138,9 +167,58 @@ export class StudentEnrollmentService {
 
 
 
+  
+  async findAllListStudend(
+    headquarterId?: number, 
+    year?: string, 
+    programId?: number,
+    group?: number,
+  ) {
+    try {
+      const queryBuilder = this.enrollmentRepository
+        .createQueryBuilder('enrollment')
+        .leftJoinAndSelect('enrollment.student', 'student')
+        .leftJoinAndSelect('student.user', 'user')
+        .leftJoinAndSelect('enrollment.group', 'group')
+        .leftJoinAndSelect('enrollment.degree', 'degree')
+        .leftJoinAndSelect('enrollment.program', 'program')
+        .orderBy('enrollment.createdAt', 'DESC');
+
+      if (headquarterId) {
+        queryBuilder.andWhere('enrollment.headquarterId = :headquarterId', { headquarterId });
+      }
+
+      if (year) {
+        queryBuilder.andWhere('YEAR(enrollment.registrationDate) = :year', { year });
+      }
+
+      if (programId) {
+        queryBuilder.andWhere('enrollment.program_id = :programId', { programId });
+      }
+
+      
+      if (group) {
+        queryBuilder.andWhere('enrollment.groupId = :group', { group });
+      }
+
+      // Si no hay paginación, devolver todos los resultados
+      const enrollments = await queryBuilder.getMany();
+      return {
+        success: true,
+        message: 'Matrículas recuperadas exitosamente',
+        data: enrollments
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al recuperar las matrículas: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
 
-
+  
 
   async findAllDegree(headquarterId?: number, year?: string, programId?: number) {
     try {

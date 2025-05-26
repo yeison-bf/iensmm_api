@@ -11,14 +11,28 @@ export class StudentEnrollmentController {
     return this.enrollmentService.create(createEnrollmentDto);
   }
 
+
   @Get()
   findAll(
     @Query('sede') headquarterId?: number, 
     @Query('year') year?: string,
-    @Query('programId') programId?: number
+    @Query('programId') programId?: number,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10
   ) {
-    return this.enrollmentService.findAll(headquarterId, year, programId);
+    return this.enrollmentService.findAll(headquarterId, year, programId, page, limit);
   }
+
+  @Get('listStudent')
+  findAllListStudend(
+    @Query('sede') headquarterId?: number, 
+    @Query('year') year?: string,
+    @Query('programId') programId?: number,
+    @Query('group') group?: number,
+  ) {
+    return this.enrollmentService.findAllListStudend(headquarterId, year, programId, group);
+  }
+
 
 
   @Get('raitng')
