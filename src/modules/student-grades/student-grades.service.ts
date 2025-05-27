@@ -63,8 +63,8 @@ export class StudentGradesService {
 
             const grade = this.gradeRepository.create({
               ...gradeDto,
-              degreeId: enrollment.degree.id,
-              groupId: enrollment.group.id,
+              degreeId: gradeDto.degreeId,
+              groupId: gradeDto.groupId,
               studentEnrollment: enrollment,
               academicThinkingDetail: thinkingDetail,
               periodDetail: periodDetail,
