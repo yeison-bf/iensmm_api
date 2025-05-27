@@ -13,7 +13,7 @@ export class PeriodDetailsService {
     private readonly periodDetailRepository: Repository<PeriodDetail>,
     @InjectRepository(Period)
     private readonly periodRepository: Repository<Period>,
-  ) {}
+  ) { }
 
   async create(createPeriodDetailDto: CreatePeriodDetailDto) {
     try {
@@ -256,6 +256,76 @@ export class PeriodDetailsService {
         success: false,
         message: `Error deleting period detail: ${error.message}`,
         data: null,
+      };
+    }
+  }
+
+   async togglePeriodState(closeId?: number, activeId?: number) {
+    console.log('closeId:', closeId, 'activeId:', activeId)
+    try {
+      const updates = [];
+
+      if (closeId) {
+        const closePeriod = await this.periodDetailRepository.findOne({
+          where: { id: closeId },
+          relations: ['period']
+        });
+
+        if (!closePeriod) {
+          return {
+            success: false,
+            message: `Periodo con ID ${closeId} no encontrado`,
+            data: null
+          };
+        }
+
+        closePeriod.status = 'closed';
+        const closedPeriod = await this.periodDetailRepository.save(closePeriod);
+        updates.push(closedPeriod);
+      }
+
+      if (activeId) {
+        const activePeriod = await this.periodDetailRepository.findOne({
+          where: { id: activeId },
+          relations: ['period']
+        });
+
+        if (!activePeriod) {
+          return {
+            success: false,
+            message: `Periodo con ID ${activeId} no encontrado`,
+            data: null
+          };
+        }
+
+        activePeriod.status = 'active';
+        const activatedPeriod = await this.periodDetailRepository.save(activePeriod);
+        updates.push(activatedPeriod);
+      }
+
+      if (updates.length === 0) {
+        return {
+          success: false,
+          message: 'No se proporcionaron IDs para actualizar',
+          data: null
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Estados de periodos actualizados exitosamente',
+        data: {
+          closedPeriod: updates.find(p => p.id === closeId),
+          activatedPeriod: updates.find(p => p.id === activeId)
+        }
+      };
+
+    } catch (error) {
+      console.error('Toggle period state error:', error);
+      return {
+        success: false,
+        message: `Error al actualizar estados de periodos: ${error.message}`,
+        data: null
       };
     }
   }

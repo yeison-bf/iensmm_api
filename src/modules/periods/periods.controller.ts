@@ -45,6 +45,9 @@ export class PeriodsController {
     return this.periodsService.update(id, updatePeriodDto);
   }
 
+
+
+
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.periodsService.remove(id);
