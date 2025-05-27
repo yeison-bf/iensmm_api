@@ -1,6 +1,7 @@
-import { IsNumber, IsString, IsOptional, Min, Max, IsIn } from 'class-validator';
+import { IsNumber, IsString, IsOptional, Min, Max, IsIn, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class CreateStudentGradeDto {
+export class GradeDto {
   @IsNumber()
   @Min(0)
   @Max(5)
@@ -31,3 +32,10 @@ export class CreateStudentGradeDto {
   @IsNumber()
   teacherId: number;
 }
+
+export class CreateStudentGradeDto {
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => GradeDto)
+    grades: GradeDto[];
+  }

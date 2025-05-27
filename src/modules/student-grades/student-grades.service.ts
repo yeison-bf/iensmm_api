@@ -26,78 +26,81 @@ export class StudentGradesService {
 
   ) {}
 
- async create(createGradeDto: CreateStudentGradeDto) {
+  async create(createGradeDto: CreateStudentGradeDto) {
     try {
-      // Validate all relationships exist
-      const [enrollment, thinkingDetail, periodDetail, teacher] = await Promise.all([
-        this.enrollmentRepository.findOne({
-          where: { id: createGradeDto.studentEnrollmentId }
-        }),
-        this.thinkingDetailRepository.findOne({
-          where: { id: createGradeDto.academicThinkingDetailId }
-        }),
-        this.periodDetailRepository.findOne({
-          where: { id: createGradeDto.periodDetailId }
-        }),
-        this.administratorRepository.findOne({
-          where: { id: createGradeDto.teacherId }
+      const results = await Promise.all(
+        createGradeDto.grades.map(async (gradeDto) => {
+          const [enrollment, thinkingDetail, periodDetail, teacher] = await Promise.all([
+            this.enrollmentRepository.findOne({
+              where: { id: gradeDto.studentEnrollmentId }
+            }),
+            this.thinkingDetailRepository.findOne({
+              where: { id: gradeDto.academicThinkingDetailId }
+            }),
+            this.periodDetailRepository.findOne({
+              where: { id: gradeDto.periodDetailId }
+            }),
+            this.administratorRepository.findOne({
+              where: { id: gradeDto.teacherId }
+            })
+          ]);
+
+          if (!enrollment || !thinkingDetail || !periodDetail || !teacher) {
+            return {
+              success: false,
+              data: gradeDto,
+              message: 'Una o más relaciones no encontradas',
+              details: {
+                enrollment: !enrollment ? 'No encontrado' : 'OK',
+                thinkingDetail: !thinkingDetail ? 'No encontrado' : 'OK',
+                periodDetail: !periodDetail ? 'No encontrado' : 'OK',
+                teacher: !teacher ? 'No encontrado' : 'OK'
+              }
+            };
+          }
+
+          const grade = this.gradeRepository.create({
+            ...gradeDto,
+            studentEnrollment: enrollment,
+            academicThinkingDetail: thinkingDetail,
+            periodDetail: periodDetail,
+            teacher: teacher
+          });
+
+          const savedGrade = await this.gradeRepository.save(grade);
+          
+          const completeGrade = await this.gradeRepository.findOne({
+            where: { id: savedGrade.id },
+            relations: ['studentEnrollment', 'academicThinkingDetail', 'periodDetail', 'teacher']
+          });
+
+          return {
+            success: true,
+            data: completeGrade,
+            message: 'Calificación creada exitosamente'
+          };
         })
-      ]);
+      );
 
-      // Check if all required entities exist
-      if (!enrollment) {
-        return {
-          success: false,
-          message: 'Matrícula de estudiante no encontrada',
-          data: null
-        };
-      }
-      if (!thinkingDetail) {
-        return {
-          success: false,
-          message: 'Detalle académico no encontrado',
-          data: null
-        };
-      }
-      if (!periodDetail) {
-        return {
-          success: false,
-          message: 'Periodo no encontrado',
-          data: null
-        };
-      }
-      if (!teacher) {
-        return {
-          success: false,
-          message: 'Profesor no encontrado',
-          data: null
-        };
-      }
-
-      const grade = this.gradeRepository.create({
-        ...createGradeDto,
-        studentEnrollment: enrollment,
-        academicThinkingDetail: thinkingDetail,
-        periodDetail: periodDetail,
-        teacher: teacher
-      });
-
-      const savedGrade = await this.gradeRepository.save(grade);
-
-      const completeGrade = await this.gradeRepository.findOne({
-        where: { id: savedGrade.id },
-        relations: ['studentEnrollment', 'academicThinkingDetail', 'periodDetail', 'teacher']
-      });
+      const allSuccess = results.every(result => result.success);
+      const successCount = results.filter(result => result.success).length;
 
       return {
-        success: true,
-        message: 'Calificación creada exitosamente',
-        data: completeGrade
+        success: allSuccess,
+        message: `${successCount} de ${results.length} calificaciones creadas exitosamente`,
+        data: {
+          results,
+          summary: {
+            total: results.length,
+            successful: successCount,
+            failed: results.length - successCount
+          }
+        }
       };
     } catch (error) {
       return {
         success: false,
-        message: `Error al crear la calificación: ${error.message}`,
+        message: `Error al crear las calificaciones: ${error.message}`,
         data: null
       };
     }
