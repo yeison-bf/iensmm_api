@@ -15,10 +15,12 @@ export class StudentGrade {
   @Column('decimal', { precision: 3, scale: 2 })
   numericalGrade: number;
 
+  @Column()
   @IsNumber()
   @Transform(({ value }) => Number(value))
   degreeId: number;
 
+  @Column()
   @IsNumber()
   @Transform(({ value }) => Number(value))
   groupId: number;
