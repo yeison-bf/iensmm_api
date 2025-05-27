@@ -28,6 +28,7 @@ import { AcademicThinkingModule } from './modules/academic-thinking/academic-thi
 import { AcademicAssignmentModule } from './modules/academic-assignment/academic-assignment.module';
 import { ProgramsModule } from './modules/programs/programs.module';
 import { AssistanceModule } from './modules/assistance/assistance.module';
+import { StudentGradesModule } from './modules/student-grades/student-grades.module';
 
 
 @Module({
@@ -101,6 +102,7 @@ import { AssistanceModule } from './modules/assistance/assistance.module';
     AcademicAssignmentModule,
     ProgramsModule,
     AssistanceModule,
+    StudentGradesModule,
 
   ],
   controllers: [AppController],

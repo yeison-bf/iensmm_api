@@ -4,6 +4,7 @@ import { AdministratorType } from '../../administrator-type/entities/administrat
 import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 import { AdministratorTypeProgram } from 'src/modules/administrator-type/entities/administrator_type_program.entity';
 import { AcademicAssignmentDetail } from 'src/modules/academic-assignment/entities/academic-assignment-detail.entity';
+import { StudentGrade } from 'src/modules/student-grades/entities/student-grade.entity';
 
 @Entity('administrators')
 export class Administrator {
@@ -69,6 +70,9 @@ export class Administrator {
   @OneToMany(() => AcademicAssignmentDetail, detail => detail.administrator)
   academicAssignmentDetails: AcademicAssignmentDetail[];
 
+
+  @OneToMany(() => StudentGrade, grade => grade.teacher)
+  grades: StudentGrade[];
 
   @Column({ type: 'boolean', default: true })
   status: boolean;

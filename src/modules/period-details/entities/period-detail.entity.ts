@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Period } from '../../periods/entities/period.entity';
+import { StudentGrade } from 'src/modules/student-grades/entities/student-grade.entity';
 
 @Entity('period_detail')
 export class PeriodDetail {
@@ -27,6 +28,10 @@ export class PeriodDetail {
   @ManyToOne(() => Period, period => period.periodDetails)
   @JoinColumn({ name: 'periodId' })
   period: Period;
+
+  @OneToMany(() => StudentGrade, grade => grade.periodDetail)
+  grades: StudentGrade[];
+
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

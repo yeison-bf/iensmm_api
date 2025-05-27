@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Institution } from '../../institutions/entities/institution.entity';
 import { PeriodDetail } from 'src/modules/period-details/entities/period-detail.entity';
+import { StudentGrade } from 'src/modules/student-grades/entities/student-grade.entity';
 
 @Entity('period')
 export class Period {

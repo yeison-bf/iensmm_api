@@ -4,6 +4,7 @@ import { Group } from '../../group/entities/group.entity';
 import { Degree } from '../../degrees/entities/degree.entity';
 import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 import { Program } from 'src/modules/programs/entities/program.entity';
+import { StudentGrade } from 'src/modules/student-grades/entities/student-grade.entity';
 
 @Entity('student_enrollment')
 export class StudentEnrollment {
@@ -52,6 +53,10 @@ export class StudentEnrollment {
 
   @Column({ name: 'program_id', type: 'int', nullable: true })
   programId: number;
+
+  
+  @OneToMany(() => StudentGrade, grade => grade.studentEnrollment)
+  grades: StudentGrade[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

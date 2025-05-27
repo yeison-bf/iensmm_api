@@ -3,6 +3,7 @@ import { AcademicThinking } from './academic-thinking.entity';
 import { TrainingArea } from '../../training-areas/entities/training-area.entity';
 import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 import { AcademicAssignmentDetail } from 'src/modules/academic-assignment/entities/academic-assignment-detail.entity';
+import { StudentGrade } from 'src/modules/student-grades/entities/student-grade.entity';
 
 @Entity('academic_thinking_details')
 export class AcademicThinkingDetail {
@@ -29,6 +30,8 @@ export class AcademicThinkingDetail {
   @OneToMany(() => AcademicAssignmentDetail, detail => detail.academicThinkingDetail)
   academicAssignmentDetails: AcademicAssignmentDetail[];
 
+  @OneToMany(() => StudentGrade, grade => grade.academicThinkingDetail)
+  grades: StudentGrade[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

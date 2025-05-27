@@ -1,0 +1,39 @@
+import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
+import { StudentGradesService } from './student-grades.service';
+import { CreateStudentGradeDto } from './dto/create-student-grade.dto';
+import { UpdateStudentGradeDto } from './dto/update-student-grade.dto';
+
+@Controller('student-grades')
+export class StudentGradesController {
+  constructor(private readonly studentGradesService: StudentGradesService) {}
+
+  @Post()
+  create(@Body() createGradeDto: CreateStudentGradeDto) {
+    return this.studentGradesService.create(createGradeDto);
+  }
+
+  @Get()
+  findAll(
+    @Query('studentId') studentId?: number,
+    @Query('periodId') periodId?: number,
+    @Query('teacherId') teacherId?: number,
+    @Query('thinkingDetailId') thinkingDetailId?: number
+  ) {
+    return this.studentGradesService.findAll(studentId, periodId, teacherId, thinkingDetailId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.studentGradesService.findOne(id);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: number, @Body() updateGradeDto: UpdateStudentGradeDto) {
+    return this.studentGradesService.update(id, updateGradeDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.studentGradesService.remove(id);
+  }
+}
