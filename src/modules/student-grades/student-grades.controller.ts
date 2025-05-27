@@ -22,6 +22,17 @@ export class StudentGradesController {
     return this.studentGradesService.findAll(studentId, periodId, teacherId, thinkingDetailId);
   }
 
+  @Get('filtered')
+findByFilters(
+  @Query('groupId') groupId?: number,
+  @Query('degreeId') degreeId?: number,
+  @Query('thinkingDetailId') thinkingDetailId?: number,
+  @Query('periodDetailId') periodDetailId?: number
+) {
+  return this.studentGradesService.findByFilters(groupId, degreeId, thinkingDetailId, periodDetailId);
+}
+
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.studentGradesService.findOne(id);
