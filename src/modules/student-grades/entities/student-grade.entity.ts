@@ -4,6 +4,8 @@ import { AcademicThinkingDetail } from '../../academic-thinking/entities/academi
 import { Period } from '../../periods/entities/period.entity';
 import { Administrator } from '../../administrators/entities/administrator.entity';
 import { PeriodDetail } from 'src/modules/period-details/entities/period-detail.entity';
+import { IsNumber } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 @Entity('student_grades')
 export class StudentGrade {
@@ -12,6 +14,14 @@ export class StudentGrade {
 
   @Column('decimal', { precision: 3, scale: 2 })
   numericalGrade: number;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  degreeId: number;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  groupId: number;
 
   @Column({ length: 20 })
   qualitativeGrade: string;

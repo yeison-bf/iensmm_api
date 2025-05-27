@@ -12,7 +12,7 @@ import { Administrator } from '../administrators/entities/administrator.entity';
 @Injectable()
 export class StudentGradesService {
   constructor(
-   
+
     @InjectRepository(StudentGrade)
     private readonly gradeRepository: Repository<StudentGrade>,
     @InjectRepository(StudentEnrollment)
@@ -24,69 +24,81 @@ export class StudentGradesService {
     @InjectRepository(Administrator)
     private readonly administratorRepository: Repository<Administrator>,
 
-  ) {}
+  ) { }
 
   async create(createGradeDto: CreateStudentGradeDto) {
     try {
       const results = await Promise.all(
         createGradeDto.grades.map(async (gradeDto) => {
-          const [enrollment, thinkingDetail, periodDetail, teacher] = await Promise.all([
-            this.enrollmentRepository.findOne({
-              where: { id: gradeDto.studentEnrollmentId }
-            }),
-            this.thinkingDetailRepository.findOne({
-              where: { id: gradeDto.academicThinkingDetailId }
-            }),
-            this.periodDetailRepository.findOne({
-              where: { id: gradeDto.periodDetailId }
-            }),
-            this.administratorRepository.findOne({
-              where: { id: gradeDto.teacherId }
-            })
-          ]);
+          try {
+            const [enrollment, thinkingDetail, periodDetail, teacher] = await Promise.all([
+              this.enrollmentRepository.findOne({
+                where: { id: gradeDto.studentEnrollmentId },
+                relations: ['student', 'degree', 'group']
+              }),
+              this.thinkingDetailRepository.findOne({
+                where: { id: gradeDto.academicThinkingDetailId }
+              }),
+              this.periodDetailRepository.findOne({
+                where: { id: gradeDto.periodDetailId }
+              }),
+              this.administratorRepository.findOne({
+                where: { id: gradeDto.teacherId }
+              })
+            ]);
 
-          if (!enrollment || !thinkingDetail || !periodDetail || !teacher) {
+            if (!enrollment || !thinkingDetail || !periodDetail || !teacher) {
+              return {
+                success: false,
+                data: gradeDto,
+                message: 'Una o más relaciones no encontradas',
+                details: {
+                  enrollment: !enrollment ? `ID ${gradeDto.studentEnrollmentId} no encontrado` : 'OK',
+                  thinkingDetail: !thinkingDetail ? `ID ${gradeDto.academicThinkingDetailId} no encontrado` : 'OK',
+                  periodDetail: !periodDetail ? `ID ${gradeDto.periodDetailId} no encontrado` : 'OK',
+                  teacher: !teacher ? `ID ${gradeDto.teacherId} no encontrado` : 'OK'
+                }
+              };
+            }
+
+            const grade = this.gradeRepository.create({
+              ...gradeDto,
+              degreeId: enrollment.degree.id,
+              groupId: enrollment.group.id,
+              studentEnrollment: enrollment,
+              academicThinkingDetail: thinkingDetail,
+              periodDetail: periodDetail,
+              teacher: teacher
+            });
+
+            const savedGrade = await this.gradeRepository.save(grade);
+            
+            const completeGrade = await this.gradeRepository.findOne({
+              where: { id: savedGrade.id },
+              relations: ['studentEnrollment', 'academicThinkingDetail', 'periodDetail', 'teacher']
+            });
+
+            return {
+              success: true,
+              data: completeGrade,
+              message: 'Calificación creada exitosamente'
+            };
+
+          } catch (error) {
+            console.error('Error processing grade:', error);
             return {
               success: false,
               data: gradeDto,
-              message: 'Una o más relaciones no encontradas',
-              details: {
-                enrollment: !enrollment ? 'No encontrado' : 'OK',
-                thinkingDetail: !thinkingDetail ? 'No encontrado' : 'OK',
-                periodDetail: !periodDetail ? 'No encontrado' : 'OK',
-                teacher: !teacher ? 'No encontrado' : 'OK'
-              }
+              message: `Error al procesar la calificación: ${error.message}`
             };
           }
-
-          const grade = this.gradeRepository.create({
-            ...gradeDto,
-            studentEnrollment: enrollment,
-            academicThinkingDetail: thinkingDetail,
-            periodDetail: periodDetail,
-            teacher: teacher
-          });
-
-          const savedGrade = await this.gradeRepository.save(grade);
-          
-          const completeGrade = await this.gradeRepository.findOne({
-            where: { id: savedGrade.id },
-            relations: ['studentEnrollment', 'academicThinkingDetail', 'periodDetail', 'teacher']
-          });
-
-          return {
-            success: true,
-            data: completeGrade,
-            message: 'Calificación creada exitosamente'
-          };
         })
       );
 
-      const allSuccess = results.every(result => result.success);
       const successCount = results.filter(result => result.success).length;
 
       return {
-        success: allSuccess,
+        success: successCount > 0,
         message: `${successCount} de ${results.length} calificaciones creadas exitosamente`,
         data: {
           results,
@@ -98,6 +110,7 @@ export class StudentGradesService {
         }
       };
     } catch (error) {
+      console.error('Create grades error:', error);
       return {
         success: false,
         message: `Error al crear las calificaciones: ${error.message}`,

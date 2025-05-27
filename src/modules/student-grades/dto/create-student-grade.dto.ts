@@ -7,6 +7,13 @@ export class GradeDto {
   @Max(5)
   numericalGrade: number;
 
+
+  @IsNumber()
+  degreeId: number;
+
+  @IsNumber()
+  groupId: number;
+
   @IsString()
   @IsIn(['Superior', 'Alto', 'Básico', 'Bajo'])
   qualitativeGrade: string;
