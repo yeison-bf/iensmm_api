@@ -7,11 +7,12 @@ export class GradeDto {
   @Max(5)
   numericalGrade: number;
 
-
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   degreeId: number;
 
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   groupId: number;
 
   @IsString()
