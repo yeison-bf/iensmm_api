@@ -1,5 +1,5 @@
 import { IsNumber, IsString, IsOptional, Min, Max, IsIn, IsArray, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class GradeDto {
   @IsNumber()
@@ -21,21 +21,25 @@ export class GradeDto {
   observations?: string;
 
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   studentEnrollmentId: number;
 
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   academicThinkingDetailId: number;
 
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   periodDetailId: number;
 
   @IsNumber()
+  @Transform(({ value }) => Number(value))
   teacherId: number;
 }
 
 export class CreateStudentGradeDto {
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => GradeDto)
-    grades: GradeDto[];
-  }
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => GradeDto)
+  grades: GradeDto[];
+}
