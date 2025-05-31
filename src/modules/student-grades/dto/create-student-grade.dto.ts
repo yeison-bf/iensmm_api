@@ -30,9 +30,12 @@ export class GradeDto {
   @IsOptional()
   observations?: string;
 
-  @IsDate()
   @IsOptional()
-  closingDate:Date
+  @Transform(({ value }) => {
+    if (!value || value === '') return null;
+    return new Date(value);
+  })
+  closingDate?: Date;
 
   @IsBoolean()
   @IsOptional()

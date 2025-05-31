@@ -68,7 +68,8 @@ export class StudentGradesService {
               studentEnrollment: enrollment,
               academicThinkingDetail: thinkingDetail,
               periodDetail: periodDetail,
-              teacher: teacher
+              teacher: teacher,
+              closingDate: gradeDto.closingDate
             });
 
             const savedGrade = await this.gradeRepository.save(grade);
