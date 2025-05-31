@@ -34,6 +34,14 @@ export class StudentGrade {
   @Column({ type: 'text', nullable: true })
   observations: string;
 
+
+  @Column({ type: 'date' })
+  closingDate: Date;
+
+  // Nueva columna status con valor por defecto false
+  @Column({ type: 'boolean', default: false })
+  status: boolean;
+
   @Column()
   studentEnrollmentId: number;
 
@@ -54,7 +62,7 @@ export class StudentGrade {
   @JoinColumn({ name: 'academicThinkingDetailId' })
   academicThinkingDetail: AcademicThinkingDetail;
 
- 
+
   @ManyToOne(() => PeriodDetail)
   @JoinColumn({ name: 'periodDetailId' })  // Changed from periodId
   periodDetail: PeriodDetail;  // Changed from period: Period

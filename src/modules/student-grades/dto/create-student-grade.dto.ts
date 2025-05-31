@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsOptional, Min, Max, IsIn, IsArray, ValidateNested } from 'class-validator';
+import { IsNumber, IsString, IsOptional, Min, Max, IsIn, IsArray, ValidateNested, IsDate, IsBoolean } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class GradeDto {
@@ -27,6 +27,14 @@ export class GradeDto {
   @IsString()
   @IsOptional()
   observations?: string;
+
+  @IsDate()
+  @IsOptional()
+  closingDate:Date
+
+  @IsBoolean()
+  @IsOptional()
+  status:boolean
 
   @IsNumber()
   @Transform(({ value }) => Number(value))

@@ -38,9 +38,20 @@ togglePeriodState(
   console.log('🔍 Raw closeId:', closeId, typeof closeId);
   console.log('🔍 Raw activeId:', activeId, typeof activeId);
   
-  // Convertir strings a números (los query params siempre llegan como string)
-  const closeIdNum = closeId ? parseInt(closeId, 10) : undefined;
-  const activeIdNum = activeId ? parseInt(activeId, 10) : undefined;
+  // Función helper para convertir valores
+  const parseId = (value: string | undefined): number | undefined => {
+    // Si no existe, está vacío, o es 'null' string, retorna undefined
+    if (!value || value.trim() === '' || value.toLowerCase() === 'null') {
+      return undefined;
+    }
+    
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? undefined : parsed;
+  };
+  
+  // Convertir strings a números manejando 'null' string
+  const closeIdNum = parseId(closeId);
+  const activeIdNum = parseId(activeId);
   
   console.log('🔢 Converted closeId:', closeIdNum, typeof closeIdNum);
   console.log('🔢 Converted activeId:', activeIdNum, typeof activeIdNum);
@@ -50,12 +61,7 @@ togglePeriodState(
     throw new BadRequestException('Al menos uno de closeId o activeId debe ser proporcionado');
   }
   
-  // Validar que los números sean válidos
-  if ((closeId && isNaN(closeIdNum)) || (activeId && isNaN(activeIdNum))) {
-    throw new BadRequestException('Los IDs deben ser números válidos');
-  }
-  
-  // Llamar al servicio
+  // Llamar al servicio (ya no necesitamos validar NaN porque parseId lo maneja)
   return this.periodDetailsService.togglePeriodState(closeIdNum, activeIdNum);
 }
 
