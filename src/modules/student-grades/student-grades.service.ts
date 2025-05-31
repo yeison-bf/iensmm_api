@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StudentGrade } from './entities/student-grade.entity';
 import { CreateStudentGradeDto } from './dto/create-student-grade.dto';
-import { UpdateStudentGradeDto } from './dto/update-student-grade.dto';
 import { StudentEnrollment } from '../student-enrollment/entities/student-enrollment.entity';
 import { AcademicThinkingDetail } from '../academic-thinking/entities/academic-thinking-detail.entity';
 import { PeriodDetail } from '../period-details/entities/period-detail.entity';
 import { Administrator } from '../administrators/entities/administrator.entity';
+import { UpdateStudentGradesBulkDto } from './dto/update-student-grade.dto';
 
 @Injectable()
 export class StudentGradesService {
@@ -72,7 +72,7 @@ export class StudentGradesService {
             });
 
             const savedGrade = await this.gradeRepository.save(grade);
-            
+
             const completeGrade = await this.gradeRepository.findOne({
               where: { id: savedGrade.id },
               relations: ['studentEnrollment', 'academicThinkingDetail', 'periodDetail', 'teacher']
@@ -186,7 +186,7 @@ export class StudentGradesService {
     }
   }
 
-  async update(id: number, updateGradeDto: UpdateStudentGradeDto) {
+  async update(id: number, updateGradeDto: UpdateStudentGradesBulkDto) {
     try {
       const grade = await this.gradeRepository.findOne({
         where: { id },
@@ -292,4 +292,117 @@ export class StudentGradesService {
       };
     }
   }
+
+
+
+
+  // MÉTODO CORREGIDO
+  async updateBulk(updateGradesDto: UpdateStudentGradesBulkDto) {
+    console.log("---- aqui ... ")
+    const results = {
+      success: true,
+      message: '',
+      data: {
+        updated: [],
+        errors: [],
+        totalProcessed: updateGradesDto.grades.length
+      }
+    };
+
+    try {
+      // Procesar cada calificación individualmente usando Promise.all como en create
+      const updateResults = await Promise.all(
+        updateGradesDto.grades.map(async (gradeUpdate) => {
+          try {
+            const { id, ...updateData } = gradeUpdate;
+
+            // Buscar el registro existente SIN relaciones (igual que en create)
+            const existingGrade = await this.gradeRepository.findOne({
+              where: { id }
+            });
+
+            if (!existingGrade) {
+              return {
+                success: false,
+                id,
+                message: `Calificación con ID ${id} no encontrada`
+              };
+            }
+
+            // Limpiar campos undefined o vacíos
+            const cleanUpdateData = {};
+            Object.keys(updateData).forEach(key => {
+              if (updateData[key] !== undefined && updateData[key] !== '') {
+                cleanUpdateData[key] = updateData[key];
+              }
+            });
+
+            // Actualizar usando el método update (más eficiente)
+            await this.gradeRepository.update(id, cleanUpdateData);
+
+            // Obtener el registro actualizado (opcional, solo si necesitas devolverlo)
+            const updatedGrade = await this.gradeRepository.findOne({
+              where: { id }
+            });
+
+            return {
+              success: true,
+              id,
+              message: 'Actualizado exitosamente',
+              data: updatedGrade
+            };
+
+          } catch (error) {
+            console.error('Error updating grade:', error);
+            return {
+              success: false,
+              id: gradeUpdate.id,
+              message: `Error al actualizar: ${error.message}`
+            };
+          }
+        })
+      );
+
+      // Procesar resultados
+      updateResults.forEach(result => {
+        if (result.success) {
+          results.data.updated.push({
+            id: result.id,
+            message: result.message,
+            data: result.data
+          });
+        } else {
+          results.data.errors.push({
+            id: result.id,
+            message: result.message
+          });
+        }
+      });
+
+      // Determinar el mensaje final
+      const updatedCount = results.data.updated.length;
+      const errorCount = results.data.errors.length;
+
+      if (errorCount === 0) {
+        results.message = `Todas las ${updatedCount} calificaciones fueron actualizadas exitosamente`;
+      } else if (updatedCount === 0) {
+        results.success = false;
+        results.message = `No se pudo actualizar ninguna calificación. ${errorCount} errores encontrados`;
+      } else {
+        results.message = `${updatedCount} calificaciones actualizadas exitosamente, ${errorCount} con errores`;
+      }
+
+      return results;
+
+    } catch (error) {
+      console.error('Update bulk error:', error);
+      return {
+        success: false,
+        message: `Error general en la actualización masiva: ${error.message}`,
+        data: null
+      };
+    }
+  }
+
+
 }
