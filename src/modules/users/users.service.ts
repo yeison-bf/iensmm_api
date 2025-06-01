@@ -1059,6 +1059,32 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
     }
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /**
    * Process a chunk of student records
    */
@@ -1101,6 +1127,28 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
     }
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /**
    * Process a single student with retry logic
    */
@@ -1132,6 +1180,19 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
         throw new Error(`Headquarters "${studentData.user.headquarterIds}" not found`);
       }
 
+
+      // Buscvar profgrama 
+
+      const program = await this.programRepository.findOne({
+        where: { name: studentData.studentInfo.programa },
+      });
+
+      if (!program) {
+        throw new Error(`Headquarters "${studentData.user.headquarterIds}" not found`);
+      }
+
+
+
       // Modify user data with found IDs
       const modifiedUserData = {
         ...studentData.user,
@@ -1147,7 +1208,8 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
         user: modifiedUserData,
         studentInfo: {
           ...studentData.studentInfo,
-          headquarterId: headquarters.id
+          headquarterId: headquarters.id,
+          programId: program.id
         }
       });
 
@@ -1235,6 +1297,24 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       }
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
   /**
    * Process records that had transient errors with more careful retry logic

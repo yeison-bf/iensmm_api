@@ -24,6 +24,7 @@ export class BulkCreateStudentDto {
     disabilityType?: string;
     healthProvider: string;
     observations?: string;
+    programa?: string;
   };
   enrollment: {
     schedule: string;
