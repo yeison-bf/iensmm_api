@@ -44,15 +44,6 @@ async create(createPeriodDto: CreatePeriodDto) {
 
       // Create period details with new validation
       if (createPeriodDto.periodDetails && createPeriodDto.periodDetails.length > 0) {
-        const expectedLength = createPeriodDto.periodsQuantity + 1;
-        if (createPeriodDto.periodDetails.length !== expectedLength) {
-          return {
-            success: false,
-            message: `Number of period details must be exactly ${expectedLength} (periodsQuantity + 1)`,
-            data: null,
-          };
-        }
-
         const periodDetailsPromises = createPeriodDto.periodDetails.map(detail => {
           const periodDetail = this.periodDetailRepository.create({
             ...detail,
