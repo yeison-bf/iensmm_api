@@ -174,6 +174,7 @@ export class StudentEnrollmentService {
     year?: string, 
     programId?: number,
     group?: number,
+    degree?: number,
   ) {
     try {
       const queryBuilder = this.enrollmentRepository
@@ -196,11 +197,15 @@ export class StudentEnrollmentService {
       if (programId) {
         queryBuilder.andWhere('enrollment.program_id = :programId', { programId });
       }
-
       
       if (group) {
         queryBuilder.andWhere('enrollment.groupId = :group', { group });
       }
+
+      if (degree) {
+        queryBuilder.andWhere('enrollment.degreeId = :degree', { degree });
+      }
+
 
       // Si no hay paginación, devolver todos los resultados
       const enrollments = await queryBuilder.getMany();

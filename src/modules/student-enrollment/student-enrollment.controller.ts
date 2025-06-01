@@ -29,8 +29,9 @@ export class StudentEnrollmentController {
     @Query('year') year?: string,
     @Query('programId') programId?: number,
     @Query('group') group?: number,
+    @Query('degree') degree?: number,
   ) {
-    return this.enrollmentService.findAllListStudend(headquarterId, year, programId, group);
+    return this.enrollmentService.findAllListStudend(headquarterId, year, programId, group, degree);
   }
 
 
