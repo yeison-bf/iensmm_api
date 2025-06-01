@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import bodyParser, { json, urlencoded } from 'body-parser';
 
 // CRÍTICO: Fix para crypto antes que cualquier otra cosa
 const nodeCrypto = require('crypto');
@@ -40,6 +41,12 @@ async function bootstrap() {
   });
 
   const port = process.env.PORT || 3000;
+  // CONFIGURAR LÍMITES DE PAYLOAD USANDO EXPRESS DIRECTAMENTE
+  // Aumentar límites para peticiones grandes (bulk uploads)
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ limit: '50mb', extended: true }));
+
+
 
   // Validaciones globales
   app.useGlobalPipes(new ValidationPipe({
