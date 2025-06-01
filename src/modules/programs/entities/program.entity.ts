@@ -40,6 +40,9 @@ export class Program {
 
 
   @OneToMany(() => StudentEnrollment, enrollment => enrollment.program)
-  enrollments: StudentEnrollment[];
+  studentEnrollments: StudentEnrollment[];
+
+
+
 
 }

@@ -104,6 +104,7 @@ export class StudentEnrollmentService {
     page?: number,
     limit?: number
   ) {
+    console.log('headquarterId', headquarterId) 
     try {
       const queryBuilder = this.enrollmentRepository
         .createQueryBuilder('enrollment')
@@ -115,11 +116,11 @@ export class StudentEnrollmentService {
         .orderBy('enrollment.createdAt', 'DESC');
 
       if (headquarterId) {
-        queryBuilder.andWhere('enrollment.headquarterId = :headquarterId', { headquarterId });
+        queryBuilder.andWhere('enrollment.headquarter_id = :headquarterId', { headquarterId });
       }
 
       if (year) {
-        queryBuilder.andWhere('YEAR(enrollment.registrationDate) = :year', { year });
+        queryBuilder.andWhere('YEAR(enrollment.createdAt) = :year', { year });
       }
 
       if (programId) {

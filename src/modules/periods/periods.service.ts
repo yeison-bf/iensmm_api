@@ -16,8 +16,10 @@ export class PeriodsService {
     private readonly institutionRepository: Repository<Institution>,
     @InjectRepository(PeriodDetail)
     private readonly periodDetailRepository: Repository<PeriodDetail>,
-  ) {}
-async create(createPeriodDto: CreatePeriodDto) {
+  ) { }
+
+
+  async create(createPeriodDto: CreatePeriodDto) {
     try {
       const institution = await this.institutionRepository.findOne({
         where: { id: createPeriodDto.institutionId },
@@ -36,7 +38,7 @@ async create(createPeriodDto: CreatePeriodDto) {
         year: createPeriodDto.year,
         periodsQuantity: createPeriodDto.periodsQuantity,
         institution,
-        programId:createPeriodDto.programId,
+        programId: createPeriodDto.programId,
       });
 
       // Save the period first
@@ -73,18 +75,18 @@ async create(createPeriodDto: CreatePeriodDto) {
         data: null,
       };
     }
-}
+  }
 
   async findAll(institutionId?: number, programId?: number) {
     try {
       let where: any = {};
-      
+
       if (institutionId) {
         where.institution = { id: institutionId };
       }
-      
+
       if (programId) {
-        where.programId = programId ;
+        where.programId = programId;
       }
 
       const periods = await this.periodRepository.find({
@@ -165,7 +167,6 @@ async create(createPeriodDto: CreatePeriodDto) {
       };
     }
   }
-
 
   async findByInstitution(institutionId: number) {
     try {
@@ -259,5 +260,5 @@ async create(createPeriodDto: CreatePeriodDto) {
   }
 
 
-  
+
 }

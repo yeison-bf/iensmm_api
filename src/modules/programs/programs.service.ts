@@ -31,15 +31,34 @@ export class ProgramsService {
     }
   }
 
-  async findAll(institutionId?: number) {
+
+  
+    async findAll(institutionId?: number) {
     try {
-      const queryBuilder = this.programRepository.createQueryBuilder('program');
+      const queryBuilder = this.programRepository
+        .createQueryBuilder('program')
+        .leftJoin('program.studentEnrollments', 'enrollments')
+        .select([
+          'program.id',
+          'program.name',
+          'program.description',
+          'program.institutionId',
+          'program.status'
+        ])
+        .addSelect('COUNT(DISTINCT enrollments.id)', 'enrollmentsCount')
+        .groupBy('program.id');
 
       if (institutionId) {
         queryBuilder.where('program.institutionId = :institutionId', { institutionId });
       }
 
-      const programs = await queryBuilder.getMany();
+      const programsRaw = await queryBuilder.getRawAndEntities();
+
+      // Combinar los resultados con los conteos
+      const programs = programsRaw.entities.map((program, index) => ({
+        ...program,
+        enrollmentsCount: parseInt(programsRaw.raw[index].enrollmentsCount) || 0
+      }));
 
       return {
         success: true,
@@ -47,6 +66,7 @@ export class ProgramsService {
         data: programs,
       };
     } catch (error) {
+      console.error('Error in findAll programs:', error);
       return {
         success: false,
         message: `Error retrieving programs: ${error.message}`,
