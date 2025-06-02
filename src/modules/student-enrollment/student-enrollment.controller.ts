@@ -60,3 +60,7 @@ export class StudentEnrollmentController {
     return this.enrollmentService.remove(id);
   }
 }
+
+
+
+
