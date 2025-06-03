@@ -31,12 +31,18 @@ export class AcademicAssignmentController {
   }
 
 
-
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.academicAssignmentService.findOne(+id);
   }
+
+
+
+  @Get('administrator/:id')
+  findOneByTeacher(@Param('id') id: string) {
+    return this.academicAssignmentService.getAssignmentsByAdministrator(+id);
+  }
+
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateAcademicAssignmentDto: UpdateAcademicAssignmentDto) {

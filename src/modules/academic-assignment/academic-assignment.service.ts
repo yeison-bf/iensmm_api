@@ -238,6 +238,48 @@ export class AcademicAssignmentService {
   }
 
 
+  async getAssignmentsByAdministrator(administratorId: number) {
+    const assignmentsDetails = await this.academicAssignmentDetailRepository.find({
+      where: { administratorId },
+      relations: [
+        'academicAssignment',
+        'academicAssignment.degree',
+        'academicAssignment.headquarters',
+        'academicAssignment.program',
+        'academicAssignment.group',
+      ],
+    });
+
+    // Procesamos los datos para devolver la información estructurada
+    return assignmentsDetails.map(detail => {
+      const assignment = detail.academicAssignment;
+      return {
+        assignmentDetailId: detail.id,
+        assignmentId: assignment.id,
+        year: assignment.year,
+        degree: {
+          id: assignment.degree.id,
+          name: assignment.degree.name, // Asumiendo que Degree tiene un campo 'name'
+        },
+        headquarter: {
+          id: assignment.headquarters.id,
+          name: assignment.headquarters.name, // Asumiendo que Headquarters tiene un campo 'name'
+        },
+        program: {
+          id: assignment.program.id,
+          name: assignment.program.name, // Asumiendo que Program tiene un campo 'name'
+        },
+        group: {
+          id: assignment.group.id,
+          name: assignment.group.name, // Asumiendo que Group tiene un campo 'name'
+        },
+        directorGroupId: assignment.directorGroupId,
+        createdAt: assignment.createdAt,
+        updatedAt: assignment.updatedAt,
+      };
+    });
+  }
+
 
 
 
