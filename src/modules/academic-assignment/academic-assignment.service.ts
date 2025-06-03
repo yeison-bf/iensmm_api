@@ -283,6 +283,31 @@ export class AcademicAssignmentService {
 
 
 
+  async findOneByDirectGroup(id: number) {
+    const assignment = await this.academicAssignmentRepository.findOne({
+      where: { directorGroupId: id },
+      relations: [
+        'degree',
+        'headquarters',
+        'program',
+      ]
+    });
+
+    if (!assignment) {
+      return {
+        success: false,
+        message: `Asignación académica con ID ${id} no encontrada`,
+        data: null
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Asignación académica recuperada exitosamente',
+      data: assignment
+    };
+  }
+
 
 
 

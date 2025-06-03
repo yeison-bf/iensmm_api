@@ -43,6 +43,12 @@ export class AcademicAssignmentController {
     return this.academicAssignmentService.getAssignmentsByAdministrator(+id);
   }
 
+  @Get('directGroup/:id')
+  findOneByDirectGroup(@Param('id') id: string) {
+    return this.academicAssignmentService.findOneByDirectGroup(+id);
+  }
+
+
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateAcademicAssignmentDto: UpdateAcademicAssignmentDto) {
