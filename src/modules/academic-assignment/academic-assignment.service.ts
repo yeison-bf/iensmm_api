@@ -238,6 +238,49 @@ export class AcademicAssignmentService {
   }
 
 
+  // async getAssignmentsByAdministrator(administratorId: number) {
+  //   const assignmentsDetails = await this.academicAssignmentDetailRepository.find({
+  //     where: { administratorId },
+  //     relations: [
+  //       'academicAssignment',
+  //       'academicAssignment.degree',
+  //       'academicAssignment.headquarters',
+  //       'academicAssignment.program',
+  //       'academicAssignment.group',
+  //     ],
+  //   });
+
+  //   // Procesamos los datos para devolver la información estructurada
+  //   return assignmentsDetails.map(detail => {
+  //     const assignment = detail.academicAssignment;
+  //     return {
+  //       assignmentDetailId: detail.id,
+  //       assignmentId: assignment.id,
+  //       year: assignment.year,
+  //       degree: {
+  //         id: assignment.degree.id,
+  //         name: assignment.degree.name, // Asumiendo que Degree tiene un campo 'name'
+  //       },
+  //       headquarter: {
+  //         id: assignment.headquarters.id,
+  //         name: assignment.headquarters.name, // Asumiendo que Headquarters tiene un campo 'name'
+  //       },
+  //       program: {
+  //         id: assignment.program.id,
+  //         name: assignment.program.name, // Asumiendo que Program tiene un campo 'name'
+  //       },
+  //       group: {
+  //         id: assignment.group.id,
+  //         name: assignment.group.name, // Asumiendo que Group tiene un campo 'name'
+  //       },
+  //       directorGroupId: assignment.directorGroupId,
+  //       createdAt: assignment.createdAt,
+  //       updatedAt: assignment.updatedAt,
+  //     };
+  //   });
+  // }
+
+
   async getAssignmentsByAdministrator(administratorId: number) {
     const assignmentsDetails = await this.academicAssignmentDetailRepository.find({
       where: { administratorId },
@@ -247,33 +290,43 @@ export class AcademicAssignmentService {
         'academicAssignment.headquarters',
         'academicAssignment.program',
         'academicAssignment.group',
+        'academicThinkingDetail',
+        'academicThinkingDetail.trainingArea', // Nueva relación añadida
       ],
     });
 
-    // Procesamos los datos para devolver la información estructurada
     return assignmentsDetails.map(detail => {
       const assignment = detail.academicAssignment;
+      const thinkingDetail = detail.academicThinkingDetail;
+      
       return {
         assignmentDetailId: detail.id,
         assignmentId: assignment.id,
         year: assignment.year,
         degree: {
           id: assignment.degree.id,
-          name: assignment.degree.name, // Asumiendo que Degree tiene un campo 'name'
+          name: assignment.degree.name,
         },
         headquarter: {
           id: assignment.headquarters.id,
-          name: assignment.headquarters.name, // Asumiendo que Headquarters tiene un campo 'name'
+          name: assignment.headquarters.name,
         },
         program: {
           id: assignment.program.id,
-          name: assignment.program.name, // Asumiendo que Program tiene un campo 'name'
+          name: assignment.program.name,
         },
         group: {
           id: assignment.group.id,
-          name: assignment.group.name, // Asumiendo que Group tiene un campo 'name'
+          name: assignment.group.name,
         },
         directorGroupId: assignment.directorGroupId,
+        // Nueva información de la asignatura
+        subject: {
+          id: thinkingDetail.trainingArea.id,
+          name: thinkingDetail.trainingArea.name, // Asumiendo que TrainingArea tiene 'name'
+          hourlyIntensity: thinkingDetail.hourlyIntensity,
+          percentage: thinkingDetail.percentage,
+        },
         createdAt: assignment.createdAt,
         updatedAt: assignment.updatedAt,
       };
