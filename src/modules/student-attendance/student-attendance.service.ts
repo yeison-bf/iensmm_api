@@ -4,6 +4,7 @@ import { Repository, Between } from 'typeorm';
 import { StudentAttendance } from './entities/student-attendance.entity';
 import { CreateStudentAttendanceDto } from './dto/create-student-attendance.dto';
 import { UpdateStudentAttendanceDto } from './dto/update-student-attendance.dto';
+import { FindAttendanceDto } from './dto/find-attendance.dto';
 
 @Injectable()
 export class StudentAttendanceService {
@@ -14,7 +15,7 @@ export class StudentAttendanceService {
 
   async create(createDtos: CreateStudentAttendanceDto[]) {
     try {
-      // Validar que no se reciba un array vacío
+      // Validaciones básicas
       if (!createDtos || createDtos.length === 0) {
         return {
           success: false,
@@ -22,8 +23,7 @@ export class StudentAttendanceService {
           data: null,
         };
       }
-
-      // Validar que no se exceda el límite de 50 registros
+  
       if (createDtos.length > 50) {
         return {
           success: false,
@@ -31,15 +31,48 @@ export class StudentAttendanceService {
           data: null,
         };
       }
-
-      // Crear todas las entidades
-      const attendances = createDtos.map(dto => 
-        this.attendanceRepository.create(dto)
+  
+      // Tomar los parámetros comunes del primer registro
+      const firstRecord = createDtos[0];
+      const { date, trainingAreaId, degreeId, groupId } = firstRecord;
+  
+      // Verificar que todos los registros tengan los mismos parámetros clave
+      const inconsistentRecords = createDtos.filter(dto => 
+        dto.date !== date || 
+        dto.trainingAreaId !== trainingAreaId ||
+        dto.degreeId !== degreeId ||
+        dto.groupId !== groupId
       );
-
-      // Guardar todas en una sola transacción
+  
+      if (inconsistentRecords.length > 0) {
+        return {
+          success: false,
+          message: 'Todos los registros deben tener la misma fecha, área de formación, grado y grupo',
+          data: null,
+        };
+      }
+  
+      // Eliminar registros existentes para estos parámetros
+      await this.attendanceRepository
+        .createQueryBuilder()
+        .delete()
+        .from(StudentAttendance)
+        .where('date = :date', { date })
+        .andWhere('training_area_id = :trainingAreaId', { trainingAreaId })
+        .andWhere('degree_id = :degreeId', { degreeId })
+        .andWhere('group_id = :groupId', { groupId })
+        .execute();
+  
+      // Crear y guardar los nuevos registros
+      const attendances = createDtos.map(dto => 
+        this.attendanceRepository.create({
+          ...dto,
+          studentId: dto.studentId // Asegurar que studentId se mapee correctamente
+        })
+      );
+  
       const savedAttendances = await this.attendanceRepository.save(attendances);
-
+  
       return {
         success: true,
         message: `Se registraron ${savedAttendances.length} asistencias exitosamente`,
@@ -54,6 +87,66 @@ export class StudentAttendanceService {
     }
   }
 
+
+
+  async findByCriteria(findDto: FindAttendanceDto) {
+    try {
+      const { date, trainingAreaId, degreeId, groupId } = findDto;
+  
+      const attendances = await this.attendanceRepository
+        .createQueryBuilder('attendance')
+        .leftJoinAndSelect('attendance.student', 'student')
+        .leftJoinAndSelect('student.user', 'user')
+        .where('attendance.date = :date', { date })
+        .andWhere('attendance.training_area_id = :trainingAreaId', { trainingAreaId })
+        .andWhere('attendance.degree_id = :degreeId', { degreeId })
+        .andWhere('attendance.group_id = :groupId', { groupId })
+        .orderBy('user.lastName', 'ASC')
+        .addOrderBy('user.firstName', 'ASC')
+        .getMany();
+  
+      // Mapeo seguro que verifica relaciones null
+      const mappedAttendances = attendances.map(att => {
+        const baseData = {
+          id: att.id,
+          attended: att.attended,
+          observations: att.observations,
+          date: att.date,
+          trainingAreaId: att.trainingAreaId,
+          degreeId: att.degreeId,
+          groupId: att.groupId
+        };
+  
+        // Verificar si existe la relación student y user
+        if (att.student && att.student.user) {
+          return {
+            ...baseData,
+            studentId: att.student.id,
+            studentName: `${att.student.user.firstName} ${att.student.user.lastName}`
+          };
+        }
+  
+        // Datos alternativos si no hay relación
+        return {
+          ...baseData,
+          studentId: null,
+          studentName: 'Estudiante no encontrado'
+        };
+      });
+  
+      return {
+        success: true,
+        message: 'Asistencias obtenidas exitosamente',
+        data: mappedAttendances
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al obtener asistencias: ${error.message}`,
+        data: null
+      };
+    }
+  }
 
 
 

@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/
 import { StudentAttendanceService } from './student-attendance.service';
 import { CreateStudentAttendanceDto } from './dto/create-student-attendance.dto';
 import { UpdateStudentAttendanceDto } from './dto/update-student-attendance.dto';
+import { FindAttendanceDto } from './dto/find-attendance.dto';
 
 @Controller('student-attendance')
 export class StudentAttendanceController {
@@ -11,6 +12,12 @@ export class StudentAttendanceController {
   createMany(@Body() createDtos: CreateStudentAttendanceDto[]) {
     return this.studentAttendanceService.create(createDtos);
   }
+
+  @Get()
+  findByCriteria(@Query() findDto: FindAttendanceDto) {
+    return this.studentAttendanceService.findByCriteria(findDto);
+  }
+
 
   @Get()
   findAll(
