@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { User } from '../../users/entities/user.entity';
 import { Attendant } from 'src/modules/attendants/entities/attendant.entity';
 import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
+import { StudentAttendance } from 'src/modules/student-attendance/entities/student-attendance.entity';
 
 @Entity('student')
 export class Student {
@@ -48,7 +49,7 @@ export class Student {
   @Column({ type: 'boolean', nullable: true, default: null })
   sisben: boolean;
 
-  @Column({ type: 'varchar',  nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   sisbenScore: string;
 
   @Column({ type: 'boolean', nullable: true, default: null })
@@ -67,16 +68,16 @@ export class Student {
   @OneToMany(() => Attendant, attendant => attendant.student)
   attendants: Attendant[];
 
-  @Column({ 
-    type: 'int', 
-    nullable: true, 
+  @Column({
+    type: 'int',
+    nullable: true,
     name: 'program_id',
   })
   programId: number;
 
-  @Column({ 
-    type: 'int', 
-    nullable: true, 
+  @Column({
+    type: 'int',
+    nullable: true,
     name: 'institution_id',
   })
   institution: number;
@@ -84,6 +85,9 @@ export class Student {
 
   @OneToMany(() => StudentEnrollment, enrollment => enrollment.student)
   enrollments: StudentEnrollment[];
+
+  @OneToMany(() => StudentAttendance, attendance => attendance.student)
+  attendances: StudentAttendance[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

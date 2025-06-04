@@ -29,6 +29,7 @@ import { AcademicAssignmentModule } from './modules/academic-assignment/academic
 import { ProgramsModule } from './modules/programs/programs.module';
 import { AssistanceModule } from './modules/assistance/assistance.module';
 import { StudentGradesModule } from './modules/student-grades/student-grades.module';
+import { StudentAttendanceModule } from './modules/student-attendance/student-attendance.module';
 
 
 @Module({
@@ -103,6 +104,7 @@ import { StudentGradesModule } from './modules/student-grades/student-grades.mod
     ProgramsModule,
     AssistanceModule,
     StudentGradesModule,
+    StudentAttendanceModule,
 
   ],
   controllers: [AppController],
