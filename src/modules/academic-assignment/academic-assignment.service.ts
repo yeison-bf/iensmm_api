@@ -301,6 +301,7 @@ export class AcademicAssignmentService {
       
       return {
         assignmentDetailId: detail.id,
+        AcademicThinkingDetail: detail.academicThinkingDetail,
         assignmentId: assignment.id,
         year: assignment.year,
         degree: {
