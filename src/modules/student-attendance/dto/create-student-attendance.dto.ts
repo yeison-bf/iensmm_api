@@ -1,11 +1,18 @@
-import { IsDate, IsString, IsBoolean, IsOptional, IsNumber, IsNotEmpty, IsArray, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDate, IsString, IsBoolean, IsOptional, IsNumber, IsNotEmpty, IsArray, ValidateNested, IsDateString } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 
 export class CreateStudentAttendanceDto {
-  @Type(() => Date)
-  @IsDate()
-  @IsNotEmpty()
-  date: Date;
+   // Cambiar para aceptar string de fecha en formato ISO
+   @IsDateString()
+   @IsNotEmpty()
+   @Transform(({ value }) => {
+     // Si viene como string, convertir a Date
+     if (typeof value === 'string') {
+       return new Date(value);
+     }
+     return value;
+   })
+   date: Date;
 
   @IsBoolean()
   attended: boolean;
