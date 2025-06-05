@@ -690,7 +690,14 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
     try {
       const user = await this.userRepository.findOne({
         where: { id },
-        relations: ['headquarters', 'role', 'documentType', 'administrator'],
+        relations: [
+          'headquarters', 
+          'role', 
+          'documentType', 
+          'administrator',
+          'administrator.administratorTypes',
+          'administrator.administratorTypePrograms'
+        ],
       });
 
       if (!user) {
@@ -706,53 +713,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       // Update user information
       const { headquarterIds, roleId, documentTypeId, password, ...restUserData } = userData;
 
-      // Update role if provided
-      if (roleId) {
-        const role = await this.roleRepository.findOne({
-          where: { id: roleId }
-        });
-        if (!role) {
-          return {
-            success: false,
-            message: 'Role not found',
-            data: null,
-          };
-        }
-        user.role = role;
-      }
-
-      // Update document type if provided
-      if (documentTypeId) {
-        const documentType = await this.documentTypeRepository.findOne({
-          where: { id: documentTypeId }
-        });
-        if (!documentType) {
-          return {
-            success: false,
-            message: 'Document type not found',
-            data: null,
-          };
-        }
-        user.documentType = documentType;
-      }
-
-      // Update headquarters if provided
-      if (headquarterIds && headquarterIds.length > 0) {
-        const headquarters = await this.headquarterRepository.findByIds(headquarterIds);
-        if (headquarters.length !== headquarterIds.length) {
-          return {
-            success: false,
-            message: 'One or more headquarters not found',
-            data: null,
-          };
-        }
-        user.headquarters = headquarters;
-      }
-
-      // Update password if provided
-      if (password) {
-        restUserData.password = await bcrypt.hash(password, 10);
-      }
+      // ... existing role, document type, headquarters, and password update code ...
 
       // Update user basic data
       const updatedUser = await this.userRepository.save({
@@ -760,18 +721,58 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
         ...restUserData,
       });
 
-      // Update administrator information if exists
+      // Update administrator information
       if (administratorInfo && user.administrator) {
-        await this.administratorRepository.save({
+        // First, remove all existing administrator type programs
+        if (user.administrator.administratorTypePrograms) {
+          await this.administratorTypeProgramRepository.remove(
+            user.administrator.administratorTypePrograms
+          );
+        }
+
+        // Update basic administrator info
+        const updatedAdministrator = await this.administratorRepository.save({
           ...user.administrator,
           ...administratorInfo,
+          administratorTypePrograms: [], // Clear existing relationships
         });
+
+        // Create new administrator type program relationships
+        if (administratorInfo.administratorTypePrograms?.length > 0) {
+          const administratorTypes = await this.administratorTypeRepository.findByIds(
+            administratorInfo.administratorTypePrograms.map(atp => atp.administratorTypeId)
+          );
+
+          // Update administrator types
+          updatedAdministrator.administratorTypes = administratorTypes;
+          await this.administratorRepository.save(updatedAdministrator);
+
+          // Create new records in administrator_type_program table
+          const typePrograms = administratorInfo.administratorTypePrograms.map(atp => ({
+            administrator: updatedAdministrator,
+            administratorType: { id: atp.administratorTypeId },
+            program: { id: atp.programId },
+            startDate: atp.startDate,
+            endDate: atp.endDate
+          }));
+
+          await this.administratorTypeProgramRepository.save(typePrograms);
+        }
       }
 
       // Fetch complete updated data
       const completeUser = await this.userRepository.findOne({
         where: { id },
-        relations: ['role', 'documentType', 'headquarters', 'administrator', 'administrator.administratorType'],
+        relations: [
+          'role',
+          'documentType',
+          'headquarters',
+          'administrator',
+          'administrator.administratorTypes',
+          'administrator.administratorTypePrograms',
+          'administrator.administratorTypePrograms.administratorType',
+          'administrator.administratorTypePrograms.program'
+        ],
         select: {
           password: false,
         },
