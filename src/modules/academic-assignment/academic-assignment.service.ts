@@ -281,9 +281,9 @@ export class AcademicAssignmentService {
   // }
 
 
-  async getAssignmentsByAdministrator(administratorId: number) {
+  async getAssignmentsByAdministrator(administratorId: number, yeart?: number) {
     const assignmentsDetails = await this.academicAssignmentDetailRepository.find({
-      where: { administratorId },
+      where: { administratorId, academicAssignment: { year: yeart } },
       relations: [
         'academicAssignment',
         'academicAssignment.degree',

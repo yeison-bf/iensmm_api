@@ -39,8 +39,11 @@ export class AcademicAssignmentController {
 
 
   @Get('administrator/:id')
-  findOneByTeacher(@Param('id') id: string) {
-    return this.academicAssignmentService.getAssignmentsByAdministrator(+id);
+  findOneByTeacher(
+    @Param('id') id: string,
+    @Query('yeart') yeart?: number,
+  ) {
+    return this.academicAssignmentService.getAssignmentsByAdministrator(+id, yeart);
   }
 
   @Get('directGroup/:id')

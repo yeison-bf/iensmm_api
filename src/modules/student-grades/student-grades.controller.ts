@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseBoolPipe } from '@nestjs/common';
 import { StudentGradesService } from './student-grades.service';
 import { CreateStudentGradeDto } from './dto/create-student-grade.dto';
 import { UpdateStudentGradesBulkDto } from './dto/update-student-grade.dto';
@@ -31,6 +31,27 @@ export class StudentGradesController {
   ) {
     return this.studentGradesService.findByFilters(groupId, degreeId, thinkingDetailId, periodDetailId);
   }
+
+
+  
+  @Get('leveling')
+  findByFiltersLeveling(
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+    @Query('thinkingDetailId') thinkingDetailId?: number,
+    @Query('periodDetailId') periodDetailId?: number,
+    @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades?: boolean // Usando ParseBoolPipe
+  ) {
+    return this.studentGradesService.findByFiltersLeveling(
+      groupId, 
+      degreeId, 
+      thinkingDetailId, 
+      periodDetailId,
+      onlyLowGrades || false // Asegurando que siempre haya un valor booleano
+    );
+  }
+
+
 
 
   @Get(':id')
