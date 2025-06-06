@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseBoolPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseBoolPipe, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
 import { StudentGradesService } from './student-grades.service';
 import { CreateStudentGradeDto } from './dto/create-student-grade.dto';
 import { UpdateStudentGradesBulkDto } from './dto/update-student-grade.dto';
@@ -55,20 +55,12 @@ export class StudentGradesController {
 
     
   @Get('list/leveling')
-  findByFiltersLevelingList(
-    @Query('groupId') groupId?: number,
-    @Query('degreeId') degreeId?: number,
-    @Query('thinkingDetailId') thinkingDetailId?: number,
-    @Query('periodDetailId') periodDetailId?: number,
-    @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades?: boolean // Usando ParseBoolPipe
+  async findByTeacherAndYear(
+    @Query('teacherId', ParseIntPipe) teacherId: number,
+    @Query('year', new DefaultValuePipe(new Date().getFullYear()), ParseIntPipe) year: number,
+    @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades: boolean = true
   ) {
-    return this.studentGradesService.findByFiltersLevelingList(
-      groupId, 
-      degreeId, 
-      thinkingDetailId, 
-      periodDetailId,
-      onlyLowGrades || true // Asegurando que siempre haya un valor booleano
-    );
+    return this.studentGradesService.findByTeacherAndYear(teacherId, year, onlyLowGrades);
   }
 
 

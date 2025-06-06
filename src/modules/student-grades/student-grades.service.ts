@@ -449,6 +449,121 @@ export class StudentGradesService {
 
 
 
+  async findByTeacherAndYear(
+    teacherId: number,
+    year: number,
+    onlyLowGrades: boolean = true
+  ) {
+    try {
+      // 1. Consulta principal para obtener los IDs necesarios
+      const gradesQuery = this.gradeRepository
+        .createQueryBuilder('grade')
+        .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
+        .leftJoinAndSelect('enrollment.student', 'student')
+        .where('grade.teacherId = :teacherId', { teacherId })
+        .andWhere('EXTRACT(YEAR FROM grade.closingDate) = :year', { year });
+  
+      if (onlyLowGrades) {
+        gradesQuery.andWhere('LOWER(TRIM(grade.qualitativeGrade)) = LOWER(:grade)', {
+          grade: 'bajo'
+        });
+      }
+  
+      const grades = await gradesQuery.getMany();
+  
+      // 2. Obtener IDs únicos de degrees y groups
+      const degreeIds = [...new Set(grades.map(g => g.degreeId))];
+      const groupIds = [...new Set(grades.map(g => g.groupId))];
+  
+      // 3. Consultar los nombres de degrees y groups por separado
+      const degrees = degreeIds.length > 0 
+        ? await this.degreeRepository.findByIds(degreeIds)
+        : [];
+      
+      const groups = groupIds.length > 0
+        ? await this.groupRepository.findByIds(groupIds)
+        : [];
+  
+      // 4. Crear mapeos para rápido acceso
+      const degreeMap = degrees.reduce((map, degree) => {
+        map[degree.id] = degree;
+        return map;
+      }, {});
+  
+      const groupMap = groups.reduce((map, group) => {
+        map[group.id] = group;
+        return map;
+      }, {});
+  
+      // 5. Agrupar los resultados
+      const groupedResults = grades.reduce((acc, grade) => {
+        const key = `${grade.degreeId}-${grade.groupId}`;
+        
+        if (!acc[key]) {
+          acc[key] = {
+            degree: degreeMap[grade.degreeId] || { id: grade.degreeId, name: 'No disponible' },
+            group: groupMap[grade.groupId] || { id: grade.groupId, name: 'No disponible' },
+            grades: []
+          };
+        }
+        
+        acc[key].grades.push({
+          id: grade.id,
+          student: grade.studentEnrollment.student,
+          numericalGrade: grade.numericalGrade,
+          qualitativeGrade: grade.qualitativeGrade,
+          closingDate: grade.closingDate
+        });
+        
+        return acc;
+      }, {});
+  
+      return {
+        success: true,
+        message: onlyLowGrades 
+          ? 'Calificaciones bajas agrupadas exitosamente' 
+          : 'Todas las calificaciones agrupadas exitosamente',
+        data: Object.values(groupedResults)
+      };
+  
+    } catch (error) {
+      console.error('Error:', error);
+      return {
+        success: false,
+        message: `Error al obtener calificaciones: ${error.message}`,
+        data: null
+      };
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
