@@ -9,6 +9,8 @@ import { Period } from '../periods/entities/period.entity';
 import { Administrator } from '../administrators/entities/administrator.entity';
 import { PeriodDetail } from '../period-details/entities/period-detail.entity';
 import { PeriodDetailsModule } from '../period-details/period-details.module';
+import { Degree } from '../degrees/entities/degree.entity';
+import { Group } from '../group/entities/group.entity';
 
 @Module({
   imports: [
@@ -17,7 +19,9 @@ import { PeriodDetailsModule } from '../period-details/period-details.module';
       StudentEnrollment,
       AcademicThinkingDetail,
       PeriodDetail,
-      Administrator
+      Administrator,
+      Degree,
+      Group
     ]),
     PeriodDetailsModule
   ],

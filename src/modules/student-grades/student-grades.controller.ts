@@ -53,6 +53,29 @@ export class StudentGradesController {
 
 
 
+    
+  @Get('list/leveling')
+  findByFiltersLevelingList(
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+    @Query('thinkingDetailId') thinkingDetailId?: number,
+    @Query('periodDetailId') periodDetailId?: number,
+    @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades?: boolean // Usando ParseBoolPipe
+  ) {
+    return this.studentGradesService.findByFiltersLevelingList(
+      groupId, 
+      degreeId, 
+      thinkingDetailId, 
+      periodDetailId,
+      onlyLowGrades || false // Asegurando que siempre haya un valor booleano
+    );
+  }
+
+
+
+
+
+
 
   @Get(':id')
   findOne(@Param('id') id: number) {

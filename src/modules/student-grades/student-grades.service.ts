@@ -8,6 +8,8 @@ import { AcademicThinkingDetail } from '../academic-thinking/entities/academic-t
 import { PeriodDetail } from '../period-details/entities/period-detail.entity';
 import { Administrator } from '../administrators/entities/administrator.entity';
 import { UpdateStudentGradesBulkDto } from './dto/update-student-grade.dto';
+import { Degree } from '../degrees/entities/degree.entity';
+import { Group } from '../group/entities/group.entity';
 
 @Injectable()
 export class StudentGradesService {
@@ -23,7 +25,11 @@ export class StudentGradesService {
     private readonly periodDetailRepository: Repository<PeriodDetail>,
     @InjectRepository(Administrator)
     private readonly administratorRepository: Repository<Administrator>,
-
+    @InjectRepository(Degree)
+    private degreeRepository: Repository<Degree>,
+    
+    @InjectRepository(Group)
+    private groupRepository: Repository<Group>,
   ) { }
 
   async create(createGradeDto: CreateStudentGradeDto) {
@@ -295,8 +301,6 @@ export class StudentGradesService {
   }
 
 
-
-
   async findByFiltersLeveling(
     groupId?: number, 
     degreeId?: number, 
@@ -355,6 +359,78 @@ export class StudentGradesService {
 
 
 
+  async findByFiltersLevelingList(
+    groupId?: number,
+    degreeId?: number,
+    thinkingDetailId?: number,
+    periodDetailId?: number,
+    onlyLowGrades: boolean = false
+  ) {
+    try {
+      // Consulta principal (solo IDs)
+      const queryBuilder = this.gradeRepository
+        .createQueryBuilder('grade')
+        .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
+        .leftJoinAndSelect('grade.teacher', 'teacher')
+  
+      // Filtros
+      if (groupId) queryBuilder.andWhere('grade.groupId = :groupId', { groupId });
+      if (degreeId) queryBuilder.andWhere('grade.degreeId = :degreeId', { degreeId });
+      if (thinkingDetailId) queryBuilder.andWhere('grade.academicThinkingDetailId = :thinkingDetailId', { thinkingDetailId });
+      if (periodDetailId) queryBuilder.andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId });
+      if (onlyLowGrades) queryBuilder.andWhere('grade.qualitativeGrade = :qualitativeGrade', { qualitativeGrade: 'bajo' });
+  
+      const grades = await queryBuilder.getMany();
+  
+      // Obtener IDs únicos de degrees y groups
+      const degreeIds = [...new Set(grades.map(g => g.degreeId))];
+      const groupIds = [...new Set(grades.map(g => g.groupId))];
+  
+      // Consultar nombres (si hay registros)
+      let degreesMap = {};
+      let groupsMap = {};
+  
+      if (degreeIds.length > 0) {
+        const degrees = await this.degreeRepository.findByIds(degreeIds);
+        degreesMap = degrees.reduce((acc, d) => ({ ...acc, [d.id]: d }), {});
+      }
+  
+      if (groupIds.length > 0) {
+        const groups = await this.groupRepository.findByIds(groupIds);
+        groupsMap = groups.reduce((acc, g) => ({ ...acc, [g.id]: g }), {});
+      }
+  
+      // Agrupar por degreeId + groupId
+      const grouped = grades.reduce((acc, grade) => {
+        const key = `${grade.degreeId}-${grade.groupId}`;
+        
+        if (!acc[key]) {
+          acc[key] = {
+            degree: degreesMap[grade.degreeId] || { id: grade.degreeId },
+            group: groupsMap[grade.groupId] || { id: grade.groupId },
+            grades: [],
+          };
+        }
+        
+        acc[key].grades.push(grade);
+        return acc;
+      }, {});
+  
+      return {
+        success: true,
+        message: 'Calificaciones agrupadas exitosamente',
+        data: Object.values(grouped),
+      };
+  
+    } catch (error) {
+      console.error('Error:', error);
+      return {
+        success: false,
+        message: `Error: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
 
 
