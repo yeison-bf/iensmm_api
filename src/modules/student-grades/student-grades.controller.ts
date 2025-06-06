@@ -47,7 +47,7 @@ export class StudentGradesController {
       degreeId, 
       thinkingDetailId, 
       periodDetailId,
-      onlyLowGrades || false // Asegurando que siempre haya un valor booleano
+      onlyLowGrades || true // Asegurando que siempre haya un valor booleano
     );
   }
 
@@ -67,7 +67,7 @@ export class StudentGradesController {
       degreeId, 
       thinkingDetailId, 
       periodDetailId,
-      onlyLowGrades || false // Asegurando que siempre haya un valor booleano
+      onlyLowGrades || true // Asegurando que siempre haya un valor booleano
     );
   }
 

@@ -306,7 +306,7 @@ export class StudentGradesService {
     degreeId?: number, 
     thinkingDetailId?: number, 
     periodDetailId?: number,
-    onlyLowGrades: boolean = false // Nuevo parámetro opcional
+    onlyLowGrades: boolean = true // Nuevo parámetro opcional
   ) {
     try {
       const queryBuilder = this.gradeRepository
@@ -330,8 +330,6 @@ export class StudentGradesService {
       if (periodDetailId) {
         queryBuilder.andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId });
       }
-  
-      // Nueva condición para filtrar por calificaciones bajas
       if (onlyLowGrades) {
         queryBuilder.andWhere('grade.qualitativeGrade = :qualitativeGrade', { qualitativeGrade: 'bajo' });
       }
@@ -358,29 +356,46 @@ export class StudentGradesService {
 
 
 
-
   async findByFiltersLevelingList(
     groupId?: number,
     degreeId?: number,
     thinkingDetailId?: number,
     periodDetailId?: number,
-    onlyLowGrades: boolean = false
+    onlyLowGrades: boolean = true
   ) {
     try {
       // Consulta principal (solo IDs)
       const queryBuilder = this.gradeRepository
         .createQueryBuilder('grade')
-        .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
-        .leftJoinAndSelect('grade.teacher', 'teacher')
   
       // Filtros
       if (groupId) queryBuilder.andWhere('grade.groupId = :groupId', { groupId });
       if (degreeId) queryBuilder.andWhere('grade.degreeId = :degreeId', { degreeId });
       if (thinkingDetailId) queryBuilder.andWhere('grade.academicThinkingDetailId = :thinkingDetailId', { thinkingDetailId });
       if (periodDetailId) queryBuilder.andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId });
-      if (onlyLowGrades) queryBuilder.andWhere('grade.qualitativeGrade = :qualitativeGrade', { qualitativeGrade: 'bajo' });
+      
+      // CORRECCIÓN: Verificar que onlyLowGrades sea true Y usar el valor correcto
+      if (onlyLowGrades === true) {
+        // Opción 1: Si "Bajo" es el valor correcto (con mayúscula)
+        // queryBuilder.andWhere('grade.qualitativeGrade = :qualitativeGrade', { qualitativeGrade: 'Bajo' });
+        
+        // Opción 2: Si quieres hacer una búsqueda insensible a mayúsculas/minúsculas
+        queryBuilder.andWhere('LOWER(grade.qualitativeGrade) = LOWER(:qualitativeGrade)', { qualitativeGrade: 'bajo' });
+        
+        // Opción 3: Si quieres múltiples valores que consideres "bajos"
+        // queryBuilder.andWhere('grade.qualitativeGrade IN (:...lowGrades)', { lowGrades: ['Bajo', 'bajo', 'Deficiente'] });
+      }
   
       const grades = await queryBuilder.getMany();
+  
+      // Si onlyLowGrades es true y no hay resultados, retornar vacío
+      if (onlyLowGrades === true && grades.length === 0) {
+        return {
+          success: true,
+          message: 'No se encontraron calificaciones bajas con los filtros aplicados',
+          data: [],
+        };
+      }
   
       // Obtener IDs únicos de degrees y groups
       const degreeIds = [...new Set(grades.map(g => g.degreeId))];
@@ -418,7 +433,7 @@ export class StudentGradesService {
   
       return {
         success: true,
-        message: 'Calificaciones agrupadas exitosamente',
+        message: onlyLowGrades ? 'Calificaciones bajas agrupadas exitosamente' : 'Calificaciones agrupadas exitosamente',
         data: Object.values(grouped),
       };
   
@@ -431,7 +446,6 @@ export class StudentGradesService {
       };
     }
   }
-
 
 
 
