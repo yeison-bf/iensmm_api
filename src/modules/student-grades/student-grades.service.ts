@@ -367,7 +367,8 @@ export class StudentGradesService {
       // Consulta principal (solo IDs)
       const queryBuilder = this.gradeRepository
         .createQueryBuilder('grade')
-  
+        .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
+        .leftJoinAndSelect('thinkingDetail.academicThinking', 'thinking');
       // Filtros
       if (groupId) queryBuilder.andWhere('grade.groupId = :groupId', { groupId });
       if (degreeId) queryBuilder.andWhere('grade.degreeId = :degreeId', { degreeId });
@@ -448,82 +449,106 @@ export class StudentGradesService {
   }
 
 
-
   async findByTeacherAndYear(
     teacherId: number,
     year: number,
     onlyLowGrades: boolean = true
   ) {
     try {
-      // 1. Consulta principal para obtener los IDs necesarios
-      const gradesQuery = this.gradeRepository
+
+      // 1. Consulta base con todas las relaciones necesarias
+      const queryBuilder = this.gradeRepository
         .createQueryBuilder('grade')
         .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
         .leftJoinAndSelect('enrollment.student', 'student')
-        .where('grade.teacherId = :teacherId', { teacherId })
-        .andWhere('EXTRACT(YEAR FROM grade.closingDate) = :year', { year });
+        .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
+        .leftJoinAndSelect('thinkingDetail.academicThinking', 'thinking')
+        .where('EXTRACT(YEAR FROM grade.createdAt) = :year', { year });
   
-      if (onlyLowGrades) {
-        gradesQuery.andWhere('LOWER(TRIM(grade.qualitativeGrade)) = LOWER(:grade)', {
-          grade: 'bajo'
-        });
+      // 2. Filtros condicionales
+      if (teacherId) {
+        queryBuilder.andWhere('grade.teacherId = :teacherId', { teacherId });
       }
   
-      const grades = await gradesQuery.getMany();
+      if (onlyLowGrades) {
+        queryBuilder.andWhere(
+          `LOWER(TRIM(grade.qualitativeGrade)) = LOWER(:grade)`, 
+          { grade: 'bajo' }
+        );
+      }
   
-      // 2. Obtener IDs únicos de degrees y groups
-      const degreeIds = [...new Set(grades.map(g => g.degreeId))];
-      const groupIds = [...new Set(grades.map(g => g.groupId))];
+      // 3. Obtener los registros filtrados
+      const grades = await queryBuilder.getMany();
   
-      // 3. Consultar los nombres de degrees y groups por separado
-      const degrees = degreeIds.length > 0 
-        ? await this.degreeRepository.findByIds(degreeIds)
-        : [];
+      // DEBUG: Agregar logs para ver qué datos estamos obteniendo
+      grades.forEach((grade, index) => {
+        console.log(`Grade ${index + 1}:`, {
+          id: grade.id,
+          degreeId: grade.degreeId,
+          groupId: grade.groupId,
+          qualitativeGrade: grade.qualitativeGrade,
+          teacherId: grade.teacherId,
+          // Ver si el degreeId viene de la relación academicThinking
+          thinkingDegreeId: grade.academicThinkingDetail?.academicThinking?.gradeId
+        });
+      });
+  
+      // 4. Obtener IDs únicos - CORREGIDO
+      // Si degreeId no está directamente en grade, usar la relación
+      const degreeIds = [...new Set(grades.map(g => 
+        g.degreeId || g.academicThinkingDetail?.academicThinking?.gradeId
+      ).filter(Boolean))];
       
-      const groups = groupIds.length > 0
-        ? await this.groupRepository.findByIds(groupIds)
-        : [];
+      const groupIds = [...new Set(grades.map(g => g.groupId).filter(Boolean))];
   
-      // 4. Crear mapeos para rápido acceso
-      const degreeMap = degrees.reduce((map, degree) => {
-        map[degree.id] = degree;
-        return map;
-      }, {});
+      // 5. Consultar información adicional (degrees y groups)
+      const [degrees, groups] = await Promise.all([
+        degreeIds.length > 0 
+          ? this.degreeRepository.findByIds(degreeIds)
+          : Promise.resolve([]),
+        groupIds.length > 0 
+          ? this.groupRepository.findByIds(groupIds)
+          : Promise.resolve([])
+      ]);
   
-      const groupMap = groups.reduce((map, group) => {
-        map[group.id] = group;
-        return map;
-      }, {});
+      // 6. Crear mapeos para rápido acceso
+      const degreeMap = degrees.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
+      const groupMap = groups.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
   
-      // 5. Agrupar los resultados
-      const groupedResults = grades.reduce((acc, grade) => {
-        const key = `${grade.degreeId}-${grade.groupId}`;
+      // 7. Agrupar resultados - CORREGIDO
+      const result = grades.reduce((acc, grade) => {
+        // Usar el degreeId correcto
+        const degreeId = grade.degreeId || grade.academicThinkingDetail?.academicThinking?.gradeId;
+        const groupId = grade.groupId;
         
+        const key = `${degreeId}-${groupId}`;
+        
+  
         if (!acc[key]) {
           acc[key] = {
-            degree: degreeMap[grade.degreeId] || { id: grade.degreeId, name: 'No disponible' },
-            group: groupMap[grade.groupId] || { id: grade.groupId, name: 'No disponible' },
+            degree: degreeMap[degreeId] || { id: degreeId, name: 'No disponible' },
+            group: groupMap[groupId] || { id: groupId, name: 'No disponible' },
             grades: []
           };
         }
-        
+  
         acc[key].grades.push({
           id: grade.id,
           student: grade.studentEnrollment.student,
           numericalGrade: grade.numericalGrade,
           qualitativeGrade: grade.qualitativeGrade,
-          closingDate: grade.closingDate
+          closingDate: grade.closingDate,
         });
-        
+  
         return acc;
       }, {});
   
       return {
         success: true,
         message: onlyLowGrades 
-          ? 'Calificaciones bajas agrupadas exitosamente' 
+          ? 'Calificaciones bajas agrupadas exitosamente'
           : 'Todas las calificaciones agrupadas exitosamente',
-        data: Object.values(groupedResults)
+        data: Object.values(result)
       };
   
     } catch (error) {
@@ -535,11 +560,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
-
-
 
 
 
