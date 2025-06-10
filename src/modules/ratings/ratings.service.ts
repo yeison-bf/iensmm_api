@@ -50,9 +50,10 @@ export class RatingsService {
     }
   }
 
-  async findAll() {
+  async findAll(institutionId: number) {
     try {
       const ratings = await this.ratingRepository.find({
+        where: { institution: { id: institutionId } },
         relations: ['institution'],
       });
 

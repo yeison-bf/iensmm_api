@@ -13,8 +13,10 @@ export class RatingsController {
   }
 
   @Get()
-  findAll() {
-    return this.ratingsService.findAll();
+  findAll(
+    @Query('institutionId') institutionId?: number,
+  ) {
+    return this.ratingsService.findAll(institutionId);
   }    
 
   @Get(':id')
