@@ -46,8 +46,8 @@ export class UsersController {
 
 
   @Get('/administrators')
-  findAllAdministrators() {
-    return this.usersService.findAllAdministrators();
+  findAllAdministrators(@Query('institutionId') institutionId?: number) {
+    return this.usersService.findAllAdministrators(institutionId);
   }
 
   @Get('students')

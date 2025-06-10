@@ -607,9 +607,10 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
 
 
-  async findAllAdministrators() {
+  async findAllAdministrators(institutionId: number) {
     try {
       const users = await this.userRepository.find({
+
         relations: [
           'role',
           'student',
@@ -622,6 +623,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
           'headquarters.institution'
         ],
         where: {
+          institution: institutionId,
           role: { name: 'administrator' }  // Only get users with administrator role
         },
         select: {
