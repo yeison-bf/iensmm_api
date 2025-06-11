@@ -17,36 +17,36 @@ export class TrainingAreasService {
 
   async create(createTrainingAreaDto: CreateTrainingAreaDto) {
     try {
-      const trainingCore = await this.trainingCoreRepository.findOneBy({ 
-        id: createTrainingAreaDto.trainingCoreId 
-      });
-
-      if (!trainingCore) {
-        return {
-          success: false,
-          message: `Training core with ID ${createTrainingAreaDto.trainingCoreId} not found`,
-          data: null,
-        };
+      let trainingCore = null;
+      
+      // Solo busca el trainingCore si se proporciona un ID
+      if (createTrainingAreaDto.trainingCoreId) {
+        trainingCore = await this.trainingCoreRepository.findOneBy({ 
+          id: createTrainingAreaDto.trainingCoreId 
+        });
+  
+        if (!trainingCore) {
+          return {
+            success: false,
+            message: `Training core with ID ${createTrainingAreaDto.trainingCoreId} not found`,
+            data: null,
+          };
+        }
       }
-
+  
       const trainingArea = new TrainingArea();
       trainingArea.name = createTrainingAreaDto.name;
       trainingArea.institution = createTrainingAreaDto.institution;
-      trainingArea.trainingCoreId = createTrainingAreaDto.trainingCoreId;
-      trainingArea.trainingCore = trainingCore;
+      trainingArea.trainingCoreId = createTrainingAreaDto.trainingCoreId || null; // Asegura null si no viene
+      trainingArea.trainingCore = trainingCore; // Puede ser null
       trainingArea.programId = createTrainingAreaDto.programId;
-
+  
       const savedTrainingArea = await this.trainingAreaRepository.save(trainingArea);
-
-      const result = await this.trainingAreaRepository.findOne({
-        where: { id: savedTrainingArea.id },
-        relations: ['trainingCore']
-      });
-
+  
       return {
         success: true,
         message: 'Training area created successfully',
-        data: result,
+        data: savedTrainingArea,
       };
     } catch (error) {
       return {
@@ -56,6 +56,18 @@ export class TrainingAreasService {
       };
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+  
 
   async findAll(institution?: number, programId?: number) {
     try {

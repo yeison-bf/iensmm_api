@@ -14,6 +14,7 @@ export class CreateTrainingAreaDto {
   programId?: number
 
   @IsNumber()
-  @IsOptional()
-  trainingCoreId: number;
+  @IsOptional() // Marca como opcional
+  trainingCoreId?: number; // Usa el operador ? para indicar que es opcional
+
 }

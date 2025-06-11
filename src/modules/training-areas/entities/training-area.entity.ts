@@ -14,8 +14,12 @@ export class TrainingArea {
   @Column({ name: 'institution_id' })
   institution: number;
 
-  @Column({ name: 'training_core_id', nullable: true })
-  trainingCoreId: number;
+  @Column({ 
+    name: 'training_core_id', 
+    nullable: true, // Esto permite NULL en la base de datos
+    default: null   // Establece NULL como valor por defecto
+  })
+  trainingCoreId: number | null; // Tipo explícito para aceptar null
 
   @Column({
     type: 'int',
@@ -25,9 +29,9 @@ export class TrainingArea {
   programId: number;
 
 
-  @ManyToOne(() => TrainingCore, trainingCore => trainingCore.trainingAreas, { eager: true })
+  @ManyToOne(() => TrainingCore, trainingCore => trainingCore.trainingAreas, { eager: true, nullable: true })
   @JoinColumn({ name: 'training_core_id' })
-  trainingCore: TrainingCore;
+  trainingCore: TrainingCore | null; // Acepta null
 
 
   @OneToMany(() => AcademicThinkingDetail, detail => detail.trainingArea)
