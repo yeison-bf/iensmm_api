@@ -234,11 +234,11 @@ export class AcademicThinkingService {
     }
   }
 
-  async update(id: number, updateAcademicThinkingDto: UpdateAcademicThinkingDto) {
+    async update(id: number, updateAcademicThinkingDto: UpdateAcademicThinkingDto) {
     try {
       const academicThinking = await this.academicThinkingRepository.findOne({
         where: { id },
-        relations: ['details'],
+        relations: ['details', 'details.trainingArea'],
       });
 
       if (!academicThinking) {
@@ -260,26 +260,64 @@ export class AcademicThinkingService {
       await this.academicThinkingRepository.save(academicThinking);
 
       if (updateAcademicThinkingDto.details) {
-        // Remove old details
-        await this.academicThinkingDetailRepository.remove(academicThinking.details);
+        // Mantener un registro de los IDs actualizados
+        const updatedDetailIds = new Set();
 
-        // Create new details with training area references
-        const newDetails = await Promise.all(
-          updateAcademicThinkingDto.details.map(async detail => {
-            const trainingArea = await this.trainingAreaRepository.findOne({
-              where: { id: detail.trainingAreaId }
-            });
+        // Actualizar o crear detalles
+        for (const detailDto of updateAcademicThinkingDto.details) {
+          const trainingArea = await this.trainingAreaRepository.findOne({
+            where: { id: detailDto.trainingAreaId }
+          });
 
-            return this.academicThinkingDetailRepository.create({
-              hourlyIntensity: detail.hourlyIntensity,
-              percentage: detail.percentage,
+          if (!trainingArea) {
+            continue;
+          }
+
+          if (detailDto.id) {
+            // Actualizar detalle existente
+            const existingDetail = academicThinking.details.find(d => d.id === detailDto.id);
+            if (existingDetail) {
+              Object.assign(existingDetail, {
+                hourlyIntensity: detailDto.hourlyIntensity,
+                percentage: detailDto.percentage,
+                trainingArea: trainingArea,
+              });
+              await this.academicThinkingDetailRepository.save(existingDetail);
+              updatedDetailIds.add(existingDetail.id);
+            }
+          } else {
+            // Crear nuevo detalle
+            const newDetail = this.academicThinkingDetailRepository.create({
+              hourlyIntensity: detailDto.hourlyIntensity,
+              percentage: detailDto.percentage,
               trainingArea: trainingArea,
               academicThinking: academicThinking
             });
-          })
+            const savedDetail = await this.academicThinkingDetailRepository.save(newDetail);
+            updatedDetailIds.add(savedDetail.id);
+          }
+        }
+
+        // Eliminar solo los detalles que no fueron actualizados y no tienen dependencias
+        const detailsToRemove = academicThinking.details.filter(
+          detail => !updatedDetailIds.has(detail.id)
         );
 
-        await this.academicThinkingDetailRepository.save(newDetails);
+        if (detailsToRemove.length > 0) {
+          for (const detail of detailsToRemove) {
+            // Verificar si hay dependencias antes de eliminar
+            const hasAssignments = await this.academicThinkingDetailRepository
+              .createQueryBuilder('detail')
+              .leftJoin('detail.academicAssignmentDetails', 'assignments')
+              .where('detail.id = :id', { id: detail.id })
+              .andWhere('assignments.id IS NOT NULL')
+              .getCount();
+
+            if (!hasAssignments) {
+              await this.academicThinkingDetailRepository.remove(detail);
+            }
+          }
+        }
       }
 
       // Get updated result with relations
