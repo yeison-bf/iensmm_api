@@ -377,6 +377,45 @@ export class AcademicThinkingService {
   }
 
 
+  
+  async removeDetail(id: number) {
+    try {
+      const academicThinking = await this.academicThinkingDetailRepository.findOne({
+        where: { id },
+      });
+  
+      if (!academicThinking) {
+        return {
+          success: false,
+          message: 'Pensamiento académico no encontrado',
+          data: null,
+        };
+      }
+  
+      await this.academicThinkingDetailRepository.remove(academicThinking);
+  
+      return {
+        success: true,
+        message: 'Pensamiento académico eliminado exitosamente',
+        data: academicThinking,
+      };
+    } catch (error) {
+      // Mensaje personalizado para errores de clave foránea
+      let errorMessage = error.message;
+      
+      if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.message.includes('foreign key constraint fails')) {
+        errorMessage = 'Lo sentimos! no se puede remover, porque tiene una asignación académica registrada.';
+      }
+  
+      return {
+        success: false,
+        message: `${errorMessage}`,
+        data: null,
+      };
+    }
+  }
+
+
   async search(year?: number | string, gradeId?: number | string, headquarterId?: number | string) {
 
     console.log(year, gradeId, headquarterId);

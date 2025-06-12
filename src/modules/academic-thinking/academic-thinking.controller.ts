@@ -68,4 +68,10 @@ export class AcademicThinkingController {
   remove(@Param('id') id: string) {
     return this.academicThinkingService.remove(+id);
   }
+
+  
+  @Delete('detail/:id')
+  removeDetail(@Param('id') id: string) {
+    return this.academicThinkingService.removeDetail(+id);
+  }
 }
