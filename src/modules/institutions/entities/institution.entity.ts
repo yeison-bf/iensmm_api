@@ -160,6 +160,10 @@ export class Institution {
     @IsString()
     letterheadImg?: string;
 
+
+
+
+    
     @OneToMany(() => Headquarters, (headquarters) => headquarters.institution)
     headquarters: Headquarters[];
 

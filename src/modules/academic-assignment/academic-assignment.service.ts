@@ -138,7 +138,30 @@ export class AcademicAssignmentService {
 
 
 
-  async findAll(headquarterId?:number, programId?:number) {
+  // async findAll(headquarterId?:number, programId?:number) {
+  //   const assignments = await this.academicAssignmentRepository.find({
+  //     where: {
+  //       headquarterId: headquarterId,
+  //       programId: programId
+  //     },
+  //     relations: [
+  //       'degree',
+  //       'headquarters',
+  //       'program'
+  //     ]
+  //   });
+
+  //   return {
+  //     success: true,
+  //     message: 'Asignaciones académicas recuperadas exitosamente',
+  //     data: assignments
+  //   };
+  // }
+
+
+
+  async findAll(headquarterId?: number, programId?: number) {
+    // 1. Obtener las asignaciones académicas como antes
     const assignments = await this.academicAssignmentRepository.find({
       where: {
         headquarterId: headquarterId,
@@ -150,17 +173,50 @@ export class AcademicAssignmentService {
         'program'
       ]
     });
-
+  
+    // 2. Enriquecer los datos con la información del director
+    const enrichedAssignments = await Promise.all(
+      assignments.map(async (assignment) => {
+        // Si no hay director asignado, retornar el assignment sin modificar
+        if (!assignment.directorGroupId || assignment.directorGroupId === 0) {
+          return {
+            ...assignment,
+            director: null
+          };
+        }
+  
+        // Buscar la información del administrador/director
+        const director = await this.administratorRepository.findOne({
+          where: { id: assignment.directorGroupId },
+          relations: ['user'] // Asumiendo que tienes relación con User
+        });
+  
+        return {
+          ...assignment,
+          director: director ? {
+            id: director.id,
+            name: `${director.user.firstName} ${director.user.lastName}`,
+            // Agrega más campos si los necesitas
+            academicTitle: director.academicTitle,
+            trainingArea: director.trainingArea
+          } : null
+        };
+      })
+    );
+  
     return {
       success: true,
       message: 'Asignaciones académicas recuperadas exitosamente',
-      data: assignments
+      data: enrichedAssignments
     };
   }
 
 
 
 
+
+
+  
 
 
   
