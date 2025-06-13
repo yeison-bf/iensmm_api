@@ -915,12 +915,11 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       let tokenPayload: any = {
         userId: user.id,
         username: user.username,
-
         firstName: user.firstName,
         lastName: user.lastName,
         photoUrl: user.photoUrl,
         student: user.student,
-
+        firma: user.TeacherSignature,
         role: user.role.name,
         documentType: user.documentType,
         headquarters: user.headquarters,
