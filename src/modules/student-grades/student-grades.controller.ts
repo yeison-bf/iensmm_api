@@ -77,10 +77,11 @@ export class StudentGradesController {
   @Get('list/leveling')
   async findByTeacherAndYear(
     @Query('teacherId', ParseIntPipe) teacherId: number,
+    @Query('periodo', ParseIntPipe) periodo: number,
     @Query('year', new DefaultValuePipe(new Date().getFullYear()), ParseIntPipe) year: number,
     @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades: boolean = true
   ) {
-    return this.studentGradesService.findByTeacherAndYear(teacherId, year, onlyLowGrades);
+    return this.studentGradesService.findByTeacherAndYear(teacherId, periodo, year, onlyLowGrades);
   }
 
 

@@ -566,15 +566,19 @@ export class StudentGradesService {
     }
   }
 
-
   async findByTeacherAndYear(
     teacherId: number,
+    periodDetailId: number,
     year: number,
     onlyLowGrades: boolean = true
   ) {
     try {
-
-      // 1. Consulta base con todas las relaciones necesarias
+      // Validación inicial de parámetros
+      if (!year) {
+        throw new Error('El año es requerido');
+      }
+  
+      // 1. Construir la consulta base
       const queryBuilder = this.gradeRepository
         .createQueryBuilder('grade')
         .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
@@ -582,85 +586,100 @@ export class StudentGradesService {
         .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
         .leftJoinAndSelect('thinkingDetail.academicThinking', 'thinking')
         .where('EXTRACT(YEAR FROM grade.createdAt) = :year', { year });
-
-      // 2. Filtros condicionales
+  
+      // 2. Aplicar filtros adicionales
       if (teacherId) {
         queryBuilder.andWhere('grade.teacherId = :teacherId', { teacherId });
       }
-
+  
+      if (periodDetailId) {
+        queryBuilder.andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId });
+      }
+  
       if (onlyLowGrades) {
         queryBuilder.andWhere(
           `LOWER(TRIM(grade.qualitativeGrade)) = LOWER(:grade)`,
           { grade: 'bajo' }
         );
       }
-
+  
       // 3. Obtener los registros filtrados
       const grades = await queryBuilder.getMany();
-
-      // DEBUG: Agregar logs para ver qué datos estamos obteniendo
-      grades.forEach((grade, index) => {
-        console.log(`Grade ${index + 1}:`, {
-          id: grade.id,
-          degreeId: grade.degreeId,
-          groupId: grade.groupId,
-          qualitativeGrade: grade.qualitativeGrade,
-          teacherId: grade.teacherId,
-          // Ver si el degreeId viene de la relación academicThinking
-          thinkingDegreeId: grade.academicThinkingDetail?.academicThinking?.gradeId
-        });
+  
+      // 4. Obtener IDs únicos de grados y grupos
+      const degreeIds = new Set<number>();
+      const groupIds = new Set<number>();
+  
+      grades.forEach(grade => {
+        // Preferir degreeId directo, si no está disponible, usar el de la relación
+        const degreeId = grade.degreeId ?? grade.academicThinkingDetail?.academicThinking?.gradeId;
+        if (degreeId) degreeIds.add(degreeId);
+        
+        if (grade.groupId) groupIds.add(grade.groupId);
       });
-
-      // 4. Obtener IDs únicos - CORREGIDO
-      // Si degreeId no está directamente en grade, usar la relación
-      const degreeIds = [...new Set(grades.map(g =>
-        g.degreeId || g.academicThinkingDetail?.academicThinking?.gradeId
-      ).filter(Boolean))];
-
-      const groupIds = [...new Set(grades.map(g => g.groupId).filter(Boolean))];
-
+  
       // 5. Consultar información adicional (degrees y groups)
       const [degrees, groups] = await Promise.all([
-        degreeIds.length > 0
-          ? this.degreeRepository.findByIds(degreeIds)
+        degreeIds.size > 0
+          ? this.degreeRepository.findByIds(Array.from(degreeIds))
           : Promise.resolve([]),
-        groupIds.length > 0
-          ? this.groupRepository.findByIds(groupIds)
+        groupIds.size > 0
+          ? this.groupRepository.findByIds(Array.from(groupIds))
           : Promise.resolve([])
       ]);
-
+  
       // 6. Crear mapeos para rápido acceso
-      const degreeMap = degrees.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
-      const groupMap = groups.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
-
-      // 7. Agrupar resultados - CORREGIDO
+      const degreeMap = new Map(degrees.map(degree => [degree.id, degree]));
+      const groupMap = new Map(groups.map(group => [group.id, group]));
+  
+      // 7. Agrupar resultados
       const result = grades.reduce((acc, grade) => {
-        // Usar el degreeId correcto
-        const degreeId = grade.degreeId || grade.academicThinkingDetail?.academicThinking?.gradeId;
+        const degreeId = grade.degreeId ?? grade.academicThinkingDetail?.academicThinking?.gradeId;
         const groupId = grade.groupId;
-
+  
+        // Validar que tengamos los IDs necesarios
+        if (!degreeId || !groupId) {
+          console.warn('Grade sin degreeId o groupId:', grade.id);
+          return acc;
+        }
+  
         const key = `${degreeId}-${groupId}`;
-
-
+  
         if (!acc[key]) {
           acc[key] = {
-            degree: degreeMap[degreeId] || { id: degreeId, name: 'No disponible' },
-            group: groupMap[groupId] || { id: groupId, name: 'No disponible' },
+            degree: degreeMap.get(degreeId) ?? { id: degreeId, name: 'No disponible' },
+            group: groupMap.get(groupId) ?? { id: groupId, name: 'No disponible' },
             grades: []
           };
         }
-
+  
         acc[key].grades.push({
           id: grade.id,
-          student: grade.studentEnrollment.student,
+          student: grade.studentEnrollment?.student ?? null,
           numericalGrade: grade.numericalGrade,
           qualitativeGrade: grade.qualitativeGrade,
+          disciplineGrade: grade.disciplineGrade,
+          observations: grade.observations,
           closingDate: grade.closingDate,
+          createdAt: grade.createdAt
         });
-
+  
         return acc;
-      }, {});
-
+      }, {} as Record<string, {
+        degree: { id: number; name: string };
+        group: { id: number; name: string };
+        grades: Array<{
+          id: number;
+          student: any;
+          numericalGrade: number;
+          qualitativeGrade: string;
+          disciplineGrade?: number;
+          observations?: string;
+          closingDate?: Date;
+          createdAt?: Date;
+        }>;
+      }>);
+  
       return {
         success: true,
         message: onlyLowGrades
@@ -668,9 +687,9 @@ export class StudentGradesService {
           : 'Todas las calificaciones agrupadas exitosamente',
         data: Object.values(result)
       };
-
+  
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error en findByTeacherAndYear:', error);
       return {
         success: false,
         message: `Error al obtener calificaciones: ${error.message}`,
@@ -678,8 +697,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
 
 
 
