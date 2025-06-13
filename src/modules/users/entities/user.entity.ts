@@ -44,6 +44,9 @@ export class User {
   @JoinColumn({ name: 'roleId' })
   role: Role;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  TeacherSignature: string;
+
   @ManyToOne(() => DocumentType)
   @JoinColumn({ name: 'documentTypeId' })
   documentType: DocumentType;

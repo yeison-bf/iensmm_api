@@ -39,6 +39,10 @@ export class CreateUserDto {
   photoUrl?: string;
 
   @IsString()
+  @IsOptional()
+  TeacherSignature: string;
+
+  @IsString()
   @IsNotEmpty()
   @Length(1, 50)
   username: string;
