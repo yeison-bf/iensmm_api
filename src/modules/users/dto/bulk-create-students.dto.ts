@@ -13,6 +13,7 @@ export class BulkCreateStudentDto {
     roleId: number;
     documentTypeId: string;
     headquarterIds: string;
+    
   };
   studentInfo: {
     birthDate: Date;

@@ -32,6 +32,17 @@ export class StudentGradesController {
     return this.studentGradesService.findByFilters(groupId, degreeId, thinkingDetailId, periodDetailId);
   }
 
+
+  @Get('trainignArea/filtered')
+  findByFiltersTrainignArea(
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+    @Query('periodDetailId') periodDetailId?: number
+  ) {
+    return this.studentGradesService.findByFiltersTrainignArea(groupId, degreeId, periodDetailId);
+  }
+
+
   @Get('voletin/filtered')
   findByFiltersVoletin(
     @Query('groupId') groupId?: number,

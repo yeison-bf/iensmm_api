@@ -1185,7 +1185,6 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
 
       // Buscvar profgrama 
-
       const program = await this.programRepository.findOne({
         where: { name: studentData.studentInfo.programa },
       });
@@ -1201,7 +1200,8 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
         ...studentData.user,
         documentTypeId: documentType.id,
         headquarterIds: [headquarters.id],
-        institution: headquarters.institution.id
+        institution: headquarters.institution.id,
+        TeacherSignature: '',
       };
 
       console.log("Modified user data:", modifiedUserData);
@@ -1212,7 +1212,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
         studentInfo: {
           ...studentData.studentInfo,
           headquarterId: headquarters.id,
-          programId: program.id
+          programId: program.id,
         }
       });
 
