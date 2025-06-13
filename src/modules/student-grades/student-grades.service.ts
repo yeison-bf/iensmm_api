@@ -585,8 +585,9 @@ export class StudentGradesService {
         .leftJoinAndSelect('enrollment.student', 'student')
         .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
         .leftJoinAndSelect('thinkingDetail.academicThinking', 'thinking')
-        .where('EXTRACT(YEAR FROM grade.createdAt) = :year', { year });
-  
+        .where('EXTRACT(YEAR FROM grade.createdAt) = :year', { year })
+        .andWhere('grade.status = :status', { status: 1 }); // Filtro por status
+
       // 2. Aplicar filtros adicionales
       if (teacherId) {
         queryBuilder.andWhere('grade.teacherId = :teacherId', { teacherId });
