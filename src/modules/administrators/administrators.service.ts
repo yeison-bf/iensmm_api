@@ -40,6 +40,7 @@ export class AdministratorsService {
       const queryBuilder = this.administratorRepository
         .createQueryBuilder('administrator')
         .leftJoinAndSelect('administrator.user', 'user')
+        .leftJoinAndSelect('user.headquarters', 'headquarters') // Nueva relación
         .leftJoinAndSelect('administrator.administratorTypes', 'administratorTypes');
 
       if (institutionId) {

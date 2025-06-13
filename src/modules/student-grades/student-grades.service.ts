@@ -301,6 +301,64 @@ export class StudentGradesService {
   }
 
 
+
+  async findByFiltersVoletin(groupId?: number, degreeId?: number, thinkingDetailId?: number, periodDetailId?: number) {
+    try {
+      const queryBuilder = this.gradeRepository
+        .createQueryBuilder('grade')
+        .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
+        .leftJoinAndSelect('enrollment.student', 'student')
+        .leftJoinAndSelect('student.user', 'user')
+        .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
+        .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
+        .leftJoinAndSelect('grade.teacher', 'teacher')
+        .leftJoinAndSelect('thinkingDetail.academicThinking', 'thinking');
+
+      if (groupId) {
+        queryBuilder.andWhere('grade.groupId = :groupId', { groupId });
+      }
+      if (degreeId) {
+        queryBuilder.andWhere('grade.degreeId = :degreeId', { degreeId });
+      }
+      if (thinkingDetailId) {
+        queryBuilder.andWhere('grade.academicThinkingDetailId = :thinkingDetailId', { thinkingDetailId });
+      }
+      if (periodDetailId) {
+        queryBuilder.andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId });
+      }
+
+      // Order by enrollment ID instead of student name
+      queryBuilder.orderBy('enrollment.id', 'ASC');
+
+      const grades = await queryBuilder.getMany();
+
+      return {
+        success: true,
+        message: 'Calificaciones recuperadas exitosamente',
+        data: grades
+      };
+    } catch (error) {
+      console.error('Find by filters error:', error);
+      return {
+        success: false,
+        message: `Error al recuperar las calificaciones: ${error.message}`,
+        data: null
+      };
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
   async findByFiltersLeveling(
     groupId?: number, 
     degreeId?: number, 

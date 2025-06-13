@@ -32,6 +32,15 @@ export class StudentGradesController {
     return this.studentGradesService.findByFilters(groupId, degreeId, thinkingDetailId, periodDetailId);
   }
 
+  @Get('voletin/filtered')
+  findByFiltersVoletin(
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+    @Query('thinkingDetailId') thinkingDetailId?: number,
+    @Query('periodDetailId') periodDetailId?: number
+  ) {
+    return this.studentGradesService.findByFiltersVoletin(groupId, degreeId, thinkingDetailId, periodDetailId);
+  }
 
   
   @Get('leveling')
