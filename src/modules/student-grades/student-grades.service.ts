@@ -580,7 +580,7 @@ export class StudentGradesService {
       const queryBuilder = this.gradeRepository
         .createQueryBuilder('grade')
         .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
-        // .leftJoinAndSelect('enrollment.student', 'student')
+        .leftJoinAndSelect('enrollment.student', 'student')
         .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
         .leftJoinAndSelect('thinkingDetail.trainingArea', 'trainingArea')
         .leftJoinAndSelect('thinkingDetail.academicThinking', 'thinking')
@@ -656,6 +656,7 @@ export class StudentGradesService {
         // Agregar la calificación
         acc[periodKey].groups[groupKey].grades.push({
           id: grade.id,
+          student: grade.studentEnrollment?.student ?? null,
           trainingArea: trainingArea,
           headquarterId: grade.studentEnrollment?.headquarterId ?? null,
           numericalGrade: grade.numericalGrade,
@@ -674,6 +675,7 @@ export class StudentGradesService {
           group: any;
           grades: Array<{
             id: number;
+            student:any,
             trainingArea: any;
             headquarterId: any;
             numericalGrade: number;
