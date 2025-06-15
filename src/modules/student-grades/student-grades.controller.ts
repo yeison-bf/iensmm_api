@@ -14,7 +14,7 @@ export class StudentGradesController {
     @Query('year', new DefaultValuePipe(new Date().getFullYear()), ParseIntPipe) year: number,
     @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades: boolean = true
   ) {
-    return this.studentGradesService.findByTeacherAndYear(teacherId, year, onlyLowGrades);
+    return this.studentGradesService.findByTeacherAndYear(teacherId,  year, onlyLowGrades);
   }
 
   @Get('voletin/filtered')
