@@ -654,6 +654,7 @@ export class StudentGradesService {
         acc[periodKey].groups[groupKey].grades.push({
           id: grade.id,
           student: grade.studentEnrollment?.student ?? null,
+          headquarterId: grade.studentEnrollment?.headquarterId ?? null,
           numericalGrade: grade.numericalGrade,
           qualitativeGrade: grade.qualitativeGrade,
           disciplineGrade: grade.disciplineGrade,
@@ -671,6 +672,7 @@ export class StudentGradesService {
           grades: Array<{
             id: number;
             student: any;
+            headquarterId: any;
             numericalGrade: number;
             qualitativeGrade: string;
             disciplineGrade?: number;
