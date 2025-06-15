@@ -626,7 +626,7 @@ export class StudentGradesService {
         const groupId = grade.groupId;
   
           // Imprimir ee area
-        const trainingArea = (grade.academicThinkingDetail?.trainingArea)
+        const trainingArea = (grade.academicThinkingDetail)
         if (!periodDetailId || !degreeId || !groupId) {
           console.warn('Grade sin periodDetailId, degreeId o groupId:', grade.id);
           return acc;
