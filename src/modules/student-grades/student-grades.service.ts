@@ -580,8 +580,9 @@ export class StudentGradesService {
       const queryBuilder = this.gradeRepository
         .createQueryBuilder('grade')
         .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
-        .leftJoinAndSelect('enrollment.student', 'student')
+        // .leftJoinAndSelect('enrollment.student', 'student')
         .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
+        .leftJoinAndSelect('thinkingDetail.trainingArea', 'trainingArea')
         .leftJoinAndSelect('thinkingDetail.academicThinking', 'thinking')
         .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
         .where('EXTRACT(YEAR FROM grade.createdAt) = :year', { year })
@@ -624,6 +625,8 @@ export class StudentGradesService {
         const degreeId = grade.degreeId ?? grade.academicThinkingDetail?.academicThinking?.gradeId;
         const groupId = grade.groupId;
   
+          // Imprimir ee area
+        const trainingArea = (grade.academicThinkingDetail?.trainingArea)
         if (!periodDetailId || !degreeId || !groupId) {
           console.warn('Grade sin periodDetailId, degreeId o groupId:', grade.id);
           return acc;
@@ -653,7 +656,7 @@ export class StudentGradesService {
         // Agregar la calificación
         acc[periodKey].groups[groupKey].grades.push({
           id: grade.id,
-          student: grade.studentEnrollment?.student ?? null,
+          trainingArea: trainingArea,
           headquarterId: grade.studentEnrollment?.headquarterId ?? null,
           numericalGrade: grade.numericalGrade,
           qualitativeGrade: grade.qualitativeGrade,
@@ -671,7 +674,7 @@ export class StudentGradesService {
           group: any;
           grades: Array<{
             id: number;
-            student: any;
+            trainingArea: any;
             headquarterId: any;
             numericalGrade: number;
             qualitativeGrade: string;
