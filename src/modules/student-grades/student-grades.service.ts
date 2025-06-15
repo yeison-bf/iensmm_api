@@ -568,10 +568,10 @@ export class StudentGradesService {
 
   async findByTeacherAndYear(
     teacherId: number,
-    periodDetailId: number,
     year: number,
     onlyLowGrades: boolean = true
   ) {
+    console.log('findByTeacherAndYear:', teacherId, year, onlyLowGrades);
     try {
       // Validación inicial de parámetros
       if (!year) {
@@ -593,10 +593,6 @@ export class StudentGradesService {
         queryBuilder.andWhere('grade.teacherId = :teacherId', { teacherId });
       }
   
-      if (periodDetailId) {
-        queryBuilder.andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId });
-      }
-  
       if (onlyLowGrades) {
         queryBuilder.andWhere(
           `LOWER(TRIM(grade.qualitativeGrade)) = LOWER(:grade)`,
@@ -612,7 +608,6 @@ export class StudentGradesService {
       const groupIds = new Set<number>();
   
       grades.forEach(grade => {
-        // Preferir degreeId directo, si no está disponible, usar el de la relación
         const degreeId = grade.degreeId ?? grade.academicThinkingDetail?.academicThinking?.gradeId;
         if (degreeId) degreeIds.add(degreeId);
         
@@ -638,7 +633,6 @@ export class StudentGradesService {
         const degreeId = grade.degreeId ?? grade.academicThinkingDetail?.academicThinking?.gradeId;
         const groupId = grade.groupId;
   
-        // Validar que tengamos los IDs necesarios
         if (!degreeId || !groupId) {
           console.warn('Grade sin degreeId o groupId:', grade.id);
           return acc;
@@ -698,9 +692,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
 
 
 

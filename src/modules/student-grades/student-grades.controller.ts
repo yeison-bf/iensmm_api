@@ -7,9 +7,61 @@ import { UpdateStudentGradesBulkDto } from './dto/update-student-grade.dto';
 export class StudentGradesController {
   constructor(private readonly studentGradesService: StudentGradesService) { }
 
-  @Post()
-  create(@Body() createGradeDto: CreateStudentGradeDto) {
-    return this.studentGradesService.create(createGradeDto);
+  // ======== Rutas Específicas (Más específicas primero) ========
+  @Get('list/leveling')
+  async findByTeacherAndYear(
+    @Query('teacherId', ParseIntPipe) teacherId: number,
+    @Query('year', new DefaultValuePipe(new Date().getFullYear()), ParseIntPipe) year: number,
+    @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades: boolean = true
+  ) {
+    return this.studentGradesService.findByTeacherAndYear(teacherId, year, onlyLowGrades);
+  }
+
+  @Get('voletin/filtered')
+  findByFiltersVoletin(
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+    @Query('thinkingDetailId') thinkingDetailId?: number,
+    @Query('periodDetailId') periodDetailId?: number
+  ) {
+    return this.studentGradesService.findByFiltersVoletin(groupId, degreeId, thinkingDetailId, periodDetailId);
+  }
+
+  @Get('trainignArea/filtered')
+  findByFiltersTrainignArea(
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+    @Query('periodDetailId') periodDetailId?: number
+  ) {
+    return this.studentGradesService.findByFiltersTrainignArea(groupId, degreeId, periodDetailId);
+  }
+
+  @Get('leveling')
+  findByFiltersLeveling(
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+    @Query('thinkingDetailId') thinkingDetailId?: number,
+    @Query('periodDetailId') periodDetailId?: number,
+    @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades?: boolean
+  ) {
+    return this.studentGradesService.findByFiltersLeveling(
+      groupId, 
+      degreeId, 
+      thinkingDetailId, 
+      periodDetailId,
+      onlyLowGrades ?? true
+    );
+  }
+
+  // ======== Rutas Genéricas (Más generales después) ========
+  @Get('filtered')
+  findByFilters(
+    @Query('groupId') groupId?: number,
+    @Query('degreeId') degreeId?: number,
+    @Query('thinkingDetailId') thinkingDetailId?: number,
+    @Query('periodDetailId') periodDetailId?: number
+  ) {
+    return this.studentGradesService.findByFilters(groupId, degreeId, thinkingDetailId, periodDetailId);
   }
 
   @Get()
@@ -22,80 +74,16 @@ export class StudentGradesController {
     return this.studentGradesService.findAll(studentId, periodId, teacherId, thinkingDetailId);
   }
 
-  @Get('filtered')
-  findByFilters(
-    @Query('groupId') groupId?: number,
-    @Query('degreeId') degreeId?: number,
-    @Query('thinkingDetailId') thinkingDetailId?: number,
-    @Query('periodDetailId') periodDetailId?: number
-  ) {
-    return this.studentGradesService.findByFilters(groupId, degreeId, thinkingDetailId, periodDetailId);
+  // ======== CRUD Básico ========
+  @Post()
+  create(@Body() createGradeDto: CreateStudentGradeDto) {
+    return this.studentGradesService.create(createGradeDto);
   }
-
-
-  @Get('trainignArea/filtered')
-  findByFiltersTrainignArea(
-    @Query('groupId') groupId?: number,
-    @Query('degreeId') degreeId?: number,
-    @Query('periodDetailId') periodDetailId?: number
-  ) {
-    return this.studentGradesService.findByFiltersTrainignArea(groupId, degreeId, periodDetailId);
-  }
-
-
-  @Get('voletin/filtered')
-  findByFiltersVoletin(
-    @Query('groupId') groupId?: number,
-    @Query('degreeId') degreeId?: number,
-    @Query('thinkingDetailId') thinkingDetailId?: number,
-    @Query('periodDetailId') periodDetailId?: number
-  ) {
-    return this.studentGradesService.findByFiltersVoletin(groupId, degreeId, thinkingDetailId, periodDetailId);
-  }
-
-  
-  @Get('leveling')
-  findByFiltersLeveling(
-    @Query('groupId') groupId?: number,
-    @Query('degreeId') degreeId?: number,
-    @Query('thinkingDetailId') thinkingDetailId?: number,
-    @Query('periodDetailId') periodDetailId?: number,
-    @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades?: boolean // Usando ParseBoolPipe
-  ) {
-    return this.studentGradesService.findByFiltersLeveling(
-      groupId, 
-      degreeId, 
-      thinkingDetailId, 
-      periodDetailId,
-      onlyLowGrades || true // Asegurando que siempre haya un valor booleano
-    );
-  }
-
-
-
-    
-  @Get('list/leveling')
-  async findByTeacherAndYear(
-    @Query('teacherId', ParseIntPipe) teacherId: number,
-    @Query('periodo', ParseIntPipe) periodo: number,
-    @Query('year', new DefaultValuePipe(new Date().getFullYear()), ParseIntPipe) year: number,
-    @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades: boolean = true
-  ) {
-    return this.studentGradesService.findByTeacherAndYear(teacherId, periodo, year, onlyLowGrades);
-  }
-
-
-
-
-
-
 
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.studentGradesService.findOne(id);
   }
-
-
 
   @Put('bulk-update')
   updateBulk(@Body() updateGradesDto: UpdateStudentGradesBulkDto) {
