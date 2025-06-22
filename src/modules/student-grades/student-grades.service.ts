@@ -566,6 +566,154 @@ export class StudentGradesService {
     }
   }
 
+  // async findByTeacherAndYear(
+  //   teacherId: number,
+  //   year: number,
+  //   onlyLowGrades: boolean = true
+  // ) {
+  //   try {
+  //     if (!year) {
+  //       throw new Error('El año es requerido');
+  //     }
+  
+  //     // 1. Construir la consulta base con periodDetailId
+  //     const queryBuilder = this.gradeRepository
+  //       .createQueryBuilder('grade')
+  //       .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
+  //       .leftJoinAndSelect('enrollment.student', 'student')
+  //       .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
+  //       .leftJoinAndSelect('thinkingDetail.trainingArea', 'trainingArea')
+  //       .leftJoinAndSelect('thinkingDetail.academicThinking', 'thinking')
+  //       .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
+  //       .where('EXTRACT(YEAR FROM grade.createdAt) = :year', { year })
+  //       .andWhere('grade.status = :status', { status: 1 });
+  
+  //     if (teacherId) {
+  //       queryBuilder.andWhere('grade.teacherId = :teacherId', { teacherId });
+  //     }
+  
+  //     if (onlyLowGrades) {
+  //       queryBuilder.andWhere(
+  //         `LOWER(TRIM(grade.qualitativeGrade)) = LOWER(:grade)`,
+  //         { grade: 'bajo' }
+  //       );
+  //     }
+  
+  //     // 2. Obtener los registros filtrados
+  //     const grades = await queryBuilder.getMany();
+  
+  //     console.log(grades)
+  //     // 3. Obtener IDs únicos de degrees y groups (como en el código anterior)
+  //     const degreeIds = [...new Set(grades.map(g => 
+  //       g.degreeId || g.academicThinkingDetail?.academicThinking?.gradeId
+  //     ).filter(Boolean))];
+      
+  //     const groupIds = [...new Set(grades.map(g => g.groupId).filter(Boolean))];
+  
+  //     // 4. Consultar información adicional (degrees y groups) - EXACTAMENTE COMO EN EL CÓDIGO ANTERIOR
+  //     const [degrees, groups] = await Promise.all([
+  //       degreeIds.length > 0 ? this.degreeRepository.findByIds(degreeIds) : Promise.resolve([]),
+  //       groupIds.length > 0 ? this.groupRepository.findByIds(groupIds) : Promise.resolve([])
+  //     ]);
+  
+  //     // 5. Crear mapeos para rápido acceso
+  //     const degreeMap = degrees.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
+  //     const groupMap = groups.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
+  
+  //     // 6. Agrupar por periodDetailId, degreeId y groupId
+  //     const result = grades.reduce((acc, grade) => {
+  //       const periodDetailId = grade.periodDetailId;
+  //       const degreeId = grade.degreeId ?? grade.academicThinkingDetail?.academicThinking?.gradeId;
+  //       const groupId = grade.groupId;
+  
+  //         // Imprimir ee area
+  //       const trainingArea = (grade.academicThinkingDetail)
+  //       if (!periodDetailId || !degreeId || !groupId) {
+  //         console.warn('Grade sin periodDetailId, degreeId o groupId:', grade.id);
+  //         return acc;
+  //       }
+  
+  //       // Crear clave única para el agrupamiento
+  //       const periodKey = `${periodDetailId}`;
+  //       const groupKey = `${degreeId}-${groupId}`;
+  
+  //       // Inicializar estructura para el período si no existe
+  //       if (!acc[periodKey]) {
+  //         acc[periodKey] = {
+  //           periodDetail: grade.periodDetail || { id: periodDetailId, name: 'No disponible' },
+  //           groups: {}
+  //         };
+  //       }
+  
+  //       // Inicializar estructura para el grupo si no existe
+  //       if (!acc[periodKey].groups[groupKey]) {
+  //         acc[periodKey].groups[groupKey] = {
+  //           degree: degreeMap[degreeId] || { id: degreeId, name: 'No disponible' }, // Usar el mapeo
+  //           group: groupMap[groupId] || { id: groupId, name: 'No disponible' }, // Usar el mapeo
+  //           grades: []
+  //         };
+  //       }
+  
+  //       // Agregar la calificación
+  //       acc[periodKey].groups[groupKey].grades.push({
+  //         id: grade.id,
+  //         student: grade.studentEnrollment?.student ?? null,
+  //         trainingArea: trainingArea,
+  //         headquarterId: grade.studentEnrollment?.headquarterId ?? null,
+  //         numericalGrade: grade.numericalGrade,
+  //         qualitativeGrade: grade.qualitativeGrade,
+  //         disciplineGrade: grade.disciplineGrade,
+  //         observations: grade.observations,
+  //         closingDate: grade.closingDate,
+  //         createdAt: grade.createdAt
+  //       });
+  
+  //       return acc;
+  //     }, {} as Record<string, {
+  //       periodDetail: { id: number; name: string };
+  //       groups: Record<string, {
+  //         degree: any;
+  //         group: any;
+  //         grades: Array<{
+  //           id: number;
+  //           student:any,
+  //           trainingArea: any;
+  //           headquarterId: any;
+  //           numericalGrade: number;
+  //           qualitativeGrade: string;
+  //           disciplineGrade?: number;
+  //           observations?: string;
+  //           closingDate?: Date;
+  //           createdAt?: Date;
+  //         }>;
+  //       }>;
+  //     }>);
+  
+  //     // 7. Transformar el resultado para una respuesta más limpia
+  //     const formattedResult = Object.values(result).map(period => ({
+  //       periodDetail: period.periodDetail,
+  //       groups: Object.values(period.groups)
+  //     }));
+  
+  //     return {
+  //       success: true,
+  //       message: onlyLowGrades
+  //         ? 'Calificaciones bajas agrupadas por período exitosamente'
+  //         : 'Todas las calificaciones agrupadas por período exitosamente',
+  //       data: formattedResult
+  //     };
+  
+  //   } catch (error) {
+  //     console.error('Error en findByTeacherAndYear:', error);
+  //     return {
+  //       success: false,
+  //       message: `Error al obtener calificaciones: ${error.message}`,
+  //       data: null
+  //     };
+  //   }
+  // }
+
+
   async findByTeacherAndYear(
     teacherId: number,
     year: number,
@@ -576,7 +724,6 @@ export class StudentGradesService {
         throw new Error('El año es requerido');
       }
   
-      // 1. Construir la consulta base con periodDetailId
       const queryBuilder = this.gradeRepository
         .createQueryBuilder('grade')
         .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
@@ -599,44 +746,38 @@ export class StudentGradesService {
         );
       }
   
-      // 2. Obtener los registros filtrados
       const grades = await queryBuilder.getMany();
   
-      // 3. Obtener IDs únicos de degrees y groups (como en el código anterior)
-      const degreeIds = [...new Set(grades.map(g => 
+      const degreeIds = [...new Set(grades.map(g =>
         g.degreeId || g.academicThinkingDetail?.academicThinking?.gradeId
       ).filter(Boolean))];
-      
+  
       const groupIds = [...new Set(grades.map(g => g.groupId).filter(Boolean))];
   
-      // 4. Consultar información adicional (degrees y groups) - EXACTAMENTE COMO EN EL CÓDIGO ANTERIOR
       const [degrees, groups] = await Promise.all([
         degreeIds.length > 0 ? this.degreeRepository.findByIds(degreeIds) : Promise.resolve([]),
         groupIds.length > 0 ? this.groupRepository.findByIds(groupIds) : Promise.resolve([])
       ]);
   
-      // 5. Crear mapeos para rápido acceso
       const degreeMap = degrees.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
       const groupMap = groups.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
   
-      // 6. Agrupar por periodDetailId, degreeId y groupId
       const result = grades.reduce((acc, grade) => {
         const periodDetailId = grade.periodDetailId;
         const degreeId = grade.degreeId ?? grade.academicThinkingDetail?.academicThinking?.gradeId;
         const groupId = grade.groupId;
+        const trainingArea = grade.academicThinkingDetail?.trainingArea;
+        const trainingAreaId = trainingArea?.id;
   
-          // Imprimir ee area
-        const trainingArea = (grade.academicThinkingDetail)
-        if (!periodDetailId || !degreeId || !groupId) {
-          console.warn('Grade sin periodDetailId, degreeId o groupId:', grade.id);
+        if (!periodDetailId || !degreeId || !groupId || !trainingAreaId) {
+          console.warn('Grade sin datos clave:', grade.id);
           return acc;
         }
   
-        // Crear clave única para el agrupamiento
         const periodKey = `${periodDetailId}`;
         const groupKey = `${degreeId}-${groupId}`;
   
-        // Inicializar estructura para el período si no existe
+        // Inicializar período
         if (!acc[periodKey]) {
           acc[periodKey] = {
             periodDetail: grade.periodDetail || { id: periodDetailId, name: 'No disponible' },
@@ -644,17 +785,25 @@ export class StudentGradesService {
           };
         }
   
-        // Inicializar estructura para el grupo si no existe
+        // Inicializar grupo
         if (!acc[periodKey].groups[groupKey]) {
           acc[periodKey].groups[groupKey] = {
-            degree: degreeMap[degreeId] || { id: degreeId, name: 'No disponible' }, // Usar el mapeo
-            group: groupMap[groupId] || { id: groupId, name: 'No disponible' }, // Usar el mapeo
+            degree: degreeMap[degreeId] || { id: degreeId, name: 'No disponible' },
+            group: groupMap[groupId] || { id: groupId, name: 'No disponible' },
+            areas: {}
+          };
+        }
+  
+        // Inicializar área
+        if (!acc[periodKey].groups[groupKey].areas[trainingAreaId]) {
+          acc[periodKey].groups[groupKey].areas[trainingAreaId] = {
+            trainingArea,
             grades: []
           };
         }
   
-        // Agregar la calificación
-        acc[periodKey].groups[groupKey].grades.push({
+        // Agregar la nota
+        acc[periodKey].groups[groupKey].areas[trainingAreaId].grades.push({
           id: grade.id,
           student: grade.studentEnrollment?.student ?? null,
           trainingArea: trainingArea,
@@ -668,40 +817,55 @@ export class StudentGradesService {
         });
   
         return acc;
-      }, {} as Record<string, {
-        periodDetail: { id: number; name: string };
-        groups: Record<string, {
-          degree: any;
-          group: any;
-          grades: Array<{
-            id: number;
-            student:any,
-            trainingArea: any;
-            headquarterId: any;
-            numericalGrade: number;
-            qualitativeGrade: string;
-            disciplineGrade?: number;
-            observations?: string;
-            closingDate?: Date;
-            createdAt?: Date;
-          }>;
-        }>;
-      }>);
+      }, {} as Record<
+        string,
+        {
+          periodDetail: { id: number; name: string };
+          groups: Record<
+            string,
+            {
+              degree: any;
+              group: any;
+              areas: Record<
+                number,
+                {
+                  trainingArea: any;
+                  grades: Array<{
+                    id: number;
+                    student: any;
+                    trainingArea: any;
+                    headquarterId: any;
+                    numericalGrade: number;
+                    qualitativeGrade: string;
+                    disciplineGrade?: number;
+                    observations?: string;
+                    closingDate?: Date;
+                    createdAt?: Date;
+                  }>;
+                }
+              >;
+            }
+          >;
+        }
+      >);
   
-      // 7. Transformar el resultado para una respuesta más limpia
+      // Formatear salida
       const formattedResult = Object.values(result).map(period => ({
         periodDetail: period.periodDetail,
-        groups: Object.values(period.groups)
+        groups: Object.values(period.groups).map(group => ({
+          degree: group.degree,
+          group: group.group,
+          areas: Object.values(group.areas)
+        }))
       }));
   
       return {
         success: true,
         message: onlyLowGrades
-          ? 'Calificaciones bajas agrupadas por período exitosamente'
-          : 'Todas las calificaciones agrupadas por período exitosamente',
+          ? 'Calificaciones bajas agrupadas por período, grupo y área exitosamente'
+          : 'Todas las calificaciones agrupadas exitosamente',
         data: formattedResult
       };
-  
     } catch (error) {
       console.error('Error en findByTeacherAndYear:', error);
       return {
@@ -711,6 +875,7 @@ export class StudentGradesService {
       };
     }
   }
+  
 
 
 
