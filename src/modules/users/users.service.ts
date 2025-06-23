@@ -176,43 +176,59 @@ export class UsersService {
 
 
 
-  async findAllStudents(headquarterId?: number, programId?: number) {
+  async findAllStudents(
+    headquarterId?: number,
+    programId?: number,
+    page: number = 1,
+    limit: number = 10
+  ) {
     try {
       const queryBuilder = this.userRepository
         .createQueryBuilder('user')
-        .leftJoinAndSelect('user.student', 'student')
-        .leftJoinAndSelect('student.enrollments', 'enrollments')
         .leftJoinAndSelect('user.role', 'role')
+        .leftJoinAndSelect('user.student', 'student')
         .leftJoinAndSelect('user.documentType', 'documentType')
         .leftJoinAndSelect('user.headquarters', 'headquarters')
-        .leftJoinAndSelect('headquarters.institution', 'institution')
-        .where('role.name = :roleName', { roleName: 'Estudent' });
+        .leftJoinAndSelect('student.program', 'program')
+        .where('role.name = :roleName', { roleName: 'student' });
 
       if (headquarterId) {
-        queryBuilder.andWhere('student.headquarter_id = :headquarterId', { headquarterId });
+        queryBuilder.andWhere('headquarters.id = :headquarterId', { headquarterId });
       }
 
       if (programId) {
-        queryBuilder.andWhere('student.program_id = :programId', { programId });
+        queryBuilder.andWhere('program.id = :programId', { programId });
       }
 
-      const users = await queryBuilder.getMany();
-
-      // Map the results to include hasEnrollment
-      const enrichedUsers = users.map(user => ({
-        ...user,
-        hasEnrollment: user.student?.enrollments?.length > 0 || false
-      }));
+      // Add pagination
+      const skip = (page - 1) * limit;
+      const [users, total] = await Promise.all([
+        queryBuilder
+          .skip(skip)
+          .take(limit)
+          .getMany(),
+        queryBuilder.getCount()
+      ]);
 
       return {
         success: true,
-        message: 'Estudiantes recuperados exitosamente',
-        data: enrichedUsers,
+        message: 'Students retrieved successfully',
+        data: {
+          items: users,
+          meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+            hasNextPage: page < Math.ceil(total / limit),
+            hasPreviousPage: page > 1
+          }
+        }
       };
     } catch (error) {
       return {
         success: false,
-        message: `Error al recuperar estudiantes: ${error.message}`,
+        message: `Error retrieving students: ${error.message}`,
         data: null,
       };
     }
@@ -938,7 +954,7 @@ export class UsersService {
         ) || null;
         console.log("matriculaActiva : ", matriculaActiva);
 
-        
+
         tokenPayload = {
           ...tokenPayload,
           student: {

@@ -53,9 +53,11 @@ export class UsersController {
   @Get('students')
   findAllStudents(
     @Query('sede') headquarterId?: number,
-    @Query('programId') programId?: number
+    @Query('programId') programId?: number,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10
   ) {
-    return this.usersService.findAllStudents(headquarterId, programId);
+    return this.usersService.findAllStudents(headquarterId, programId, page, limit);
   }
 
   @Get('students/:id')
