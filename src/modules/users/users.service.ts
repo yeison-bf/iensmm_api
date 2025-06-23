@@ -60,7 +60,7 @@ export class UsersService {
 
 
     @InjectRepository(AdministratorType)
-private readonly administratorTypeRepository: Repository<AdministratorType>,
+    private readonly administratorTypeRepository: Repository<AdministratorType>,
 
   ) { }
 
@@ -176,7 +176,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
 
 
-    async findAllStudents(headquarterId?: number, programId?: number) {
+  async findAllStudents(headquarterId?: number, programId?: number) {
     try {
       const queryBuilder = this.userRepository
         .createQueryBuilder('user')
@@ -517,7 +517,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
 
   // Metodos del administrador
-   async createWithAdministrator(createUserWithAdministratorDto: CreateUserWithAdministratorDto) {
+  async createWithAdministrator(createUserWithAdministratorDto: CreateUserWithAdministratorDto) {
     try {
       const { user: userData, administratorInfo } = createUserWithAdministratorDto;
 
@@ -693,9 +693,9 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       const user = await this.userRepository.findOne({
         where: { id },
         relations: [
-          'headquarters', 
-          'role', 
-          'documentType', 
+          'headquarters',
+          'role',
+          'documentType',
           'administrator',
           'administrator.administratorTypes',
           'administrator.administratorTypePrograms'
@@ -883,6 +883,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
         relations: [
           'role',
           'student',
+          'student.enrollments', // Include student enrollments
           'administrator',
           'administrator.administratorTypePrograms',
           'administrator.administratorTypePrograms.administratorType',
@@ -899,6 +900,13 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
           data: null,
         };
       }
+
+      console.log(user.student.enrollments);
+
+      const matriculaActiva = user.student.enrollments?.find(
+        enrollment => enrollment.status === true
+      ) || null;
+      console.log("matriculaActiva : ", matriculaActiva);
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -931,6 +939,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
           ...tokenPayload,
           student: {
             id: user.student.id,
+            matriculaActiva: matriculaActiva,
             // Add other student-specific fields you want in the token
           }
         };
@@ -976,6 +985,144 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
       };
     }
   }
+
+  // async login(username: string, password: string) {
+  //   try {
+  //     // Find user with all necessary relations including filtered enrollments
+  //     const user = await this.userRepository.findOne({
+  //       where: { username },
+  //       relations: [
+  //         'role',
+  //         'student',
+  //         'student.enrollments', // Include student enrollments
+  //         'student.enrollments.program', // Include program info if needed
+  //         'student.enrollments.group', // Include group info if needed
+  //         'administrator',
+  //         'administrator.administratorTypePrograms',
+  //         'administrator.administratorTypePrograms.administratorType',
+  //         'administrator.administratorTypePrograms.program',
+  //         'documentType',
+  //         'headquarters',
+  //         'headquarters.institution'
+  //       ],
+  //     });
+
+  //     if (!user) {
+  //       return {
+  //         success: false,
+  //         message: 'Usuario no encontrado',
+  //         data: null,
+  //       };
+  //     }
+
+  //     // Verify password
+  //     const isPasswordValid = await bcrypt.compare(password, user.password);
+  //     if (!isPasswordValid) {
+  //       return {
+  //         success: false,
+  //         message: 'Contraseña incorrecta',
+  //         data: null,
+  //       };
+  //     }
+
+  //     // Find active enrollment (status: true)
+  //     let activeEnrollment = null;
+  //     if (user.role.name === 'student' && user.student?.enrollments) {
+  //       activeEnrollment = user.student.enrollments.find(
+  //         enrollment => enrollment.status === true
+  //       );
+  //     }
+
+  //     // Prepare token payload
+  //     let tokenPayload: any = {
+  //       userId: user.id,
+  //       username: user.username,
+  //       firstName: user.firstName,
+  //       lastName: user.lastName,
+  //       photoUrl: user.photoUrl,
+  //       role: user.role.name,
+  //       documentType: user.documentType,
+  //       headquarters: user.headquarters,
+  //     };
+
+  //     // Add role-specific data
+  //     if (user.role.name === 'student' && user.student) {
+  //       tokenPayload.student = {
+  //         id: user.student.id,
+  //         activeEnrollment: activeEnrollment ? {
+  //           id: activeEnrollment.id,
+  //           programId: activeEnrollment.programId,
+  //           groupId: activeEnrollment.groupId,
+  //           headquarterId: activeEnrollment.headquarterId,
+  //           institutionId: activeEnrollment.institutionId,
+  //           schedule: activeEnrollment.schedule,
+  //           folio: activeEnrollment.folio,
+  //           registrationDate: activeEnrollment.registrationDate,
+  //           // Add other enrollment fields as needed
+  //         } : null
+  //       };
+  //     } else if (user.role.name === 'administrator' && user.administrator) {
+  //       tokenPayload.administrator = {
+  //         id: user.administrator.id,
+  //         academicTitle: user.administrator.academicTitle,
+  //         trainingArea: user.administrator.trainingArea,
+  //         maritalStatus: user.administrator.maritalStatus,
+  //         startDate: user.administrator.startDate,
+  //         endDate: user.administrator.endDate,
+  //         teachingLevel: user.administrator.teachingLevel,
+  //         contractType: user.administrator.contractType,
+  //         signature: user.administrator.signature,
+  //         administratorTypePrograms: user.administrator.administratorTypePrograms?.map(atp => ({
+  //           administratorType: atp.administratorType,
+  //           program: atp.program,
+  //           startDate: atp.startDate,
+  //           endDate: atp.endDate
+  //         }))
+  //       };
+  //     }
+
+  //     // Generate JWT token
+  //     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+  //       expiresIn: '24h',
+  //     });
+
+  //     return {
+  //       success: true,
+  //       message: 'Inicio de sesión exitoso',
+  //       role: user.role.name,
+  //       token,
+  //       userData: {
+  //         id: user.id,
+  //         firstName: user.firstName,
+  //         lastName: user.lastName,
+  //         role: user.role.name,
+  //         photoUrl: user.photoUrl,
+  //         ...(user.role.name === 'student' && {
+  //           studentId: user.student?.id,
+  //           activeEnrollment: tokenPayload.student?.activeEnrollment
+  //         }),
+  //         ...(user.role.name === 'administrator' && {
+  //           administratorId: user.administrator?.id
+  //         })
+  //       }
+  //     };
+
+  //   } catch (error) {
+  //     console.error('Error en login:', error);
+  //     return {
+  //       success: false,
+  //       message: 'Error durante el inicio de sesión',
+  //       error: error.message,
+  //       data: null,
+  //     };
+  //   }
+  // }
+
+
+
+
+
+
 
   async bulkCreateStudents(students: BulkCreateStudentDto[]) {
     const results = {
@@ -1219,17 +1366,17 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
         console.error(`Failed to create user: ${userResult.message}`);
         throw new Error(userResult.message);
 
-        
+
       } if (!userResult.success) {
         throw new Error(userResult.message);
       }
 
       // If enrollment data is provided, find actual group and degree IDs
       if (studentData.enrollment && studentData.enrollment.type) {
-        const hasEnrollmentData = studentData.enrollment.groupId && 
-                                 studentData.enrollment.degreeId && 
-                                 studentData.enrollment.schedule && 
-                                 studentData.enrollment.folio;
+        const hasEnrollmentData = studentData.enrollment.groupId &&
+          studentData.enrollment.degreeId &&
+          studentData.enrollment.schedule &&
+          studentData.enrollment.folio;
 
         if (hasEnrollmentData) {
           const enrollmentData: any = {
@@ -1250,7 +1397,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
             this.degreeRepository.findOne({
               where: { name: studentData.enrollment.degreeId }
             }),
-            studentData.enrollment.programId ? 
+            studentData.enrollment.programId ?
               this.programRepository.findOne({
                 where: { name: studentData.enrollment.programId }
               }) : null
@@ -1270,7 +1417,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
           console.log("matricula : ", enrollmentData)
           const enrollmentResult = await this.enrollmentService.create(enrollmentData);
-          
+
           if (!enrollmentResult.success) {
             throw new Error(`Enrollment failed: ${enrollmentResult.message}`);
           }
@@ -1316,7 +1463,7 @@ private readonly administratorTypeRepository: Repository<AdministratorType>,
 
 
 
-  
+
 
   /**
    * Process records that had transient errors with more careful retry logic
