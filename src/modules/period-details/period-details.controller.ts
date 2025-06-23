@@ -34,10 +34,6 @@ togglePeriodState(
   @Query('closeId') closeId?: string,
   @Query('activeId') activeId?: string,
 ) {
-  console.log('🚀 TOGGLE-STATE ENDPOINT HIT!');
-  console.log('🔍 Raw closeId:', closeId, typeof closeId);
-  console.log('🔍 Raw activeId:', activeId, typeof activeId);
-  
   // Función helper para convertir valores
   const parseId = (value: string | undefined): number | undefined => {
     // Si no existe, está vacío, o es 'null' string, retorna undefined
@@ -52,9 +48,6 @@ togglePeriodState(
   // Convertir strings a números manejando 'null' string
   const closeIdNum = parseId(closeId);
   const activeIdNum = parseId(activeId);
-  
-  console.log('🔢 Converted closeId:', closeIdNum, typeof closeIdNum);
-  console.log('🔢 Converted activeId:', activeIdNum, typeof activeIdNum);
   
   // Validar que al menos uno de los parámetros sea válido
   if (!closeIdNum && !activeIdNum) {

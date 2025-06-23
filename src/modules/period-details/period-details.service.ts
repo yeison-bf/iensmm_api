@@ -5,6 +5,7 @@ import { PeriodDetail } from './entities/period-detail.entity';
 import { Period } from '../periods/entities/period.entity';
 import { CreatePeriodDetailDto } from './dto/create-period-detail.dto';
 import { UpdatePerioDetaildDto } from './dto/update-period-detail.dto';
+import { StudentGrade } from '../student-grades/entities/student-grade.entity';
 
 @Injectable()
 export class PeriodDetailsService {
@@ -13,6 +14,11 @@ export class PeriodDetailsService {
     private readonly periodDetailRepository: Repository<PeriodDetail>,
     @InjectRepository(Period)
     private readonly periodRepository: Repository<Period>,
+
+    @InjectRepository(StudentGrade)
+    private readonly studentGradeRepository: Repository<StudentGrade>,
+
+
   ) { }
 
   async create(createPeriodDetailDto: CreatePeriodDetailDto) {
@@ -264,6 +270,21 @@ export class PeriodDetailsService {
     console.log('closeId:', closeId, 'activeId:', activeId)
     try {
       const updates = [];
+
+      const vaidatStudenGrade = await this.studentGradeRepository.find({
+        where: {
+          periodDetail: { id: closeId},
+          status: true,
+        },
+      });
+
+      if(vaidatStudenGrade.length > 0){
+        return {
+          success: false,
+          message: `No se puede cerrar el periodo porque existen estudiantes con notas en sesión`,
+          data: null
+        };
+      }
 
       if (closeId) {
         const closePeriod = await this.periodDetailRepository.findOne({
