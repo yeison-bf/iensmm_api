@@ -8,19 +8,16 @@ export class CreateRatingDto {
   @IsNumber()
   @IsNotEmpty()
   @Min(1.0)
-  @Max(5.0)
   minRange: number;
 
   @IsNumber()
   @IsNotEmpty()
   @Min(1.0)
-  @Max(5.0)
   maxRange: number;
 
   @IsNumber()
   @IsNotEmpty()
   @Min(2000)
-  @Max(2100)
   year: number;
 
   @IsNumber()
