@@ -723,7 +723,90 @@ export class StudentGradesService {
 
 
 
+  async findByEnrollmentAndPeriod(studentEnrollmentId: number, periodId: number) {
+    try {
+      const grades = await this.gradeRepository
+        .createQueryBuilder('grade')
+        .leftJoinAndSelect('grade.academicThinkingDetail', 'academicThinkingDetail')
+        .leftJoinAndSelect('academicThinkingDetail.trainingArea', 'trainingArea')
+        .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
+        .leftJoinAndSelect('grade.studentEnrollment', 'studentEnrollment')
+        .leftJoin('studentEnrollment.student', 'student')
+        .leftJoin('student.user', 'studentUser')
+        .leftJoinAndSelect('grade.teacher', 'teacher') // Relación con Administrator
+        .leftJoin('teacher.user', 'teacherUser') // Para obtener datos del usuario del teacher
+        .addSelect([
+          'student.id',
+          'studentUser.firstName',
+          'studentUser.lastName',
+          'teacherUser.firstName',
+          'teacherUser.lastName',
+          'teacher.academicTitle',
+          'teacher.trainingArea'
+        ])
+        .where('grade.studentEnrollmentId = :studentEnrollmentId', { studentEnrollmentId })
+        .andWhere('grade.periodDetailId = :periodId', { periodId })
+        .orderBy('grade.createdAt', 'DESC')
+        .getMany();
 
+      if (!grades.length) {
+        return {
+          success: false,
+          message: 'No se encontraron calificaciones para esta matrícula y período',
+          data: null,
+        };
+      }
+
+      // Formatear los datos para la respuesta
+      const formattedGrades = grades.map(grade => ({
+        id: grade.id,
+        numericalGrade: grade.numericalGrade,
+        qualitativeGrade: grade.qualitativeGrade,
+        disciplineGrade: grade.disciplineGrade,
+        observations: grade.observations,
+        closingDate: grade.closingDate,
+        status: grade.status,
+        academicThinkingDetail: {
+          id: grade.academicThinkingDetail.id,
+          name: grade.academicThinkingDetail.trainingArea.name,
+          hourlyIntensity: grade.academicThinkingDetail.hourlyIntensity,
+          percentage: grade.academicThinkingDetail.percentage
+        },
+        periodDetail: {
+          id: grade.periodDetail.id,
+          name: grade.periodDetail.name,
+          code: grade.periodDetail.code,
+          startDate: grade.periodDetail.startDate,
+          endDate: grade.periodDetail.endDate
+        },
+        teacher: grade.teacher ? {
+          id: grade.teacher.id,
+          firstName: grade.teacher.user?.firstName,
+          lastName: grade.teacher.user?.lastName,
+          academicTitle: grade.teacher.academicTitle,
+          trainingArea: grade.teacher.trainingArea,
+          signature: grade.teacher.signature
+        } : null,
+        student: {
+          id: grade.studentEnrollment.student?.id,
+          firstName: grade.studentEnrollment.student?.user?.firstName,
+          lastName: grade.studentEnrollment.student?.user?.lastName
+        }
+      }));
+
+      return {
+        success: true,
+        message: 'Calificaciones obtenidas exitosamente',
+        data: formattedGrades,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al obtener calificaciones: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
 
 

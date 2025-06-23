@@ -8,13 +8,23 @@ export class StudentGradesController {
   constructor(private readonly studentGradesService: StudentGradesService) { }
 
   // ======== Rutas Específicas (Más específicas primero) ========
+
+  @Get('enrollment/:enrollmentId/period/:periodId')
+  findByEnrollmentAndPeriod(
+    @Param('enrollmentId') enrollmentId: number,
+    @Param('periodId') periodId: number,
+  ) {
+    return this.studentGradesService.findByEnrollmentAndPeriod(enrollmentId, periodId);
+  }
+
+  
   @Get('list/leveling')
   async findByTeacherAndYear(
     @Query('teacherId', ParseIntPipe) teacherId: number,
     @Query('year', new DefaultValuePipe(new Date().getFullYear()), ParseIntPipe) year: number,
     @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades: boolean = true
   ) {
-    return this.studentGradesService.findByTeacherAndYear(teacherId,  year, onlyLowGrades);
+    return this.studentGradesService.findByTeacherAndYear(teacherId, year, onlyLowGrades);
   }
 
   @Get('voletin/filtered')
@@ -45,9 +55,9 @@ export class StudentGradesController {
     @Query('onlyLowGrades', new ParseBoolPipe({ optional: true })) onlyLowGrades?: boolean
   ) {
     return this.studentGradesService.findByFiltersLeveling(
-      groupId, 
-      degreeId, 
-      thinkingDetailId, 
+      groupId,
+      degreeId,
+      thinkingDetailId,
       periodDetailId,
       onlyLowGrades ?? true
     );
@@ -73,6 +83,8 @@ export class StudentGradesController {
   ) {
     return this.studentGradesService.findAll(studentId, periodId, teacherId, thinkingDetailId);
   }
+
+
 
   // ======== CRUD Básico ========
   @Post()
