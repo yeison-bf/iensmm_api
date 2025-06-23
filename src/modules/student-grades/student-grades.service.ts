@@ -885,8 +885,88 @@ export class StudentGradesService {
 
 
 
-
-
+  async getGradesGroupedForChart(studentEnrollmentId: number, periodDetailId: number) {
+    try {
+      const grades = await this.gradeRepository
+        .createQueryBuilder('grade')
+        .leftJoinAndSelect('grade.academicThinkingDetail', 'academicThinkingDetail')
+        .leftJoinAndSelect('academicThinkingDetail.trainingArea', 'trainingArea')
+        .leftJoinAndSelect('academicThinkingDetail.academicThinking', 'academicThinking')
+        .where('grade.studentEnrollmentId = :studentEnrollmentId', { studentEnrollmentId })
+        .andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId })
+        .getMany();
+  
+      if (!grades.length) {
+        return {
+          success: false,
+          message: 'No se encontraron calificaciones para esta matrícula y período',
+          data: null,
+        };
+      }
+  
+      // Agrupar por academicThinking.id y luego por trainingArea.id
+      const grouped: Record<number, {
+        academicThinking: { id: number; year: number };
+        trainingAreas: Record<number, {
+          trainingArea: { id: number; name: string };
+          grades: Array<{ id: number; numericalGrade: number; qualitativeGrade: string; status: boolean }>;
+        }>;
+      }> = {};
+  
+      grades.forEach(grade => {
+        const academicThinking = grade.academicThinkingDetail.academicThinking;
+        const trainingArea = grade.academicThinkingDetail.trainingArea;
+  
+        const thinkingId = academicThinking.id;
+        const areaId = trainingArea.id;
+  
+        if (!grouped[thinkingId]) {
+          grouped[thinkingId] = {
+            academicThinking: {
+              id: thinkingId,
+              year: academicThinking.year,
+            },
+            trainingAreas: {}
+          };
+        }
+  
+        if (!grouped[thinkingId].trainingAreas[areaId]) {
+          grouped[thinkingId].trainingAreas[areaId] = {
+            trainingArea: {
+              id: areaId,
+              name: trainingArea.name
+            },
+            grades: []
+          };
+        }
+  
+        grouped[thinkingId].trainingAreas[areaId].grades.push({
+          id: grade.id,
+          numericalGrade: grade.numericalGrade,
+          qualitativeGrade: grade.qualitativeGrade,
+          status: grade.status
+        });
+      });
+  
+      const formattedResult = Object.values(grouped).map(thinking => ({
+        academicThinking: thinking.academicThinking,
+        trainingAreas: Object.values(thinking.trainingAreas)
+      }));
+  
+      return {
+        success: true,
+        message: 'Calificaciones agrupadas para gráfico obtenidas exitosamente',
+        data: formattedResult
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al obtener datos para gráfico: ${error.message}`,
+        data: null
+      };
+    }
+  }
+  
 
 
 

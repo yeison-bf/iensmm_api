@@ -25,7 +25,13 @@ export class StudentGradesController {
     return this.studentGradesService.getGradeAveragesByPeriod(enrollmentId, periodId);
   }
 
-
+  @Get('chart/grouped')
+  findByEnrollmentAndPeriodGrouped(
+    @Query('enrollmentId') enrollmentId: number,
+    @Query('periodId') periodId: number
+  ) {
+    return this.studentGradesService.getGradesGroupedForChart(enrollmentId, periodId);
+  }
 
   @Get('list/leveling')
   async findByTeacherAndYear(
