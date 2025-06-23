@@ -176,6 +176,50 @@ export class UsersService {
 
 
 
+  // async findAllStudents(headquarterId?: number, programId?: number) {
+  //   try {
+  //     const queryBuilder = this.userRepository
+  //       .createQueryBuilder('user')
+  //       .leftJoinAndSelect('user.student', 'student')
+  //       .leftJoinAndSelect('student.enrollments', 'enrollments')
+  //       .leftJoinAndSelect('user.role', 'role')
+  //       .leftJoinAndSelect('user.documentType', 'documentType')
+  //       .leftJoinAndSelect('user.headquarters', 'headquarters')
+  //       .leftJoinAndSelect('headquarters.institution', 'institution')
+  //       .where('role.name = :roleName', { roleName: 'Estudent' });
+
+  //     if (headquarterId) {
+  //       queryBuilder.andWhere('student.headquarter_id = :headquarterId', { headquarterId });
+  //     }
+
+  //     if (programId) {
+  //       queryBuilder.andWhere('student.program_id = :programId', { programId });
+  //     }
+
+  //     const users = await queryBuilder.getMany();
+
+  //     // Map the results to include hasEnrollment
+  //     const enrichedUsers = users.map(user => ({
+  //       ...user,
+  //       hasEnrollment: user.student?.enrollments?.length > 0 || false
+  //     }));
+
+  //     return {
+  //       success: true,
+  //       message: 'Estudiantes recuperados exitosamente',
+  //       data: enrichedUsers,
+  //     };
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       message: `Error al recuperar estudiantes: ${error.message}`,
+  //       data: null,
+  //     };
+  //   }
+  // }
+
+
+
   async findAllStudents(
     headquarterId?: number,
     programId?: number,
@@ -185,22 +229,22 @@ export class UsersService {
     try {
       const queryBuilder = this.userRepository
         .createQueryBuilder('user')
-        .leftJoinAndSelect('user.role', 'role')
         .leftJoinAndSelect('user.student', 'student')
+        .leftJoinAndSelect('student.enrollments', 'enrollments')
+        .leftJoinAndSelect('user.role', 'role')
         .leftJoinAndSelect('user.documentType', 'documentType')
         .leftJoinAndSelect('user.headquarters', 'headquarters')
-        .leftJoinAndSelect('student.program', 'program')
-        .where('role.name = :roleName', { roleName: 'student' });
+        .leftJoinAndSelect('headquarters.institution', 'institution')
+        .where('role.name = :roleName', { roleName: 'Estudent' }); // Changed back to 'Estudent'
 
       if (headquarterId) {
-        queryBuilder.andWhere('headquarters.id = :headquarterId', { headquarterId });
+        queryBuilder.andWhere('student.headquarter_id = :headquarterId', { headquarterId });
       }
 
       if (programId) {
-        queryBuilder.andWhere('program.id = :programId', { programId });
+        queryBuilder.andWhere('student.program_id = :programId', { programId });
       }
 
-      // Add pagination
       const skip = (page - 1) * limit;
       const [users, total] = await Promise.all([
         queryBuilder
@@ -210,11 +254,17 @@ export class UsersService {
         queryBuilder.getCount()
       ]);
 
+      // Map the results to include hasEnrollment
+      const enrichedUsers = users.map(user => ({
+        ...user,
+        hasEnrollment: user.student?.enrollments?.length > 0 || false
+      }));
+
       return {
         success: true,
-        message: 'Students retrieved successfully',
+        message: 'Estudiantes recuperados exitosamente',
         data: {
-          items: users,
+          items: enrichedUsers,
           meta: {
             total,
             page,
@@ -228,17 +278,11 @@ export class UsersService {
     } catch (error) {
       return {
         success: false,
-        message: `Error retrieving students: ${error.message}`,
+        message: `Error al recuperar estudiantes: ${error.message}`,
         data: null,
       };
     }
   }
-
-
-
-
-
-
 
 
 
@@ -954,7 +998,7 @@ export class UsersService {
         ) || null;
         console.log("matriculaActiva : ", matriculaActiva);
 
-
+        
         tokenPayload = {
           ...tokenPayload,
           student: {
