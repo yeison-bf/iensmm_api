@@ -18,7 +18,6 @@ export class GradeDto {
   groupId: number;
 
   @IsString()
-  @IsIn(['Superior', 'Alto', 'Básico', 'Bajo'])
   qualitativeGrade: string;
 
   @IsNumber()
