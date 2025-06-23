@@ -811,71 +811,73 @@ export class StudentGradesService {
 
 
   // Listar promedios por peeridos
-  async getGradeAveragesByPeriod(
-    studentEnrollmentId: number,
-    periodId?: number // Parámetro opcional para filtrar por período específico
-  ) {
+  async getGradeAveragesByPeriod(enrollmentId: number, periodId: number) {
     try {
-      // Crear query builder
-      const query = this.gradeRepository
+      // 1. Obtener información del período específico
+      const periodInfo = await this.gradeRepository
         .createQueryBuilder('grade')
         .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
         .select([
-          'periodDetail.id as periodId',
-          'periodDetail.name as periodName',
-          'periodDetail.code as periodCode',
+          'periodDetail.id as id',
+          'periodDetail.name as name',
+          'periodDetail.code as code',
+          'periodDetail.startDate as startDate',
+          'periodDetail.endDate as endDate'
+        ])
+        .where('grade.studentEnrollmentId = :enrollmentId', { enrollmentId })
+        .andWhere('grade.periodDetailId = :periodId', { periodId })
+        .limit(1)
+        .getRawOne();
+  
+      if (!periodInfo) {
+        return {
+          success: false,
+          message: 'No se encontró el período especificado',
+          data: [],
+        };
+      }
+  
+      // 2. Calcular promedios para el período
+      const averages = await this.gradeRepository
+        .createQueryBuilder('grade')
+        .select([
           'COUNT(grade.id) as totalGrades',
           'AVG(grade.numericalGrade) as averageGrade',
           'AVG(grade.disciplineGrade) as averageDiscipline'
         ])
-        .where('grade.studentEnrollmentId = :studentEnrollmentId', { studentEnrollmentId })
-        .groupBy('grade.periodDetailId')
-        .addGroupBy('periodDetail.id')
-        .addGroupBy('periodDetail.name')
-        .addGroupBy('periodDetail.code')
-        .orderBy('periodDetail.startDate', 'ASC');
+        .where('grade.studentEnrollmentId = :enrollmentId', { enrollmentId })
+        .andWhere('grade.periodDetailId = :periodId', { periodId })
+        .getRawOne();
   
-      // Filtrar por período específico si se proporciona
-      if (periodId) {
-        query.andWhere('grade.periodDetailId = :periodId', { periodId });
-      }
-  
-      // Ejecutar la consulta
-      const results = await query.getRawMany();
-  
-      if (!results.length) {
-        return {
-          success: false,
-          message: 'No se encontraron calificaciones para esta matrícula',
-          data: null,
-        };
-      }
-  
-      // Formatear la respuesta
-      const formattedResults = results.map(item => ({
-        period: {
-          id: item.periodId,
-          name: item.periodName,
-          code: item.periodCode
-        },
-        statistics: {
-          totalGrades: parseInt(item.totalGrades),
-          averageGrade: parseFloat(item.averageGrade),
-          averageDiscipline: parseFloat(item.averageDiscipline)
+      // 3. Formatear respuesta como ARREGLO
+      const result = [
+        {
+          period: {
+            id: periodInfo.id,
+            name: periodInfo.name,
+            code: periodInfo.code,
+            startDate: periodInfo.startDate,
+            endDate: periodInfo.endDate
+          },
+          statistics: {
+            totalGrades: parseInt(averages.totalGrades),
+            averageGrade: parseFloat(averages.averageGrade),
+            averageDiscipline: parseFloat(averages.averageDiscipline)
+          }
         }
-      }));
+      ];
   
       return {
         success: true,
-        message: 'Promedios calculados exitosamente',
-        data: periodId ? formattedResults[0] : formattedResults // Si es consulta por un período, devolver solo ese objeto
+        message: 'Promedios del período obtenidos exitosamente',
+        data: result // Siempre devuelve un arreglo
       };
   
     } catch (error) {
       return {
         success: false,
         message: `Error al calcular promedios: ${error.message}`,
-        data: null,
+        data: [], // Devuelve arreglo vacío en caso de error
       };
     }
   }
