@@ -22,7 +22,6 @@ export class UpdateGradeDto {
   groupId?: number;
 
   @IsString()
-  @IsIn(['Superior', 'Alto', 'Básico', 'Bajo'])
   @IsOptional()
   qualitativeGrade?: string;
 
