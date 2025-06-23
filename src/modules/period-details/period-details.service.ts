@@ -271,14 +271,14 @@ export class PeriodDetailsService {
     try {
       const updates = [];
 
-      const vaidatStudenGrade = await this.studentGradeRepository.find({
+      const vaidatStudenGrade = await this.studentGradeRepository.findOne({
         where: {
           periodDetail: { id: closeId},
-          status: true,
+          status: false,
         },
       });
 
-      if(vaidatStudenGrade.length > 0){
+      if(vaidatStudenGrade){
         return {
           success: false,
           message: `No se puede cerrar el periodo porque existen estudiantes con notas en sesión`,
