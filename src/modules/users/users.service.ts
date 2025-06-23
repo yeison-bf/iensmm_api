@@ -901,12 +901,7 @@ export class UsersService {
         };
       }
 
-      console.log(user.student.enrollments);
-
-      const matriculaActiva = user.student.enrollments?.find(
-        enrollment => enrollment.status === true
-      ) || null;
-      console.log("matriculaActiva : ", matriculaActiva);
+    
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -935,6 +930,15 @@ export class UsersService {
 
       // Add specific data based on role
       if (user.role.name === 'student' && user.student) {
+
+        console.log(user.student.enrollments);
+
+        const matriculaActiva = user.student.enrollments?.find(
+          enrollment => enrollment.status === true
+        ) || null;
+        console.log("matriculaActiva : ", matriculaActiva);
+
+        
         tokenPayload = {
           ...tokenPayload,
           student: {
