@@ -20,6 +20,21 @@ export class AcademicAssignmentController {
     return this.academicAssignmentService.findAll(headquarterId, programId);
   }
 
+  @Get('by-criteria')
+  async findByCriteria(
+    @Query('degreeId') degreeId: number,
+    @Query('groupId') groupId: number,
+    @Query('headquarterId') headquarterId: number,
+    @Query('year') year: number,
+  ) {
+    return this.academicAssignmentService.findAssignmentByCriteria(
+      Number(degreeId),
+      Number(groupId),
+      Number(headquarterId),
+      Number(year)
+    );
+  }
+
   @Get('rating')
   findAllByRatign(
     @Query('headquarterId') headquarterId?: number,

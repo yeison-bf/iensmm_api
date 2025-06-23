@@ -213,7 +213,50 @@ export class AcademicAssignmentService {
 
 
 
+  async findAssignmentByCriteria(
+    degreeId: number,
+    groupId: number,
+    headquarterId: number,
+    year: number
+  ) {
+    console.log("--- paso aqui ")
+    try {
+      const assignment = await this.academicAssignmentRepository
+        .createQueryBuilder('assignment')
+        .leftJoinAndSelect('assignment.degree', 'degree')
+        .leftJoinAndSelect('assignment.group', 'group')
+        .leftJoinAndSelect('assignment.headquarters', 'headquarters')
+        .leftJoinAndSelect('assignment.program', 'program')
+        .leftJoinAndSelect('assignment.details', 'details')
+        // .leftJoinAndSelect('details.academicThinkingDetail', 'academicThinkingDetail')
+        // .leftJoinAndSelect('academicThinkingDetail.trainingArea', 'trainingArea')
+        .where('assignment.degree_id = :degreeId', { degreeId })
+        .andWhere('assignment.group_id = :groupId', { groupId })
+        .andWhere('assignment.headquarter_id = :headquarterId', { headquarterId })
+        .andWhere('assignment.year = :year', { year })
+        .getOne();
 
+      if (!assignment) {
+        return {
+          success: false,
+          message: 'No se encontró la asignación académica con los criterios proporcionados',
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Asignación académica encontrada',
+        data: assignment,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al buscar asignación académica: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
 
   
