@@ -810,7 +810,75 @@ export class StudentGradesService {
 
 
 
-
+  // Listar promedios por peeridos
+  async getGradeAveragesByPeriod(
+    studentEnrollmentId: number,
+    periodId?: number // Parámetro opcional para filtrar por período específico
+  ) {
+    try {
+      // Crear query builder
+      const query = this.gradeRepository
+        .createQueryBuilder('grade')
+        .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
+        .select([
+          'periodDetail.id as periodId',
+          'periodDetail.name as periodName',
+          'periodDetail.code as periodCode',
+          'COUNT(grade.id) as totalGrades',
+          'AVG(grade.numericalGrade) as averageGrade',
+          'AVG(grade.disciplineGrade) as averageDiscipline'
+        ])
+        .where('grade.studentEnrollmentId = :studentEnrollmentId', { studentEnrollmentId })
+        .groupBy('grade.periodDetailId')
+        .addGroupBy('periodDetail.id')
+        .addGroupBy('periodDetail.name')
+        .addGroupBy('periodDetail.code')
+        .orderBy('periodDetail.startDate', 'ASC');
+  
+      // Filtrar por período específico si se proporciona
+      if (periodId) {
+        query.andWhere('grade.periodDetailId = :periodId', { periodId });
+      }
+  
+      // Ejecutar la consulta
+      const results = await query.getRawMany();
+  
+      if (!results.length) {
+        return {
+          success: false,
+          message: 'No se encontraron calificaciones para esta matrícula',
+          data: null,
+        };
+      }
+  
+      // Formatear la respuesta
+      const formattedResults = results.map(item => ({
+        period: {
+          id: item.periodId,
+          name: item.periodName,
+          code: item.periodCode
+        },
+        statistics: {
+          totalGrades: parseInt(item.totalGrades),
+          averageGrade: parseFloat(item.averageGrade),
+          averageDiscipline: parseFloat(item.averageDiscipline)
+        }
+      }));
+  
+      return {
+        success: true,
+        message: 'Promedios calculados exitosamente',
+        data: periodId ? formattedResults[0] : formattedResults // Si es consulta por un período, devolver solo ese objeto
+      };
+  
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al calcular promedios: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
 
 
