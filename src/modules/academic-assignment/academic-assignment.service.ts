@@ -585,35 +585,43 @@ export class AcademicAssignmentService {
 
 
 
-
-
   async remove(id: number) {
     try {
-      // First find the assignment with its details
-      const assignment = await this.academicAssignmentRepository.findOne({
-        where: { id },
-        relations: ['details']
-      });
+      const assignment = await this.academicAssignmentRepository
+        .createQueryBuilder('assignment')
+        .leftJoinAndSelect('assignment.details', 'details')
+        .leftJoinAndSelect('details.academicThinkingDetail', 'thinkingDetail')
+        .leftJoinAndSelect('thinkingDetail.grades', 'grades')
+        .where('assignment.id = :id', { id })
+        .getOne();
 
       if (!assignment) {
         return {
           success: false,
-          message: `Asignación académica con ID ${id} no encontrada`,
+          message: 'Asignación académica no encontrada',
           data: null
         };
       }
 
-      // First remove all details
-      if (assignment.details?.length) {
-        await this.academicAssignmentDetailRepository.remove(assignment.details);
+      // Check if any detail has grades
+      const detailsWithGrades = assignment.details.filter(detail => 
+        detail.academicThinkingDetail?.grades?.length > 0
+      );
+
+      if (detailsWithGrades.length > 0) {
+        return {
+          success: false,
+          message: 'No se puede eliminar la asignación académica porque ya existen calificaciones registradas para algunos estudiantes',
+        };
       }
 
-      // Then remove the main assignment
+      // If no grades exist, proceed with deletion
+      await this.academicAssignmentDetailRepository.remove(assignment.details);
       await this.academicAssignmentRepository.remove(assignment);
 
       return {
         success: true,
-        message: 'Asignación académica y sus detalles eliminados exitosamente',
+        message: 'Asignación académica eliminada exitosamente',
         data: assignment
       };
     } catch (error) {
