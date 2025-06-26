@@ -11,6 +11,7 @@ import { PeriodDetail } from '../period-details/entities/period-detail.entity';
 import { PeriodDetailsModule } from '../period-details/period-details.module';
 import { Degree } from '../degrees/entities/degree.entity';
 import { Group } from '../group/entities/group.entity';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { Group } from '../group/entities/group.entity';
       Degree,
       Group
     ]),
-    PeriodDetailsModule
+    PeriodDetailsModule,
+    MailModule
   ],
   controllers: [StudentGradesController],
   providers: [StudentGradesService],

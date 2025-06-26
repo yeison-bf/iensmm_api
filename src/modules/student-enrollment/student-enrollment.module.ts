@@ -7,14 +7,19 @@ import { Student } from '../students/entities/student.entity';
 import { Group } from '../group/entities/group.entity';
 import { Degree } from '../degrees/entities/degree.entity';
 import { Program } from '../programs/entities/program.entity';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([  StudentEnrollment,
+  imports: [TypeOrmModule.forFeature([StudentEnrollment,
     Student,
     Group,
-    Degree, Program])],
+    Degree, 
+    Program, 
+  ]),
+  MailModule
+],
   controllers: [StudentEnrollmentController],
   providers: [StudentEnrollmentService],
   exports: [StudentEnrollmentService]  // Add this line
 })
-export class StudentEnrollmentModule {}
+export class StudentEnrollmentModule { }

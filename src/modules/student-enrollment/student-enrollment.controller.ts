@@ -34,6 +34,18 @@ export class StudentEnrollmentController {
     return this.enrollmentService.findAllListStudend(headquarterId, year, programId, group, degree);
   }
 
+  @Get('sendEmail')
+  sendEmail(
+    @Query('asignatura') asignatura?: string, 
+    @Query('year') year?: string,
+    @Query('programId') programId?: number,
+    @Query('group') group?: number,
+    @Query('degree') degree?: number,
+  ) {
+    return this.enrollmentService.sendEmail(asignatura, year, programId, group, degree);
+  }
+
+
 
 
   @Get('raitng')

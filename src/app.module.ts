@@ -30,6 +30,7 @@ import { ProgramsModule } from './modules/programs/programs.module';
 import { AssistanceModule } from './modules/assistance/assistance.module';
 import { StudentGradesModule } from './modules/student-grades/student-grades.module';
 import { StudentAttendanceModule } from './modules/student-attendance/student-attendance.module';
+import { MailModule } from './mail/mail.module';
 
 
 @Module({
@@ -105,6 +106,7 @@ import { StudentAttendanceModule } from './modules/student-attendance/student-at
     AssistanceModule,
     StudentGradesModule,
     StudentAttendanceModule,
+    MailModule,
 
   ],
   controllers: [AppController],

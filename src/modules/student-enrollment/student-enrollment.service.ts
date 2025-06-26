@@ -7,6 +7,7 @@ import { Student } from '../students/entities/student.entity';
 import { Group } from '../group/entities/group.entity';
 import { Degree } from '../degrees/entities/degree.entity';
 import { Program } from '../programs/entities/program.entity';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class StudentEnrollmentService {
@@ -22,7 +23,23 @@ export class StudentEnrollmentService {
 
     @InjectRepository(Program)
     private readonly programRepository: Repository<Program>,
+
+    private readonly mailService: MailService
+
+
   ) { }
+
+
+  async notificarUsuario(email: string, nombre: string, message: string) {
+    const contenido = `
+      <h1>Hola ${nombre}</h1>
+      <p>${message}</p>
+    `;
+    await this.mailService.sendMail(email, 'Notificación de Edunormas', contenido);
+  }
+
+
+
 
   async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
     try {
@@ -98,13 +115,13 @@ export class StudentEnrollmentService {
 
 
   async findAll(
-    headquarterId?: number, 
-    year?: string, 
+    headquarterId?: number,
+    year?: string,
     programId?: number,
     page?: number,
     limit?: number
   ) {
-    console.log('headquarterId', headquarterId) 
+    console.log('headquarterId', headquarterId)
     try {
       const queryBuilder = this.enrollmentRepository
         .createQueryBuilder('enrollment')
@@ -167,11 +184,9 @@ export class StudentEnrollmentService {
   }
 
 
-
-  
   async findAllListStudend(
-    headquarterId?: number, 
-    year?: string, 
+    headquarterId?: number,
+    year?: string,
     programId?: number,
     group?: number,
     degree?: number,
@@ -197,7 +212,7 @@ export class StudentEnrollmentService {
       if (programId) {
         queryBuilder.andWhere('enrollment.program_id = :programId', { programId });
       }
-      
+
       if (group) {
         queryBuilder.andWhere('enrollment.groupId = :group', { group });
       }
@@ -224,7 +239,86 @@ export class StudentEnrollmentService {
   }
 
 
-  
+
+
+  async sendEmail(
+    asignatura?: string,
+    year?: string,
+    programId?: number,
+    group?: number,
+    degree?: number,
+  ) {
+    try {
+
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('es-CO', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
+
+      const queryBuilder = this.enrollmentRepository
+        .createQueryBuilder('enrollment')
+        .leftJoinAndSelect('enrollment.student', 'student')
+        .leftJoinAndSelect('student.user', 'user')
+        .orderBy('enrollment.createdAt', 'DESC');
+
+      if (year) {
+        queryBuilder.andWhere('YEAR(enrollment.registrationDate) = :year', { year });
+      }
+
+      if (group) {
+        queryBuilder.andWhere('enrollment.groupId = :group', { group });
+      }
+
+      if (degree) {
+        queryBuilder.andWhere('enrollment.degreeId = :degree', { degree });
+      }
+
+      // Obtener todas las matrículas
+      const enrollments = await queryBuilder.getMany();
+
+      // Enviar correo a cada uno
+      for (const enrollment of enrollments) {
+        const user = enrollment.student?.user;
+
+        if (user?.notificationEmail) {
+          const nombre = `${user.firstName} ${user.lastName}`;
+          const message = `
+          Te notificamos que tus calificaciones en la asignatura <strong>${asignatura}</strong> han sido registradas en la plataforma <strong>Edunormas</strong>.<br><br>
+          Fecha de registro: <strong>${formattedDate}</strong>.<br><br>
+          Por favor, revisa tu calificación. Si no estás de acuerdo con el resultado, te invitamos a comunicarte con el docente del área correspondiente.<br><br>
+          ¡Gracias por ser parte de nuestra comunidad!
+        `;
+          await this.notificarUsuario(user.notificationEmail, nombre, message);
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Matrículas recuperadas y correos enviados exitosamente',
+        data: enrollments
+      };
+
+    } catch (error) {
+      console.error('❌ Error al enviar correos:', error);
+      return {
+        success: false,
+        message: `Error al recuperar las matrículas y enviar correos: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
+
+
+
+
+
+
 
   async findAllDegree(headquarterId?: number, year?: string, programId?: number) {
     try {

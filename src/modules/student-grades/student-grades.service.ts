@@ -10,6 +10,7 @@ import { Administrator } from '../administrators/entities/administrator.entity';
 import { UpdateStudentGradesBulkDto } from './dto/update-student-grade.dto';
 import { Degree } from '../degrees/entities/degree.entity';
 import { Group } from '../group/entities/group.entity';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class StudentGradesService {
@@ -30,7 +31,21 @@ export class StudentGradesService {
 
     @InjectRepository(Group)
     private groupRepository: Repository<Group>,
+
+    private readonly mailService: MailService
   ) { }
+
+
+  async notificarUsuario(email: string, nombre: string) {
+    const contenido = `
+      <h1>Hola ${nombre}</h1>
+      <p>Tu registro ha sido exitoso. ¡Gracias por participar!</p>
+    `;
+
+    await this.mailService.sendMail(email, 'Registro confirmado', contenido);
+  }
+
+
 
   async create(createGradeDto: CreateStudentGradeDto) {
     try {
@@ -125,6 +140,24 @@ export class StudentGradesService {
       };
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   async findAll(studentId?: number, periodId?: number, teacherId?: number, thinkingDetailId?: number) {
     try {
@@ -299,6 +332,24 @@ export class StudentGradesService {
       };
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   async findByFiltersTrainignArea(groupId?: number, degreeId?: number, periodDetailId?: number) {
     try {
