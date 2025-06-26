@@ -29,6 +29,19 @@ export class StudentAttendanceController {
     return this.studentAttendanceService.findAll(studentId, trainingAreaId, startDate, endDate);
   }
 
+
+  @Get()
+  sendEmail(
+    @Query('studentId') studentId?: number,
+    @Query('trainingAreaId') trainingAreaId?: number,
+    @Query('startDate') startDate?: Date,
+    @Query('endDate') endDate?: Date,
+  ) {
+    return this.studentAttendanceService.sendEmail(studentId, trainingAreaId, startDate, endDate);
+  }
+
+
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.studentAttendanceService.findOne(id);
