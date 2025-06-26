@@ -176,7 +176,13 @@ export class UsersService {
 
 
 
-  // async findAllStudents(headquarterId?: number, programId?: number) {
+
+  // async findAllStudents(
+  //   headquarterId?: number,
+  //   programId?: number,
+  //   page: number = 1,
+  //   limit: number = 10
+  // ) {
   //   try {
   //     const queryBuilder = this.userRepository
   //       .createQueryBuilder('user')
@@ -186,7 +192,7 @@ export class UsersService {
   //       .leftJoinAndSelect('user.documentType', 'documentType')
   //       .leftJoinAndSelect('user.headquarters', 'headquarters')
   //       .leftJoinAndSelect('headquarters.institution', 'institution')
-  //       .where('role.name = :roleName', { roleName: 'Estudent' });
+  //       .where('role.name = :roleName', { roleName: 'Estudent' }); // Changed back to 'Estudent'
 
   //     if (headquarterId) {
   //       queryBuilder.andWhere('student.headquarter_id = :headquarterId', { headquarterId });
@@ -196,7 +202,14 @@ export class UsersService {
   //       queryBuilder.andWhere('student.program_id = :programId', { programId });
   //     }
 
-  //     const users = await queryBuilder.getMany();
+  //     const skip = (page - 1) * limit;
+  //     const [users, total] = await Promise.all([
+  //       queryBuilder
+  //         .skip(skip)
+  //         .take(limit)
+  //         .getMany(),
+  //       queryBuilder.getCount()
+  //     ]);
 
   //     // Map the results to include hasEnrollment
   //     const enrichedUsers = users.map(user => ({
@@ -207,7 +220,17 @@ export class UsersService {
   //     return {
   //       success: true,
   //       message: 'Estudiantes recuperados exitosamente',
-  //       data: enrichedUsers,
+  //       data: {
+  //         items: enrichedUsers,
+  //         meta: {
+  //           total,
+  //           page,
+  //           limit,
+  //           totalPages: Math.ceil(total / limit),
+  //           hasNextPage: page < Math.ceil(total / limit),
+  //           hasPreviousPage: page > 1
+  //         }
+  //       }
   //     };
   //   } catch (error) {
   //     return {
@@ -217,8 +240,6 @@ export class UsersService {
   //     };
   //   }
   // }
-
-
 
   async findAllStudents(
     headquarterId?: number,
@@ -235,17 +256,18 @@ export class UsersService {
         .leftJoinAndSelect('user.documentType', 'documentType')
         .leftJoinAndSelect('user.headquarters', 'headquarters')
         .leftJoinAndSelect('headquarters.institution', 'institution')
-        .where('role.name = :roleName', { roleName: 'Estudent' }); // Changed back to 'Estudent'
-
+        .where('role.name = :roleName', { roleName: 'Estudent' });
+  
       if (headquarterId) {
         queryBuilder.andWhere('student.headquarter_id = :headquarterId', { headquarterId });
       }
-
+  
       if (programId) {
         queryBuilder.andWhere('student.program_id = :programId', { programId });
       }
-
+  
       const skip = (page - 1) * limit;
+  
       const [users, total] = await Promise.all([
         queryBuilder
           .skip(skip)
@@ -253,13 +275,17 @@ export class UsersService {
           .getMany(),
         queryBuilder.getCount()
       ]);
-
-      // Map the results to include hasEnrollment
-      const enrichedUsers = users.map(user => ({
-        ...user,
-        hasEnrollment: user.student?.enrollments?.length > 0 || false
-      }));
-
+  
+      const enrichedUsers = users
+        .map(user => ({
+          ...user,
+          hasEnrollment: user.student?.enrollments?.length > 0 || false
+        }))
+        .sort((a, b) => {
+          // Primero los que tienen matrícula
+          return Number(b.hasEnrollment) - Number(a.hasEnrollment);
+        });
+  
       return {
         success: true,
         message: 'Estudiantes recuperados exitosamente',
@@ -283,8 +309,7 @@ export class UsersService {
       };
     }
   }
-
-
+  
 
 
 
