@@ -295,6 +295,31 @@ export class AcademicAssignmentService {
 
 
 
+  async findOneByTeacher(id: number, yeart?: number) {
+    const assignment = await this.academicAssignmentRepository.find({
+      where: { directorGroupId: id, year: yeart },
+      relations: [
+        'degree',
+        'group',
+        'program'
+      ]
+    });
+
+    if (!assignment) {
+      return {
+        success: false,
+        message: `Asignación académica con ID ${id} no encontrada`,
+        data: null
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Asignación académica recuperada exitosamente',
+      data: assignment
+    };
+  }
+
 
 
 

@@ -45,6 +45,15 @@ export class AcademicAssignmentController {
     return this.academicAssignmentService.findAllByRatign(headquarterId, programId, groupId, degreeId);
   }
 
+  @Get('teacher/:id/year/:year')
+  findOneByTeacer(
+    @Param('id') id: string,
+    @Param('year') year: number
+  ) {
+    return this.academicAssignmentService.findOneByTeacher(+id, year);
+  }
+
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {
