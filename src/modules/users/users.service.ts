@@ -1097,7 +1097,7 @@ export class UsersService {
 
 
       if (user) {
-        const resetLink = `http://localhost:5173/recovery/newPassword?token=${user?.notificationEmail}&was=kfreogerogo43ut9ruvbb584y8gvb805y08b3r8vb804y50gyrevbyyv3brbvfbvkdfkjfbdbo457`;
+        const resetLink = `http://localhost:5173/recovery/newPassword?token=${user?.notificationEmail}&was=kfreogerogo43ut9ruvbb584y8gvb805y08b3&code=${user?.username}&r8vb804y50gyrevbyyv3brbvfbvkdfkjfbdbo457`;
         
         const nombre = `${user.firstName} ${user.lastName}`;
         const message = `
