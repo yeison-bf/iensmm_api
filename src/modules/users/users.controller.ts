@@ -65,6 +65,11 @@ export class UsersController {
     return this.usersService.findOneStudents(id);
   }
 
+  @Get('recovery/:id')
+  recoveryPassword(@Param('id') id: string) {
+    return this.usersService.recoveryPassword(id);
+  }
+
   @Get('administrators/:id')
   findOneAdministrator(@Param('id') id: number) {
     return this.usersService.findOneAdministrator(id);
@@ -92,6 +97,13 @@ export class UsersController {
   updateWithAdministrator(@Param('id') id: number, @Body() updateDto: any) {
     return this.usersService.updateWithAdministrator(id, updateDto);
   }
+
+  @Post('recovery/new')
+  async setNewPassword(@Body() body: { username: string; newPassword: string }) {
+    const { username, newPassword } = body;
+    return this.usersService.updatePassword(username, newPassword);
+  }
+
 
   @Delete('students/:id')
   removeStudent(@Param('id') id: number) {

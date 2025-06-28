@@ -20,6 +20,7 @@ import { Degree } from '../degrees/entities/degree.entity';
 import { AdministratorTypeProgram } from '../administrator-type/entities/administrator_type_program.entity';
 import { AdministratorType } from '../administrator-type/entities/administrator-type.entity';
 import { Program } from '../programs/entities/program.entity';
+import { MailService } from 'src/mail/mail.service';
 
 
 @Injectable()
@@ -62,7 +63,23 @@ export class UsersService {
     @InjectRepository(AdministratorType)
     private readonly administratorTypeRepository: Repository<AdministratorType>,
 
+
+    private readonly mailService: MailService
+
+
   ) { }
+
+
+
+  async notificarUsuario(email: string, nombre: string, message: string) {
+    const contenido = `
+      <h1>Hola ${nombre}</h1>
+      <p>${message}</p>
+    `;
+    await this.mailService.sendMail(email, 'Notificación de Edunormas', contenido);
+  }
+
+
 
   async create(createUserDto: CreateUserDto) {
     try {
@@ -811,6 +828,54 @@ export class UsersService {
     }
   }
 
+
+
+
+
+
+
+
+  async updatePassword(username: string, plainPassword: string) {
+    try {
+      // 1. Buscar usuario por username
+      const user = await this.userRepository.findOne({
+        where: { username },
+      });
+  
+      if (!user) {
+        return {
+          success: false,
+          message: `No se encontró un usuario con el nombre de usuario ${username}`,
+          data: null,
+        };
+      }
+  
+      // 2. Encriptar nueva contraseña
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(plainPassword, salt);
+  
+      // 3. Guardar nueva contraseña
+      user.password = hashedPassword;
+      await this.userRepository.save(user);
+  
+      return {
+        success: true,
+        message: 'La contraseña fue actualizada correctamente.',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al actualizar la contraseña: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
+
+
+
   async findOneDocument(id: string) {
     try {
       const user = await this.userRepository.findOne({
@@ -918,7 +983,7 @@ export class UsersService {
         };
       }
 
-    
+
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -955,7 +1020,7 @@ export class UsersService {
         ) || null;
         console.log("matriculaActiva : ", matriculaActiva);
 
-        
+
         tokenPayload = {
           ...tokenPayload,
           student: {
@@ -1007,137 +1072,62 @@ export class UsersService {
     }
   }
 
-  // async login(username: string, password: string) {
-  //   try {
-  //     // Find user with all necessary relations including filtered enrollments
-  //     const user = await this.userRepository.findOne({
-  //       where: { username },
-  //       relations: [
-  //         'role',
-  //         'student',
-  //         'student.enrollments', // Include student enrollments
-  //         'student.enrollments.program', // Include program info if needed
-  //         'student.enrollments.group', // Include group info if needed
-  //         'administrator',
-  //         'administrator.administratorTypePrograms',
-  //         'administrator.administratorTypePrograms.administratorType',
-  //         'administrator.administratorTypePrograms.program',
-  //         'documentType',
-  //         'headquarters',
-  //         'headquarters.institution'
-  //       ],
-  //     });
 
-  //     if (!user) {
-  //       return {
-  //         success: false,
-  //         message: 'Usuario no encontrado',
-  //         data: null,
-  //       };
-  //     }
 
-  //     // Verify password
-  //     const isPasswordValid = await bcrypt.compare(password, user.password);
-  //     if (!isPasswordValid) {
-  //       return {
-  //         success: false,
-  //         message: 'Contraseña incorrecta',
-  //         data: null,
-  //       };
-  //     }
 
-  //     // Find active enrollment (status: true)
-  //     let activeEnrollment = null;
-  //     if (user.role.name === 'student' && user.student?.enrollments) {
-  //       activeEnrollment = user.student.enrollments.find(
-  //         enrollment => enrollment.status === true
-  //       );
-  //     }
 
-  //     // Prepare token payload
-  //     let tokenPayload: any = {
-  //       userId: user.id,
-  //       username: user.username,
-  //       firstName: user.firstName,
-  //       lastName: user.lastName,
-  //       photoUrl: user.photoUrl,
-  //       role: user.role.name,
-  //       documentType: user.documentType,
-  //       headquarters: user.headquarters,
-  //     };
 
-  //     // Add role-specific data
-  //     if (user.role.name === 'student' && user.student) {
-  //       tokenPayload.student = {
-  //         id: user.student.id,
-  //         activeEnrollment: activeEnrollment ? {
-  //           id: activeEnrollment.id,
-  //           programId: activeEnrollment.programId,
-  //           groupId: activeEnrollment.groupId,
-  //           headquarterId: activeEnrollment.headquarterId,
-  //           institutionId: activeEnrollment.institutionId,
-  //           schedule: activeEnrollment.schedule,
-  //           folio: activeEnrollment.folio,
-  //           registrationDate: activeEnrollment.registrationDate,
-  //           // Add other enrollment fields as needed
-  //         } : null
-  //       };
-  //     } else if (user.role.name === 'administrator' && user.administrator) {
-  //       tokenPayload.administrator = {
-  //         id: user.administrator.id,
-  //         academicTitle: user.administrator.academicTitle,
-  //         trainingArea: user.administrator.trainingArea,
-  //         maritalStatus: user.administrator.maritalStatus,
-  //         startDate: user.administrator.startDate,
-  //         endDate: user.administrator.endDate,
-  //         teachingLevel: user.administrator.teachingLevel,
-  //         contractType: user.administrator.contractType,
-  //         signature: user.administrator.signature,
-  //         administratorTypePrograms: user.administrator.administratorTypePrograms?.map(atp => ({
-  //           administratorType: atp.administratorType,
-  //           program: atp.program,
-  //           startDate: atp.startDate,
-  //           endDate: atp.endDate
-  //         }))
-  //       };
-  //     }
+  // Recovery Password
+  async recoveryPassword(id: string) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { username: id },
+        select: {
+          password: false,
+        },
+      });
 
-  //     // Generate JWT token
-  //     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
-  //       expiresIn: '24h',
-  //     });
+      if (!user) {
+        return {
+          success: false,
+          message: `User with ID ${id} not found`,
+          data: null,
+        };
+      }
 
-  //     return {
-  //       success: true,
-  //       message: 'Inicio de sesión exitoso',
-  //       role: user.role.name,
-  //       token,
-  //       userData: {
-  //         id: user.id,
-  //         firstName: user.firstName,
-  //         lastName: user.lastName,
-  //         role: user.role.name,
-  //         photoUrl: user.photoUrl,
-  //         ...(user.role.name === 'student' && {
-  //           studentId: user.student?.id,
-  //           activeEnrollment: tokenPayload.student?.activeEnrollment
-  //         }),
-  //         ...(user.role.name === 'administrator' && {
-  //           administratorId: user.administrator?.id
-  //         })
-  //       }
-  //     };
 
-  //   } catch (error) {
-  //     console.error('Error en login:', error);
-  //     return {
-  //       success: false,
-  //       message: 'Error durante el inicio de sesión',
-  //       error: error.message,
-  //       data: null,
-  //     };
-  //   }
-  // }
+      if (user) {
+        const resetLink = `http://localhost:5173/newPassword?token=${user?.notificationEmail}&was=kfreogerogo43ut9ruvbb584y8gvb805y08b3r8vb804y50gyrevbyyv3brbvfbvkdfkjfbdbo457`;
+        
+        const nombre = `${user.firstName} ${user.lastName}`;
+        const message = `
+        <p>Hola,</p>
+        <p>Hemos recibido una solicitud para restablecer tu contraseña en la plataforma <strong>Edunormas</strong>.</p>
+        <p>Para continuar con el proceso, haz clic en el siguiente enlace o cópialo en tu navegador:</p>
+        <p><a href="{{resetLink}}" target="_blank" style="color:#008001; font-weight:bold;">Restablecer contraseña</a></p>
+        <p>Si no solicitaste este cambio, puedes ignorar este mensaje y tu contraseña permanecerá sin cambios.</p>
+        <br>
+        <p>Gracias por ser parte de nuestra comunidad.</p>
+        <p><strong>Edunormas</strong></p>
+        `;
+        
+        const finalMessage = message.replace("{{resetLink}}", resetLink);
+        await this.notificarUsuario(user.notificationEmail, nombre, finalMessage);
+      }
+
+
+      return {
+        success: true,
+        message: 'Email recovery send exit',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving user: ${error.message}`,
+        data: null,
+      };
+    }
+  }
 
 
 

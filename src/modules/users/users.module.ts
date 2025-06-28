@@ -17,6 +17,7 @@ import { Group } from '../group/entities/group.entity';
 import { AdministratorTypeProgram } from '../administrator-type/entities/administrator_type_program.entity';
 import { AdministratorType } from '../administrator-type/entities/administrator-type.entity';
 import { Program } from '../programs/entities/program.entity';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { Program } from '../programs/entities/program.entity';
     RolesModule,
     DocumentTypeModule,
     HeadquartersModule,
-    
+    MailModule
   ],
   controllers: [UsersController],
   providers: [UsersService],
