@@ -680,6 +680,48 @@ export class UsersService {
   }
 
 
+  
+  async findAllAdministratorsProgram(programId: number, institutionId: number) {
+    try {
+      const users = await this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.role', 'role')
+        .leftJoinAndSelect('user.administrator', 'administrator')
+        .leftJoinAndSelect('administrator.administratorTypePrograms', 'typePrograms')
+        .leftJoinAndSelect('typePrograms.administratorType', 'adminType')
+        .leftJoinAndSelect('typePrograms.program', 'program')
+        .leftJoinAndSelect('user.documentType', 'documentType')
+        .leftJoinAndSelect('user.headquarters', 'headquarters')
+        .where('role.name = :roleName', { roleName: 'administrator' })
+        .andWhere('program.id = :programId', { programId })
+        .andWhere('adminType.name = :typeName', { typeName: 'Docente' })
+        .andWhere('user.institution = :institutionId', { institutionId })
+        .getMany();
+
+      return {
+        success: true,
+        message: 'Teachers retrieved successfully',
+        data: users,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error retrieving teachers: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
   async findOneAdministrator(id: number) {
     try {
       const user = await this.userRepository.findOne({

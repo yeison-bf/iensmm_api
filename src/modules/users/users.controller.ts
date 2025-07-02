@@ -50,6 +50,16 @@ export class UsersController {
     return this.usersService.findAllAdministrators(institutionId);
   }
 
+
+  @Get('/administrators/program')
+  findAllAdministratorsProgram(
+    @Query('programId') programId?: number,
+    @Query('institutionId') institutionId?: number
+  ) {
+    return this.usersService.findAllAdministratorsProgram(programId, institutionId);
+  }
+
+
   @Get('students')
   findAllStudents(
     @Query('sede') headquarterId?: number,
