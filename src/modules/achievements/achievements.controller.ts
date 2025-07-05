@@ -5,7 +5,7 @@ import { UpdateAchievementDto } from './dto/update-achievement.dto';
 
 @Controller('achievements')
 export class AchievementsController {
-  constructor(private readonly achievementsService: AchievementsService) {}
+  constructor(private readonly achievementsService: AchievementsService) { }
 
   @Post()
   create(@Body() createAchievementDto: CreateAchievementDto) {
@@ -17,7 +17,7 @@ export class AchievementsController {
     return this.achievementsService.findAll();
   }
 
-    @Get('by-degrees')
+  @Get('by-degrees')
   findByDegreesAndPeriod(
     @Query('degreeIds') degreeIds: string,
     @Query('periodDetailId') periodDetailId: string,
@@ -33,8 +33,12 @@ export class AchievementsController {
 
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.achievementsService.findOne(+id);
+  findOne(@Param('id') id: number,
+    @Query('degreeIds') degreeIds: number,
+    @Query('periodDetailId') periodDetailId: number,
+    @Query('year') year: number
+  ) {
+    return this.achievementsService.findOne(id, degreeIds, periodDetailId, year);
   }
 
   @Put(':id')

@@ -108,7 +108,7 @@ export class AchievementsService {
       const degrees = await this.degreeRepository.find({
         where: { id: In(degreeIds) }
       });
-    
+     
       // Get achievements for these degrees
       const achievements = await this.achievementRepository
         .createQueryBuilder('achievement')
@@ -171,11 +171,11 @@ export class AchievementsService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, degreeIds: number, periodDetailId: number, year: number ) {
     try {
       const achievement = await this.achievementRepository.findOne({
-        where: { id },
-        relations: ['administrator', 'degree', 'trainingArea', 'periodDetail', 'details'],
+        where: { degree: { id: degreeIds }, periodDetail: { id: periodDetailId }, year: year },
+        relations: ['periodDetail', 'details'],
       });
 
       if (!achievement) {
