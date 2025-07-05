@@ -31,6 +31,8 @@ import { AssistanceModule } from './modules/assistance/assistance.module';
 import { StudentGradesModule } from './modules/student-grades/student-grades.module';
 import { StudentAttendanceModule } from './modules/student-attendance/student-attendance.module';
 import { MailModule } from './mail/mail.module';
+import { AchievementsModule } from './modules/achievements/achievements.module';
+import { AchievementDetailsModule } from './modules/achievement-details/achievement-details.module';
 
 
 @Module({
@@ -107,6 +109,8 @@ import { MailModule } from './mail/mail.module';
     StudentGradesModule,
     StudentAttendanceModule,
     MailModule,
+    AchievementsModule,
+    AchievementDetailsModule,
 
   ],
   controllers: [AppController],

@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Period } from '../../periods/entities/period.entity';
 import { StudentGrade } from 'src/modules/student-grades/entities/student-grade.entity';
+import { Achievement } from 'src/modules/achievements/entities/achievement.entity';
 
 @Entity('period_detail')
 export class PeriodDetail {
@@ -38,4 +39,8 @@ export class PeriodDetail {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany(() => Achievement, achievement => achievement.periodDetail)
+  achievements: Achievement[];
+
 }

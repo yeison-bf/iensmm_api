@@ -1,5 +1,6 @@
 import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 import { AcademicThinking } from 'src/modules/academic-thinking/entities/academic-thinking.entity';
+import { Achievement } from 'src/modules/achievements/entities/achievement.entity';
 import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
@@ -45,4 +46,8 @@ export class Degree {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany(() => Achievement, achievement => achievement.degree)
+  achievements: Achievement[];
+
 }

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Institution } from '../../institutions/entities/institution.entity';
+import { AchievementDetail } from 'src/modules/achievement-details/entities/achievement-detail.entity';
 
 @Entity('rating')
 export class Rating {
@@ -27,4 +28,9 @@ export class Rating {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany(() => AchievementDetail, achievementDetail => achievementDetail.rating)
+  achievementDetails: AchievementDetail[];
+
+
 }

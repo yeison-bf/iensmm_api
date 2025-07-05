@@ -5,6 +5,7 @@ import { AcademicAssignment } from 'src/modules/academic-assignment/entities/aca
 import { AdministratorTypeProgram } from 'src/modules/administrator-type/entities/administrator_type_program.entity';
 import { AcademicAssignmentDetail } from 'src/modules/academic-assignment/entities/academic-assignment-detail.entity';
 import { StudentGrade } from 'src/modules/student-grades/entities/student-grade.entity';
+import { Achievement } from 'src/modules/achievements/entities/achievement.entity';
 
 @Entity('administrators')
 export class Administrator {
@@ -76,5 +77,9 @@ export class Administrator {
 
   @Column({ type: 'boolean', default: true })
   status: boolean;
+
+  
+  @OneToMany(() => Achievement, achievement => achievement.administrator)
+  achievements: Achievement[];
 
 }

@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { TrainingCore } from '../../training-cores/entities/training-core.entity';
 import { AcademicThinkingDetail } from 'src/modules/academic-thinking/entities/academic-thinking-detail.entity';
 import { StudentAttendance } from 'src/modules/student-attendance/entities/student-attendance.entity';
+import { Achievement } from 'src/modules/achievements/entities/achievement.entity';
 
 @Entity('training_areas')
 export class TrainingArea {
@@ -46,4 +47,8 @@ export class TrainingArea {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+
+  @OneToMany(() => Achievement, achievement => achievement.trainingArea)
+  achievements: Achievement[];
+
 }
