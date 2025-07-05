@@ -108,7 +108,7 @@ export class AchievementsService {
       const degrees = await this.degreeRepository.find({
         where: { id: In(degreeIds) }
       });
-
+    
       // Get achievements for these degrees
       const achievements = await this.achievementRepository
         .createQueryBuilder('achievement')
