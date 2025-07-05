@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Achievement } from './entities/achievement.entity';
 import { CreateAchievementDto } from './dto/create-achievement.dto';
 import { UpdateAchievementDto } from './dto/update-achievement.dto';
 import { AchievementDetail } from '../achievement-details/entities/achievement-detail.entity';
+import { Degree } from '../degrees/entities/degree.entity';
 
 @Injectable()
 export class AchievementsService {
@@ -13,6 +14,8 @@ export class AchievementsService {
     private readonly achievementRepository: Repository<Achievement>,
     @InjectRepository(AchievementDetail)
     private readonly achievementDetailRepository: Repository<AchievementDetail>,
+    @InjectRepository(Degree)
+    private readonly degreeRepository: Repository<Degree>,
   ) {}
 
    async create(createAchievementDto: CreateAchievementDto) {
@@ -101,6 +104,12 @@ export class AchievementsService {
 
   async findByDegreesAndPeriod(degreeIds: number[], periodDetailId: number, year: number) {
     try {
+      // Get all degrees first
+      const degrees = await this.degreeRepository.find({
+        where: { id: In(degreeIds) }
+      });
+
+      // Get achievements for these degrees
       const achievements = await this.achievementRepository
         .createQueryBuilder('achievement')
         .leftJoinAndSelect('achievement.administrator', 'administrator')
@@ -110,16 +119,25 @@ export class AchievementsService {
         .leftJoinAndSelect('achievement.periodDetail', 'periodDetail')
         .leftJoinAndSelect('achievement.details', 'details')
         .leftJoinAndSelect('details.rating', 'rating')
-        .where('achievement.year = :year', { year })
+        .where('achievement.degree.id IN (:...degreeIds)', { degreeIds })
+        .andWhere('achievement.year = :year', { year })
         .andWhere('achievement.periodDetail.id = :periodDetailId', { periodDetailId })
-        .andWhere('achievement.degree.id IN (:...degreeIds)', { degreeIds })
-        .orderBy('achievement.createdAt', 'DESC')
         .getMany();
+
+      // Map results including degrees without achievements
+      const result = degrees.map(degree => ({
+        degree: {
+          id: degree.id,
+          name: degree.name,
+        },
+        achievements: achievements.filter(a => a.degree.id === degree.id),
+        hasAchievements: achievements.some(a => a.degree.id === degree.id)
+      }));
 
       return {
         success: true,
-        message: 'Achievements retrieved successfully',
-        data: achievements,
+        message: 'Degrees and achievements information retrieved successfully',
+        data: result,
       };
     } catch (error) {
       return {
@@ -129,7 +147,6 @@ export class AchievementsService {
       };
     }
   }
-
 
 
 
