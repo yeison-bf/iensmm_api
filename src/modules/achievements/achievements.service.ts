@@ -151,10 +151,11 @@ export class AchievementsService {
 
 
 
-  async findAll() {
+  async findAll(degreeIds:number , year: number) {
     try {
       const achievements = await this.achievementRepository.find({
-        relations: ['administrator', 'degree', 'trainingArea', 'periodDetail', 'details'],
+        where: { degree: { id: degreeIds }, year: year },
+        relations: ['administrator', 'administrator.user', 'degree', 'trainingArea', 'periodDetail', 'details'],
       });
 
       return {

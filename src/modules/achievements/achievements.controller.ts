@@ -13,8 +13,11 @@ export class AchievementsController {
   }
 
   @Get()
-  findAll() {
-    return this.achievementsService.findAll();
+  findAll(
+    @Query('degreeIds') degreeIds: number,
+    @Query('year') year: number,
+  ) {
+    return this.achievementsService.findAll(degreeIds, year);
   }
 
   @Get('by-degrees')
