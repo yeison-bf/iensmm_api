@@ -166,7 +166,7 @@ export class AchievementsService {
       }
 
        // Si viene periodo, agregamos el filtro
-       if (areaId) {
+       if (periodDetailId) {
         queryBuilder.andWhere('periodDetail.id = :periodDetailId', { periodDetailId });
       }
   
