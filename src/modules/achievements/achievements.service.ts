@@ -148,7 +148,7 @@ export class AchievementsService {
     }
   }
 
-  async findAll(degreeIds: number, year: number, areaId?: number) {
+  async findAll(degreeIds: number, year: number, areaId?: number, periodDetailId?: number) {
     try {
       const queryBuilder = this.achievementRepository.createQueryBuilder('achievement')
         .leftJoinAndSelect('achievement.administrator', 'administrator')
@@ -164,6 +164,12 @@ export class AchievementsService {
       if (areaId) {
         queryBuilder.andWhere('trainingArea.id = :areaId', { areaId });
       }
+
+       // Si viene periodo, agregamos el filtro
+       if (areaId) {
+        queryBuilder.andWhere('periodDetail.id = :periodDetailId', { periodDetailId });
+      }
+  
   
       const achievements = await queryBuilder.getMany();
   
@@ -182,7 +188,7 @@ export class AchievementsService {
   }
 
   
-  
+
   async findOne(id: number, degreeIds: number, periodDetailId: number, year: number ) {
     try {
       const achievement = await this.achievementRepository.findOne({
