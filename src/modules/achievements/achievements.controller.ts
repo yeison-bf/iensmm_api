@@ -16,8 +16,9 @@ export class AchievementsController {
   findAll(
     @Query('degreeIds') degreeIds: number,
     @Query('year') year: number,
+    @Query('area') area: number,
   ) {
-    return this.achievementsService.findAll(degreeIds, year);
+    return this.achievementsService.findAll(degreeIds, year, area);
   }
 
   @Get('by-degrees')

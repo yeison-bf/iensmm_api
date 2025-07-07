@@ -148,16 +148,25 @@ export class AchievementsService {
     }
   }
 
-
-
-
-  async findAll(degreeIds:number , year: number) {
+  async findAll(degreeIds: number, year: number, areaId?: number) {
     try {
-      const achievements = await this.achievementRepository.find({
-        where: { degree: { id: degreeIds }, year: year },
-        relations: ['administrator', 'administrator.user', 'degree', 'trainingArea', 'periodDetail', 'details'],
-      });
-
+      const queryBuilder = this.achievementRepository.createQueryBuilder('achievement')
+        .leftJoinAndSelect('achievement.administrator', 'administrator')
+        .leftJoinAndSelect('administrator.user', 'user')
+        .leftJoinAndSelect('achievement.degree', 'degree')
+        .leftJoinAndSelect('achievement.trainingArea', 'trainingArea')
+        .leftJoinAndSelect('achievement.periodDetail', 'periodDetail')
+        .leftJoinAndSelect('achievement.details', 'details')
+        .where('degree.id = :degreeId', { degreeId: degreeIds })
+        .andWhere('achievement.year = :year', { year });
+  
+      // Si viene areaId, agregamos el filtro
+      if (areaId) {
+        queryBuilder.andWhere('trainingArea.id = :areaId', { areaId });
+      }
+  
+      const achievements = await queryBuilder.getMany();
+  
       return {
         success: true,
         message: 'Achievements retrieved successfully',
@@ -172,6 +181,8 @@ export class AchievementsService {
     }
   }
 
+  
+  
   async findOne(id: number, degreeIds: number, periodDetailId: number, year: number ) {
     try {
       const achievement = await this.achievementRepository.findOne({
