@@ -16,9 +16,9 @@ export class AchievementsService {
     private readonly achievementDetailRepository: Repository<AchievementDetail>,
     @InjectRepository(Degree)
     private readonly degreeRepository: Repository<Degree>,
-  ) {}
+  ) { }
 
-   async create(createAchievementDto: CreateAchievementDto) {
+  async create(createAchievementDto: CreateAchievementDto) {
     try {
       // Create the achievement with its relationships
       const achievement = this.achievementRepository.create({
@@ -72,7 +72,7 @@ export class AchievementsService {
     }
   }
 
-    async findAllWithDetails() {
+  async findAllWithDetails() {
     try {
       const achievements = await this.achievementRepository
         .createQueryBuilder('achievement')
@@ -108,7 +108,7 @@ export class AchievementsService {
       const degrees = await this.degreeRepository.find({
         where: { id: In(degreeIds) }
       });
-     
+
       // Get achievements for these degrees
       const achievements = await this.achievementRepository
         .createQueryBuilder('achievement')
@@ -148,7 +148,7 @@ export class AchievementsService {
     }
   }
 
-  async findAll(degreeIds: number, year: number, areaId?: number, periodDetailId?: number) {
+   async findAll(degreeIds: number, year: number, areaId?: number, periodDetailId?: number) {
     try {
       const queryBuilder = this.achievementRepository.createQueryBuilder('achievement')
         .leftJoinAndSelect('achievement.administrator', 'administrator')
@@ -157,22 +157,20 @@ export class AchievementsService {
         .leftJoinAndSelect('achievement.trainingArea', 'trainingArea')
         .leftJoinAndSelect('achievement.periodDetail', 'periodDetail')
         .leftJoinAndSelect('achievement.details', 'details')
+        .leftJoinAndSelect('details.rating', 'rating') // Added rating relation
         .where('degree.id = :degreeId', { degreeId: degreeIds })
         .andWhere('achievement.year = :year', { year });
-  
-      // Si viene areaId, agregamos el filtro
+
       if (areaId) {
         queryBuilder.andWhere('trainingArea.id = :areaId', { areaId });
       }
 
-       // Si viene periodo, agregamos el filtro
-       if (periodDetailId) {
+      if (periodDetailId) {
         queryBuilder.andWhere('periodDetail.id = :periodDetailId', { periodDetailId });
       }
-  
-  
+
       const achievements = await queryBuilder.getMany();
-  
+
       return {
         success: true,
         message: 'Achievements retrieved successfully',
@@ -187,9 +185,9 @@ export class AchievementsService {
     }
   }
 
-  
 
-  async findOne(id: number, degreeIds: number, periodDetailId: number, year: number ) {
+
+  async findOne(id: number, degreeIds: number, periodDetailId: number, year: number) {
     try {
       const achievement = await this.achievementRepository.findOne({
         where: { degree: { id: degreeIds }, periodDetail: { id: periodDetailId }, year: year },
