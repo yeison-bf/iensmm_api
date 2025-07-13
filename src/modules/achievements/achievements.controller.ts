@@ -40,10 +40,12 @@ export class AchievementsController {
   @Get(':id')
   findOne(@Param('id') id: number,
     @Query('degreeIds') degreeIds: number,
+    @Query('area') area: number,
     @Query('periodDetailId') periodDetailId: number,
     @Query('year') year: number
   ) {
-    return this.achievementsService.findOne(id, degreeIds, periodDetailId, year);
+    console.log("entro aqui ...")
+    return this.achievementsService.findOne(id, degreeIds, area, periodDetailId, year);
   }
 
   @Put(':id')

@@ -122,7 +122,7 @@ export class AchievementsService {
 
       const result = degrees.map(degree => {
         const degreeAchievements = achievements.filter(a => a.degree.id === degree.id);
-        
+
         // Agrupar logros por área de formación
         const groupedByArea = degreeAchievements.reduce((acc, achievement) => {
           const areaId = achievement.trainingArea.id;
@@ -163,7 +163,7 @@ export class AchievementsService {
     }
   }
 
-   async findAll(degreeIds: number, year: number, areaId?: number, periodDetailId?: number) {
+  async findAll(degreeIds: number, year: number, areaId?: number, periodDetailId?: number) {
     try {
       const queryBuilder = this.achievementRepository.createQueryBuilder('achievement')
         .leftJoinAndSelect('achievement.administrator', 'administrator')
@@ -202,13 +202,15 @@ export class AchievementsService {
 
 
 
-  async findOne(id: number, degreeIds: number, periodDetailId: number, year: number) {
+  async findOne(id: number, degreeIds: number, area: number, periodDetailId: number, year: number) {
+    console.log({id, degreeIds, area, periodDetailId, year});
     try {
       const achievement = await this.achievementRepository.findOne({
-        where: { degree: { id: degreeIds }, periodDetail: { id: periodDetailId }, year: year },
+        where: { degree: { id: degreeIds }, trainingArea: { id: area }, periodDetail: { id: periodDetailId }, year: year },
         relations: ['periodDetail', 'details'],
       });
 
+      console.log(achievement)
       if (!achievement) {
         return {
           success: false,
