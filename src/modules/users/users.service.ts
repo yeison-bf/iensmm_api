@@ -877,7 +877,7 @@ export class UsersService {
 
 
 
-  async updatePassword(username: string, plainPassword: string) {
+  async updatePassword(username: string, newPassword: string) {
     try {
       // 1. Buscar usuario por username
       const user = await this.userRepository.findOne({
@@ -892,9 +892,10 @@ export class UsersService {
         };
       }
   
+      console.log(newPassword)
       // 2. Encriptar nueva contraseña
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(plainPassword, salt);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
   
       // 3. Guardar nueva contraseña
       user.password = hashedPassword;
