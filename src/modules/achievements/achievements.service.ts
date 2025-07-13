@@ -163,7 +163,44 @@ export class AchievementsService {
     }
   }
 
-  async findAll(degreeIds: number, year: number, areaId?: number, periodDetailId?: number) {
+  // async findAll(degreeIds: number, year: number, areaId?: number, periodDetailId?: number) {
+  //   try {
+  //     const queryBuilder = this.achievementRepository.createQueryBuilder('achievement')
+  //       .leftJoinAndSelect('achievement.administrator', 'administrator')
+  //       .leftJoinAndSelect('administrator.user', 'user')
+  //       .leftJoinAndSelect('achievement.degree', 'degree')
+  //       .leftJoinAndSelect('achievement.trainingArea', 'trainingArea')
+  //       .leftJoinAndSelect('achievement.periodDetail', 'periodDetail')
+  //       .leftJoinAndSelect('achievement.details', 'details')
+  //       .leftJoinAndSelect('details.rating', 'rating') // Added rating relation
+  //       .where('degree.id = :degreeId', { degreeId: degreeIds })
+  //       .andWhere('achievement.year = :year', { year });
+
+  //     if (areaId) {
+  //       queryBuilder.andWhere('trainingArea.id = :areaId', { areaId });
+  //     }
+
+  //     if (periodDetailId) {
+  //       queryBuilder.andWhere('periodDetail.id = :periodDetailId', { periodDetailId });
+  //     }
+
+  //     const achievements = await queryBuilder.getMany();
+
+  //     return {
+  //       success: true,
+  //       message: 'Achievements retrieved successfully',
+  //       data: achievements,
+  //     };
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       message: `Error retrieving achievements: ${error.message}`,
+  //       data: null,
+  //     };
+  //   }
+  // }
+
+  async findAll(degreeIds?: number, year?: number, areaId?: number, periodDetailId?: number) {
     try {
       const queryBuilder = this.achievementRepository.createQueryBuilder('achievement')
         .leftJoinAndSelect('achievement.administrator', 'administrator')
@@ -172,20 +209,27 @@ export class AchievementsService {
         .leftJoinAndSelect('achievement.trainingArea', 'trainingArea')
         .leftJoinAndSelect('achievement.periodDetail', 'periodDetail')
         .leftJoinAndSelect('achievement.details', 'details')
-        .leftJoinAndSelect('details.rating', 'rating') // Added rating relation
-        .where('degree.id = :degreeId', { degreeId: degreeIds })
-        .andWhere('achievement.year = :year', { year });
-
+        .leftJoinAndSelect('details.rating', 'rating');
+  
+      // Solo aplicar los filtros si vienen definidos
+      if (degreeIds) {
+        queryBuilder.andWhere('degree.id = :degreeId', { degreeId: degreeIds });
+      }
+  
+      if (year) {
+        queryBuilder.andWhere('achievement.year = :year', { year });
+      }
+  
       if (areaId) {
         queryBuilder.andWhere('trainingArea.id = :areaId', { areaId });
       }
-
+  
       if (periodDetailId) {
         queryBuilder.andWhere('periodDetail.id = :periodDetailId', { periodDetailId });
       }
-
+  
       const achievements = await queryBuilder.getMany();
-
+  
       return {
         success: true,
         message: 'Achievements retrieved successfully',
@@ -199,6 +243,7 @@ export class AchievementsService {
       };
     }
   }
+  
 
 
 
