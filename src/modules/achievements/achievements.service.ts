@@ -100,16 +100,12 @@ export class AchievementsService {
       };
     }
   }
-
-
   async findByDegreesAndPeriod(degreeIds: number[], periodDetailId: number, year: number) {
     try {
-      // Get all degrees first
       const degrees = await this.degreeRepository.find({
         where: { id: In(degreeIds) }
       });
 
-      // Get achievements for these degrees
       const achievements = await this.achievementRepository
         .createQueryBuilder('achievement')
         .leftJoinAndSelect('achievement.administrator', 'administrator')
@@ -124,15 +120,34 @@ export class AchievementsService {
         .andWhere('achievement.periodDetail.id = :periodDetailId', { periodDetailId })
         .getMany();
 
-      // Map results including degrees without achievements
-      const result = degrees.map(degree => ({
-        degree: {
-          id: degree.id,
-          name: degree.name,
-        },
-        achievements: achievements.filter(a => a.degree.id === degree.id),
-        hasAchievements: achievements.some(a => a.degree.id === degree.id)
-      }));
+      const result = degrees.map(degree => {
+        const degreeAchievements = achievements.filter(a => a.degree.id === degree.id);
+        
+        // Agrupar logros por área de formación
+        const groupedByArea = degreeAchievements.reduce((acc, achievement) => {
+          const areaId = achievement.trainingArea.id;
+          if (!acc[areaId]) {
+            acc[areaId] = {
+              trainingArea: {
+                id: achievement.trainingArea.id,
+                name: achievement.trainingArea.name,
+              },
+              achievements: []
+            };
+          }
+          acc[areaId].achievements.push(achievement);
+          return acc;
+        }, {});
+
+        return {
+          degree: {
+            id: degree.id,
+            name: degree.name,
+          },
+          trainingAreas: Object.values(groupedByArea),
+          hasAchievements: degreeAchievements.length > 0
+        };
+      });
 
       return {
         success: true,
