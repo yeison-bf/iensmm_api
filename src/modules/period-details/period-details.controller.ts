@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseIntPipe, BadRequestException, UsePipes, ValidationPipe } from '@nestjs/common';
 import { PeriodDetailsService } from './period-details.service';
 import { CreatePeriodDetailDto } from './dto/create-period-detail.dto';
 import { UpdatePerioDetaildDto } from './dto/update-period-detail.dto';
@@ -73,11 +73,11 @@ export class PeriodDetailsController {
   }
 
 
-  @Put('leveling/:id')
-  updateLeveling(@Param('id') id: number, @Body() UpdatePerioDetailLevelingDto: UpdatePerioDetailLevelingDto) {
-    return this.periodDetailsService.updateLeveling(id, UpdatePerioDetailLevelingDto);
+  @Put('leveling/batch')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: false, transform: true }))
+  updateLevelingBatch(@Body() updates: UpdatePerioDetailLevelingDto[]) {
+    return this.periodDetailsService.updateLevelingBatch(updates);
   }
-
 
 
   @Put(':id')

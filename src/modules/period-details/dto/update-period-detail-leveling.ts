@@ -1,23 +1,23 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsBoolean, IsDate, IsDateString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class UpdatePerioDetailLevelingDto {
-    
+    @IsNumber()
+    id: number;
+  
     @IsOptional()
-    @Type(() => Date)
-    @IsDate()
+    @IsDateString()
     startDateLeveling?: Date;
   
     @IsOptional()
-    @Type(() => Date)
-    @IsDate()
+    @IsDateString()
     endDateLeveling?: Date;
   
     @IsOptional()
     @IsBoolean()
-    hasRecovery: boolean = false; 
-
+    hasLeveling: boolean = false;
+  
     @IsOptional()
     @IsBoolean()
-    hasLeveling: boolean = false; 
-}
+    hasRecovery: boolean = false;
+  }

@@ -175,35 +175,47 @@ export class PeriodDetailsService {
 
 
 
-  async updateLeveling(id: number, UpdatePerioDetailLevelingDto: UpdatePerioDetailLevelingDto) {
+  async updateLevelingBatch(updates: UpdatePerioDetailLevelingDto[]) {
+    const results = [];
     try {
-      const periodDetail = await this.periodDetailRepository.findOne({
-        where: { id },
-      });
+      for (const update of updates) {
+        const { id, ...rest } = update;
 
-      if (!periodDetail) {
-        return {
-          success: false,
-          message: `Period detail with ID ${id} not found`,
-          data: null,
-        };
+        const periodDetail = await this.periodDetailRepository.findOne({ where: { id } });
+
+        if (!periodDetail) {
+          results.push({
+            id,
+            success: false,
+            message: `Period detail with ID ${id} not found`,
+          });
+          continue;
+        }
+
+        const updated = await this.periodDetailRepository.save({
+          ...periodDetail,
+          ...rest,
+        });
+
+        results.push({
+          id,
+          success: true,
+          message: 'Updated successfully',
+          data: updated,
+        });
       }
-
-      const updated = await this.periodDetailRepository.save({
-        ...periodDetail,
-        ...UpdatePerioDetailLevelingDto,
-      });
 
       return {
         success: true,
-        message: 'Period detail updated successfully',
-        data: updated,
+        message: 'Batch update completed',
+        data: results,
       };
+
     } catch (error) {
       return {
         success: false,
-        message: `Error updating period detail: ${error.message}`,
-        data: null,
+        message: `Batch update failed: ${error.message}`,
+        data: results,
       };
     }
   }
@@ -305,19 +317,19 @@ export class PeriodDetailsService {
     }
   }
 
-   async togglePeriodState(closeId?: number, activeId?: number) {
+  async togglePeriodState(closeId?: number, activeId?: number) {
     console.log('closeId:', closeId, 'activeId:', activeId)
     try {
       const updates = [];
 
       const vaidatStudenGrade = await this.studentGradeRepository.findOne({
         where: {
-          periodDetail: { id: closeId},
+          periodDetail: { id: closeId },
           status: false,
         },
       });
 
-      if(vaidatStudenGrade){
+      if (vaidatStudenGrade) {
         return {
           success: false,
           message: `No se puede cerrar el periodo porque existen estudiantes con notas en sesión`,
