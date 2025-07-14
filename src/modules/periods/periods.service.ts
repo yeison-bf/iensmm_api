@@ -80,24 +80,34 @@ export class PeriodsService {
   async findAll(institutionId?: number, programId?: number) {
     try {
       let where: any = {};
-
+      
       if (institutionId) {
         where.institution = { id: institutionId };
       }
-
+      
       if (programId) {
         where.programId = programId;
       }
-
+      
       const periods = await this.periodRepository.find({
         where: where,
         relations: ['institution', 'periodDetails']
       });
-
+      
+      // Procesar las fechas para convertir fechas inválidas a null o string vacío
+      const processedPeriods = periods.map(period => ({
+        ...period,
+        periodDetails: period.periodDetails.map(detail => ({
+          ...detail,
+          startDateLeveling: this.formatDateField(detail.startDateLeveling),
+          endDateLeveling: this.formatDateField(detail.endDateLeveling)
+        }))
+      }));
+      
       return {
         success: true,
         message: 'Periods retrieved successfully',
-        data: periods,
+        data: processedPeriods,
       };
     } catch (error) {
       return {
@@ -106,6 +116,20 @@ export class PeriodsService {
         data: null,
       };
     }
+  }
+  
+  private formatDateField(date: Date | string): string | null {
+    if (!date) return null;
+    
+    const dateStr = date.toString();
+    
+    // Si la fecha es anterior a 1900 o contiene años muy antiguos, considerarla como "00-00-0000"
+    if (dateStr.includes('1899') || dateStr.includes('1900') || 
+        (date instanceof Date && date.getFullYear() < 1900)) {
+      return "00-00-0000";
+    }
+    
+    return dateStr;
   }
 
   async findOne(id: number) {
