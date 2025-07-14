@@ -43,4 +43,17 @@ export class PeriodDetail {
   @OneToMany(() => Achievement, achievement => achievement.periodDetail)
   achievements: Achievement[];
 
+  
+  @Column({ type: 'date' })
+  startDateLeveling: Date;
+  
+  @Column({ type: 'date' })
+  endDateLeveling: Date;
+  
+  @Column({ type: 'boolean', default: false })
+  hasRecovery: boolean; // ¿Tiene recuperación?
+  
+  @Column({ type: 'boolean', default: false })
+  hasLeveling: boolean; // ¿Tiene nivelación?
+  
 }

@@ -6,6 +6,7 @@ import { Period } from '../periods/entities/period.entity';
 import { CreatePeriodDetailDto } from './dto/create-period-detail.dto';
 import { UpdatePerioDetaildDto } from './dto/update-period-detail.dto';
 import { StudentGrade } from '../student-grades/entities/student-grade.entity';
+import { UpdatePerioDetailLevelingDto } from './dto/update-period-detail-leveling';
 
 @Injectable()
 export class PeriodDetailsService {
@@ -171,6 +172,44 @@ export class PeriodDetailsService {
       };
     }
   }
+
+
+
+  async updateLeveling(id: number, UpdatePerioDetailLevelingDto: UpdatePerioDetailLevelingDto) {
+    try {
+      const periodDetail = await this.periodDetailRepository.findOne({
+        where: { id },
+      });
+
+      if (!periodDetail) {
+        return {
+          success: false,
+          message: `Period detail with ID ${id} not found`,
+          data: null,
+        };
+      }
+
+      const updated = await this.periodDetailRepository.save({
+        ...periodDetail,
+        ...UpdatePerioDetailLevelingDto,
+      });
+
+      return {
+        success: true,
+        message: 'Period detail updated successfully',
+        data: updated,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error updating period detail: ${error.message}`,
+        data: null,
+      };
+    }
+  }
+
+
+
 
   async update(id: number, updatePeriodDetailDto: UpdatePerioDetaildDto) {
     try {

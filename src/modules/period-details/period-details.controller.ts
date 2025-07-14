@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseIntPipe, B
 import { PeriodDetailsService } from './period-details.service';
 import { CreatePeriodDetailDto } from './dto/create-period-detail.dto';
 import { UpdatePerioDetaildDto } from './dto/update-period-detail.dto';
+import { UpdatePerioDetailLevelingDto } from './dto/update-period-detail-leveling';
 
 @Controller('period-details')
 export class PeriodDetailsController {
@@ -28,35 +29,35 @@ export class PeriodDetailsController {
     return this.periodDetailsService.findActivePeriod(periodId);
   }
 
-// 🧪 TOGGLE STATE - VERSION SUPER SIMPLE PARA DEBUGGING
-@Put('toggle-state')
-togglePeriodState(
-  @Query('closeId') closeId?: string,
-  @Query('activeId') activeId?: string,
-) {
-  // Función helper para convertir valores
-  const parseId = (value: string | undefined): number | undefined => {
-    // Si no existe, está vacío, o es 'null' string, retorna undefined
-    if (!value || value.trim() === '' || value.toLowerCase() === 'null') {
-      return undefined;
+  // 🧪 TOGGLE STATE - VERSION SUPER SIMPLE PARA DEBUGGING
+  @Put('toggle-state')
+  togglePeriodState(
+    @Query('closeId') closeId?: string,
+    @Query('activeId') activeId?: string,
+  ) {
+    // Función helper para convertir valores
+    const parseId = (value: string | undefined): number | undefined => {
+      // Si no existe, está vacío, o es 'null' string, retorna undefined
+      if (!value || value.trim() === '' || value.toLowerCase() === 'null') {
+        return undefined;
+      }
+
+      const parsed = parseInt(value, 10);
+      return isNaN(parsed) ? undefined : parsed;
+    };
+
+    // Convertir strings a números manejando 'null' string
+    const closeIdNum = parseId(closeId);
+    const activeIdNum = parseId(activeId);
+
+    // Validar que al menos uno de los parámetros sea válido
+    if (!closeIdNum && !activeIdNum) {
+      throw new BadRequestException('Al menos uno de closeId o activeId debe ser proporcionado');
     }
-    
-    const parsed = parseInt(value, 10);
-    return isNaN(parsed) ? undefined : parsed;
-  };
-  
-  // Convertir strings a números manejando 'null' string
-  const closeIdNum = parseId(closeId);
-  const activeIdNum = parseId(activeId);
-  
-  // Validar que al menos uno de los parámetros sea válido
-  if (!closeIdNum && !activeIdNum) {
-    throw new BadRequestException('Al menos uno de closeId o activeId debe ser proporcionado');
+
+    // Llamar al servicio (ya no necesitamos validar NaN porque parseId lo maneja)
+    return this.periodDetailsService.togglePeriodState(closeIdNum, activeIdNum);
   }
-  
-  // Llamar al servicio (ya no necesitamos validar NaN porque parseId lo maneja)
-  return this.periodDetailsService.togglePeriodState(closeIdNum, activeIdNum);
-}
 
 
 
@@ -70,6 +71,14 @@ togglePeriodState(
   findOne(@Param('id') id: number) {
     return this.periodDetailsService.findOne(id);
   }
+
+
+  @Put('leveling/:id')
+  updateLeveling(@Param('id') id: number, @Body() UpdatePerioDetailLevelingDto: UpdatePerioDetailLevelingDto) {
+    return this.periodDetailsService.updateLeveling(id, UpdatePerioDetailLevelingDto);
+  }
+
+
 
   @Put(':id')
   update(@Param('id') id: number, @Body() updatePeriodDetailDto: UpdatePerioDetaildDto) {

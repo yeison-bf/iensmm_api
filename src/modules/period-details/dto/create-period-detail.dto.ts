@@ -1,4 +1,4 @@
-import { IsString, IsDate, IsNotEmpty, Length, IsNumber } from 'class-validator';
+import { IsString, IsDate, IsNotEmpty, Length, IsNumber, IsOptional, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreatePeriodDetailDto {
@@ -33,4 +33,22 @@ export class CreatePeriodDetailDto {
   @IsNumber()
   @IsNotEmpty()
   periodId: number;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  startDateLeveling?: Date;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  endDateLeveling?: Date;
+
+  @IsOptional()
+  @IsBoolean()
+  hasRecovery: boolean = false; // Valor por defecto: false
+
+  @IsOptional()
+  @IsBoolean()
+  hasLeveling: boolean = false; // Valor por defecto: false
 }
