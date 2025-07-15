@@ -77,6 +77,23 @@ export class PeriodsService {
     }
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   async findAll(institutionId?: number, programId?: number) {
     try {
       let where: any = {};

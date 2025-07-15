@@ -1,4 +1,4 @@
-import { IsNumber, IsNotEmpty, Min, Max, ValidateNested, IsArray, IsString, IsDate, IsOptional } from 'class-validator';
+import { IsNumber, IsNotEmpty, Min, Max, ValidateNested, IsArray, IsString, IsDate, IsOptional, IsDateString, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class PeriodDetailDto {
@@ -28,6 +28,24 @@ class PeriodDetailDto {
   @IsDate()
   @IsOptional()
   closeDate: Date;
+
+  
+  @IsOptional()
+  @IsDateString()
+  startDateLeveling?: Date;
+
+  @IsOptional()
+  @IsDateString()
+  endDateLeveling?: Date;
+
+  @IsOptional()
+  @IsBoolean()
+  hasLeveling: boolean = false;
+
+  @IsOptional()
+  @IsBoolean()
+  hasRecovery: boolean = false;
+
 }
 
 export class CreatePeriodDto {
@@ -37,10 +55,8 @@ export class CreatePeriodDto {
   @Max(2100)
   year: number;
 
+  @IsOptional()
   @IsNumber()
-  @IsNotEmpty()
-  @Min(1)
-  @Max(12)
   periodsQuantity: number;
 
   @IsNumber()
