@@ -93,24 +93,24 @@ export class PeriodsService {
 
 
 
-  
+
   async findAll(institutionId?: number, programId?: number) {
     try {
       let where: any = {};
-      
+
       if (institutionId) {
         where.institution = { id: institutionId };
       }
-      
+
       if (programId) {
         where.programId = programId;
       }
-      
+
       const periods = await this.periodRepository.find({
         where: where,
         relations: ['institution', 'periodDetails']
       });
-      
+
       // Procesar las fechas para convertir fechas inválidas a null o string vacío
       const processedPeriods = periods.map(period => ({
         ...period,
@@ -120,7 +120,7 @@ export class PeriodsService {
           endDateLeveling: this.formatDateField(detail.endDateLeveling)
         }))
       }));
-      
+
       return {
         success: true,
         message: 'Periods retrieved successfully',
@@ -134,18 +134,18 @@ export class PeriodsService {
       };
     }
   }
-  
+
   private formatDateField(date: Date | string): string | null {
     if (!date) return null;
-    
+
     const dateStr = date.toString();
-    
+
     // Si la fecha es anterior a 1900 o contiene años muy antiguos, considerarla como "00-00-0000"
-    if (dateStr.includes('1899') || dateStr.includes('1900') || 
-        (date instanceof Date && date.getFullYear() < 1900)) {
+    if (dateStr.includes('1899') || dateStr.includes('1900') ||
+      (date instanceof Date && date.getFullYear() < 1900)) {
       return "00-00-0000";
     }
-    
+
     return dateStr;
   }
 
@@ -229,13 +229,16 @@ export class PeriodsService {
       };
     }
   }
-
+  
+  
+  
   async update(id: number, updatePeriodDto: UpdatePeriodDto) {
     try {
       const period = await this.periodRepository.findOne({
         where: { id },
+        relations: ['periodDetails'],
       });
-
+  
       if (!period) {
         return {
           success: false,
@@ -243,16 +246,57 @@ export class PeriodsService {
           data: null,
         };
       }
-
-      const updated = await this.periodRepository.save({
-        ...period,
-        ...updatePeriodDto,
+  
+      // Actualizar campos del periodo
+      period.year = updatePeriodDto.year ?? period.year;
+      period.periodsQuantity = updatePeriodDto.periodsQuantity ?? period.periodsQuantity;
+      period.programId = updatePeriodDto.programId ?? period.programId;
+  
+      const updatedPeriod = await this.periodRepository.save(period);
+  
+      // Si vienen detalles de periodo, actualizarlos
+      if (updatePeriodDto.periodDetails && updatePeriodDto.periodDetails.length > 0) {
+        const updatedDetails = await Promise.all(
+          updatePeriodDto.periodDetails.map(async (detailDto) => {
+            // Si las fechas vienen como "00-00-0000", las eliminamos
+            const cleanDetail: any = { ...detailDto };
+  
+            if (cleanDetail.startDateLeveling === '00-00-0000') {
+              cleanDetail.startDateLeveling = null;
+            }
+  
+            if (cleanDetail.endDateLeveling === '00-00-0000') {
+              cleanDetail.endDateLeveling = null;
+            }
+  
+            const existingDetail = await this.periodDetailRepository.findOne({
+              where: { id: cleanDetail.id },
+            });
+  
+            if (existingDetail) {
+              const updated = this.periodDetailRepository.merge(existingDetail, cleanDetail);
+              return await this.periodDetailRepository.save(updated);
+            } else {
+              const newDetail = this.periodDetailRepository.create({
+                ...cleanDetail,
+                period: updatedPeriod,
+              });
+              return await this.periodDetailRepository.save(newDetail);
+            }
+          })
+        );
+      }
+  
+      // Retornar el periodo actualizado con sus relaciones
+      const completeUpdatedPeriod = await this.periodRepository.findOne({
+        where: { id: updatedPeriod.id },
+        relations: ['periodDetails', 'institution'],
       });
-
+  
       return {
         success: true,
-        message: 'Period updated successfully',
-        data: updated,
+        message: 'Period and details updated successfully',
+        data: completeUpdatedPeriod,
       };
     } catch (error) {
       return {
@@ -262,7 +306,22 @@ export class PeriodsService {
       };
     }
   }
+  
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   async remove(id: number) {
     try {
       const period = await this.periodRepository.findOne({

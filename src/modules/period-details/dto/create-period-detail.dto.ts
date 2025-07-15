@@ -2,6 +2,9 @@ import { IsString, IsDate, IsNotEmpty, Length, IsNumber, IsOptional, IsBoolean }
 import { Type } from 'class-transformer';
 
 export class CreatePeriodDetailDto {
+  @IsOptional()
+  id?: number; // ✅ Necesario para actualización
+ 
   @IsString()
   @IsNotEmpty()
   @Length(1, 20)
@@ -27,7 +30,7 @@ export class CreatePeriodDetailDto {
 
   @Type(() => Date)
   @IsDate()
-  @IsNotEmpty()
+  @IsOptional()
   closeDate: Date;
 
   @IsNumber()

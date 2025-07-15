@@ -24,8 +24,7 @@ class PeriodDetailDto {
   @IsNotEmpty()
   name: string;
 
-  @Type(() => Date)
-  @IsDate()
+
   @IsOptional()
   closeDate: Date;
 
@@ -49,6 +48,10 @@ class PeriodDetailDto {
 }
 
 export class CreatePeriodDto {
+
+  @IsOptional()
+  id?: number; // ✅ Necesario para actualización
+
   @IsNumber()
   @IsNotEmpty()
   @Min(2000)
