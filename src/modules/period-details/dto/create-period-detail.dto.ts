@@ -34,7 +34,7 @@ export class CreatePeriodDetailDto {
   closeDate: Date;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   periodId: number;
 
   @IsOptional()
