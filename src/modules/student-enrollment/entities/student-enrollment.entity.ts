@@ -33,7 +33,7 @@ export class StudentEnrollment {
   @JoinColumn({ name: 'groupId' })
   group: Group;
 
-  @ManyToOne(() => Degree, degree => degree.enrollments)
+  @ManyToOne(() => Degree, degree => degree.enrollments) 
   @JoinColumn({ name: 'degreeId' })
   degree: Degree;
 

@@ -1,6 +1,7 @@
 import { AcademicAssignment } from 'src/modules/academic-assignment/entities/academic-assignment.entity';
 import { AcademicThinking } from 'src/modules/academic-thinking/entities/academic-thinking.entity';
 import { Achievement } from 'src/modules/achievements/entities/achievement.entity';
+import { Schedule } from 'src/modules/schedules/entities/schedule.entity';
 import { StudentEnrollment } from 'src/modules/student-enrollment/entities/student-enrollment.entity';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
@@ -18,16 +19,16 @@ export class Degree {
   @Column({ type: 'varchar', length: 100 })
   program: string;
 
-  @Column({ 
-    type: 'int', 
-    nullable: true, 
+  @Column({
+    type: 'int',
+    nullable: true,
     name: 'program_number',
   })
   programId: number;
 
-  @Column({ 
-    type: 'int', 
-    nullable: true, 
+  @Column({
+    type: 'int',
+    nullable: true,
     name: 'institution_id',
   })
   institutionId: number;
@@ -49,5 +50,9 @@ export class Degree {
 
   @OneToMany(() => Achievement, achievement => achievement.degree)
   achievements: Achievement[];
+
+  @OneToMany(() => Schedule, schedule => schedule.degree)
+  schedules: Achievement[];
+
 
 }

@@ -20,4 +20,9 @@ export class UpdatePerioDetailLevelingDto {
     @IsOptional()
     @IsBoolean()
     hasRecovery: boolean = false;
+
+    @IsOptional()
+    @IsBoolean()
+    habilited: boolean = false; // Valor por defecto: false
+    
   }

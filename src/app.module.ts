@@ -33,6 +33,7 @@ import { StudentAttendanceModule } from './modules/student-attendance/student-at
 import { MailModule } from './mail/mail.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { AchievementDetailsModule } from './modules/achievement-details/achievement-details.module';
+import { SchedulesModule } from './modules/schedules/schedules.module';
 
 
 @Module({
@@ -111,6 +112,7 @@ import { AchievementDetailsModule } from './modules/achievement-details/achievem
     MailModule,
     AchievementsModule,
     AchievementDetailsModule,
+    SchedulesModule,
 
   ],
   controllers: [AppController],

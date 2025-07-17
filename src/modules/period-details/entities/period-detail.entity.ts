@@ -56,4 +56,7 @@ export class PeriodDetail {
   @Column({ type: 'boolean', default: false })
   hasLeveling: boolean; // ¿Tiene nivelación?
   
+  @Column({ type: 'boolean', default: false })
+  habilited: boolean; // ¿Tiene nivelación?
+
 }

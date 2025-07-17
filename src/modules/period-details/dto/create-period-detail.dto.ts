@@ -54,4 +54,8 @@ export class CreatePeriodDetailDto {
   @IsOptional()
   @IsBoolean()
   hasLeveling: boolean = false; // Valor por defecto: false
+
+  @IsOptional()
+  @IsBoolean()
+  habilited: boolean = false; // Valor por defecto: false
 }
