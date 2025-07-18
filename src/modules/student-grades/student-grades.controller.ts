@@ -33,6 +33,16 @@ export class StudentGradesController {
     return this.studentGradesService.getGradesGroupedForChart(enrollmentId, periodId);
   }
 
+
+  @Get('status-check')
+   async checkGradesStatus(
+    @Query('studentId', ParseIntPipe) studentId: number,
+    @Query('periodId', ParseIntPipe) periodId: number,
+  ) {
+    const result = await this.studentGradesService.checkAllGradesStatusByStudentAndPeriod(studentId, periodId);
+    return { allGradesClosed: result };
+  }
+
   @Get('list/leveling')
   async findByTeacherAndYear(
     @Query('teacherId', ParseIntPipe) teacherId: number,

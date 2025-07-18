@@ -617,7 +617,7 @@ export class StudentGradesService {
     }
   }
 
-  
+
 
 
   async findByTeacherAndYear(
@@ -629,7 +629,7 @@ export class StudentGradesService {
       if (!year) {
         throw new Error('El año es requerido');
       }
-  
+
       const queryBuilder = this.gradeRepository
         .createQueryBuilder('grade')
         .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
@@ -640,56 +640,56 @@ export class StudentGradesService {
         .leftJoinAndSelect('grade.periodDetail', 'periodDetail')
         .where('EXTRACT(YEAR FROM grade.createdAt) = :year', { year })
         .andWhere('grade.status = :status', { status: 1 });
-  
+
       if (teacherId) {
         queryBuilder.andWhere('grade.teacherId = :teacherId', { teacherId });
       }
-  
+
       if (onlyLowGrades) {
         queryBuilder.andWhere(
           `LOWER(TRIM(grade.qualitativeGrade)) = LOWER(:grade)`,
           { grade: 'bajo' }
         );
       }
-  
+
       const grades = await queryBuilder.getMany();
-  
+
       const degreeIds = [...new Set(grades.map(g =>
         g.degreeId || g.academicThinkingDetail?.academicThinking?.gradeId
       ).filter(Boolean))];
-  
+
       const groupIds = [...new Set(grades.map(g => g.groupId).filter(Boolean))];
-  
+
       const [degrees, groups] = await Promise.all([
         degreeIds.length > 0 ? this.degreeRepository.findByIds(degreeIds) : Promise.resolve([]),
         groupIds.length > 0 ? this.groupRepository.findByIds(groupIds) : Promise.resolve([])
       ]);
-  
+
       const degreeMap = degrees.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
       const groupMap = groups.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
-  
+
       const result = grades.reduce((acc, grade) => {
         const periodDetailId = grade.periodDetailId;
         const degreeId = grade.degreeId ?? grade.academicThinkingDetail?.academicThinking?.gradeId;
         const groupId = grade.groupId;
         const trainingAreaId = grade.academicThinkingDetail?.trainingArea?.id;
-  
+
         if (!periodDetailId || !degreeId || !groupId || !trainingAreaId) {
           console.warn('Grade con datos faltantes:', grade.id);
           return acc;
         }
-  
+
         const periodKey = `${periodDetailId}`;
         const groupKey = `${degreeId}-${groupId}`;
         const areaKey = `${trainingAreaId}`;
-  
+
         if (!acc[periodKey]) {
           acc[periodKey] = {
             periodDetail: grade.periodDetail || { id: periodDetailId, name: 'No disponible' },
             groups: {}
           };
         }
-  
+
         if (!acc[periodKey].groups[groupKey]) {
           acc[periodKey].groups[groupKey] = {
             degree: degreeMap[degreeId] || { id: degreeId, name: 'No disponible' },
@@ -697,7 +697,7 @@ export class StudentGradesService {
             trainingAreas: {}
           };
         }
-  
+
         if (!acc[periodKey].groups[groupKey].trainingAreas[areaKey]) {
           acc[periodKey].groups[groupKey].trainingAreas[areaKey] = {
             trainingArea: {
@@ -707,7 +707,7 @@ export class StudentGradesService {
             grades: []
           };
         }
-  
+
         acc[periodKey].groups[groupKey].trainingAreas[areaKey].grades.push({
           id: grade.id,
           student: grade.studentEnrollment?.student ?? null,
@@ -719,7 +719,7 @@ export class StudentGradesService {
           closingDate: grade.closingDate,
           createdAt: grade.createdAt
         });
-  
+
         return acc;
       }, {} as Record<string, {
         periodDetail: { id: number; name: string };
@@ -742,7 +742,7 @@ export class StudentGradesService {
           }>;
         }>;
       }>);
-  
+
       const formattedResult = Object.values(result).map(period => ({
         periodDetail: period.periodDetail,
         groups: Object.values(period.groups).map(group => ({
@@ -751,7 +751,7 @@ export class StudentGradesService {
           trainingAreas: Object.values(group.trainingAreas)
         }))
       }));
-  
+
       return {
         success: true,
         message: onlyLowGrades
@@ -759,7 +759,7 @@ export class StudentGradesService {
           : 'Todas las calificaciones agrupadas por período, grupo y área exitosamente',
         data: formattedResult
       };
-  
+
     } catch (error) {
       console.error('Error en findByTeacherAndYear:', error);
       return {
@@ -769,7 +769,23 @@ export class StudentGradesService {
       };
     }
   }
-  
+
+
+  async checkAllGradesStatusByStudentAndPeriod(
+    studentId: number,
+    periodId: number,
+  ): Promise<boolean> {
+    try {
+      const grades = await this.gradeRepository.find({
+        where: { studentEnrollmentId: studentId, periodDetailId: periodId, status: false }
+      })
+      // Si no encuentra ninguna nota con status false, significa que todas están en true
+      return grades.length > 0 ? true : false;
+    } catch (error) {
+      throw new Error(`Error al verificar estado de notas: ${error.message}`);
+    }
+  }
+
 
 
 
@@ -879,7 +895,7 @@ export class StudentGradesService {
         .andWhere('grade.periodDetailId = :periodId', { periodId })
         .limit(1)
         .getRawOne();
-  
+
       if (!periodInfo) {
         return {
           success: false,
@@ -887,7 +903,7 @@ export class StudentGradesService {
           data: [],
         };
       }
-  
+
       // 2. Calcular promedios para el período
       const averages = await this.gradeRepository
         .createQueryBuilder('grade')
@@ -899,7 +915,7 @@ export class StudentGradesService {
         .where('grade.studentEnrollmentId = :enrollmentId', { enrollmentId })
         .andWhere('grade.periodDetailId = :periodId', { periodId })
         .getRawOne();
-  
+
       // 3. Formatear respuesta como ARREGLO
       const result = [
         {
@@ -917,13 +933,13 @@ export class StudentGradesService {
           }
         }
       ];
-  
+
       return {
         success: true,
         message: 'Promedios del período obtenidos exitosamente',
         data: result // Siempre devuelve un arreglo
       };
-  
+
     } catch (error) {
       return {
         success: false,
@@ -946,7 +962,7 @@ export class StudentGradesService {
         .where('grade.studentEnrollmentId = :studentEnrollmentId', { studentEnrollmentId })
         .andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId })
         .getMany();
-  
+
       if (!grades.length) {
         return {
           success: false,
@@ -954,7 +970,7 @@ export class StudentGradesService {
           data: null,
         };
       }
-  
+
       // Agrupar por academicThinking.id y luego por trainingArea.id
       const grouped: Record<number, {
         academicThinking: { id: number; year: number };
@@ -963,14 +979,14 @@ export class StudentGradesService {
           grades: Array<{ id: number; numericalGrade: number; qualitativeGrade: string; status: boolean }>;
         }>;
       }> = {};
-  
+
       grades.forEach(grade => {
         const academicThinking = grade.academicThinkingDetail.academicThinking;
         const trainingArea = grade.academicThinkingDetail.trainingArea;
-  
+
         const thinkingId = academicThinking.id;
         const areaId = trainingArea.id;
-  
+
         if (!grouped[thinkingId]) {
           grouped[thinkingId] = {
             academicThinking: {
@@ -980,7 +996,7 @@ export class StudentGradesService {
             trainingAreas: {}
           };
         }
-  
+
         if (!grouped[thinkingId].trainingAreas[areaId]) {
           grouped[thinkingId].trainingAreas[areaId] = {
             trainingArea: {
@@ -990,7 +1006,7 @@ export class StudentGradesService {
             grades: []
           };
         }
-  
+
         grouped[thinkingId].trainingAreas[areaId].grades.push({
           id: grade.id,
           numericalGrade: grade.numericalGrade,
@@ -998,12 +1014,12 @@ export class StudentGradesService {
           status: grade.status
         });
       });
-  
+
       const formattedResult = Object.values(grouped).map(thinking => ({
         academicThinking: thinking.academicThinking,
         trainingAreas: Object.values(thinking.trainingAreas)
       }));
-  
+
       return {
         success: true,
         message: 'Calificaciones agrupadas para gráfico obtenidas exitosamente',
@@ -1017,7 +1033,7 @@ export class StudentGradesService {
       };
     }
   }
-  
+
 
 
 
