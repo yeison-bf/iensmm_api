@@ -62,6 +62,24 @@ export class AdministratorsService {
       };
     }
   }
+
+
+
+   async findRectors(institutionId?: number): Promise<Administrator[]> {
+    return await this.administratorRepository
+      .createQueryBuilder('administrator')
+      .leftJoinAndSelect('administrator.user', 'user')
+      .leftJoinAndSelect('administrator.administratorTypes', 'administratorType')
+      .where('administratorType.name = :typeName', { typeName: 'Rector' })
+      .andWhere('administrator.status = :status', { status: true })
+      .andWhere('user.institution = :institutionId', { institutionId })
+
+      .getMany();
+  }
+
+
+
+
   async findOne(id: number) {
     try {
       const administrator = await this.administratorRepository.findOne({

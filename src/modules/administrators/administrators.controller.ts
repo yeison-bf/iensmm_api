@@ -5,7 +5,7 @@ import { UpdateAdministratorDto } from './dto/update-administrator.dto';
 
 @Controller('administrators')
 export class AdministratorsController {
-  constructor(private readonly administratorsService: AdministratorsService) {}
+  constructor(private readonly administratorsService: AdministratorsService) { }
 
   @Post()
   create(@Body() createAdministratorDto: CreateAdministratorDto) {
@@ -16,7 +16,12 @@ export class AdministratorsController {
     return this.administratorsService.findAll(institution);
   }
 
-  
+
+  @Get('rectors')
+  async getRectors(@Query('institution') institution?: number) {
+    return await this.administratorsService.findRectors(institution);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.administratorsService.findOne(id);
