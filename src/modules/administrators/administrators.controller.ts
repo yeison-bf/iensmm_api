@@ -16,7 +16,6 @@ export class AdministratorsController {
     return this.administratorsService.findAll(institution);
   }
 
-
   @Get('rectors')
   async getRectors(@Query('institution') institution?: number) {
     return await this.administratorsService.findRectors(institution);
@@ -26,9 +25,6 @@ export class AdministratorsController {
   findOne(@Param('id') id: number) {
     return this.administratorsService.findOne(id);
   }
-
-
-
 
   @Put(':id')
   update(@Param('id') id: number, @Body() updateAdministratorDto: UpdateAdministratorDto) {

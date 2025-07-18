@@ -388,8 +388,13 @@ export class StudentEnrollmentService {
 
 
 
-
-
+  async findByStudentId(studentId: number): Promise<StudentEnrollment[]> {
+    return this.enrollmentRepository.find({
+      where: { student: { id: studentId } },
+      relations: ['degree'], // 👈 Incluye la relación con Degree
+      order: { registrationDate: 'DESC' },
+    });
+  }
 
 
 

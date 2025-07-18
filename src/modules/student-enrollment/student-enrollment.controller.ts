@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query, ParseIntPipe } from '@nestjs/common';
 import { StudentEnrollmentService } from './student-enrollment.service';
 import { CreateStudentEnrollmentDto } from './dto/create-student-enrollment.dto';
 
@@ -46,8 +46,6 @@ export class StudentEnrollmentController {
   }
 
 
-
-
   @Get('raitng')
   findAllDegree(
     @Query('sede') headquarterId?: number, 
@@ -55,6 +53,14 @@ export class StudentEnrollmentController {
     @Query('programId') programId?: number
   ) {
     return this.enrollmentService.findAllDegree(headquarterId, year, programId);
+  }
+
+
+   @Get('student/:studentId')
+  async getEnrollmentsByStudent(
+    @Param('studentId', ParseIntPipe) studentId: number,
+  ) {
+    return this.enrollmentService.findByStudentId(studentId);
   }
 
 
