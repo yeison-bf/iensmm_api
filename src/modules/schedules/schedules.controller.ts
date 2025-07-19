@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
 import { SchedulesService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
@@ -15,6 +15,18 @@ export class SchedulesController {
   @Get()
   findAll() {
     return this.schedulesService.findAll();
+  }
+
+  
+  @Get('byDegree')
+  findOneByDegre(
+    @Query('degreeId') degreeId: number,
+    @Query('year') year: number,
+  ) {
+    return this.schedulesService.findOneByDegre(
+      degreeId,
+      year,
+    );
   }
 
   @Get(':id')

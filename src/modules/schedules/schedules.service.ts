@@ -33,6 +33,24 @@ export class SchedulesService {
     return this.scheduleRepo.find();
   }
 
+  async findOneByDegre(
+    degreeId: number,
+    year: number,
+  ): Promise<Schedule> {
+    const schedule = await this.scheduleRepo.findOne({
+      where: {
+        degree: {
+          id: degreeId,
+        },
+        anio: year,
+      },
+    });
+    if (!schedule) throw new NotFoundException('Schedule not found');
+    return schedule;
+  }
+
+  
+
   async findOne(id: number): Promise<Schedule> {
     const schedule = await this.scheduleRepo.findOne({ where: { id } });
     if (!schedule) throw new NotFoundException('Schedule not found');
