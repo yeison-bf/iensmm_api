@@ -68,17 +68,29 @@ export class SchedulesService {
     return schedule;
   }
 
-  async update(id: number, dto: UpdateScheduleDto): Promise<Schedule> {
+  async update(
+    id: number,
+    dto: UpdateScheduleDto,
+  ): Promise<{ success: boolean; data?: Schedule; message?: string }> {
     const schedule = await this.findOne(id);
+    if (!schedule) {
+      return { success: false, message: 'Schedule not found' };
+    }
+
     if (dto.degreeId) {
       const degree = await this.degreeRepo.findOneBy({ id: dto.degreeId });
-      if (!degree) throw new NotFoundException('Degree not found');
+      if (!degree) {
+        return { success: false, message: 'Degree not found' };
+      }
       schedule.degree = degree;
     }
 
     Object.assign(schedule, dto);
-    return this.scheduleRepo.save(schedule);
+    const updated = await this.scheduleRepo.save(schedule);
+
+    return { success: true, data: updated };
   }
+
 
   async remove(id: number): Promise<void> {
     const result = await this.scheduleRepo.delete(id);
