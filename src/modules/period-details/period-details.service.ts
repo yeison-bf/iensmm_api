@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { PeriodDetail } from './entities/period-detail.entity';
@@ -7,6 +7,7 @@ import { CreatePeriodDetailDto } from './dto/create-period-detail.dto';
 import { UpdatePerioDetaildDto } from './dto/update-period-detail.dto';
 import { StudentGrade } from '../student-grades/entities/student-grade.entity';
 import { UpdatePerioDetailLevelingDto } from './dto/update-period-detail-leveling';
+import { ToggleHabilitedDto } from './dto/update-habilite-period-detail.dto';
 
 @Injectable()
 export class PeriodDetailsService {
@@ -219,6 +220,26 @@ export class PeriodDetailsService {
       };
     }
   }
+
+
+
+  async toggleHabilited(id: number, habilited: ToggleHabilitedDto) {
+    const periodDetail = await this.periodDetailRepository.findOne({
+      where: { id }
+    });
+
+    if (!periodDetail) {
+      throw new NotFoundException(`PeriodDetail with ID ${id} not found`);
+    }
+
+    // Solo actualiza el campo habilited
+    periodDetail.habilited = habilited.habilited;
+    periodDetail.status = habilited.status;
+    periodDetail.endDate = habilited.endDate;
+
+    return this.periodDetailRepository.save(periodDetail);
+  }
+
 
 
 

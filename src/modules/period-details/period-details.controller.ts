@@ -3,6 +3,7 @@ import { PeriodDetailsService } from './period-details.service';
 import { CreatePeriodDetailDto } from './dto/create-period-detail.dto';
 import { UpdatePerioDetaildDto } from './dto/update-period-detail.dto';
 import { UpdatePerioDetailLevelingDto } from './dto/update-period-detail-leveling';
+import { ToggleHabilitedDto } from './dto/update-habilite-period-detail.dto';
 
 @Controller('period-details')
 export class PeriodDetailsController {
@@ -79,11 +80,22 @@ export class PeriodDetailsController {
     return this.periodDetailsService.updateLevelingBatch(updates);
   }
 
+  // En el controlador
+  @Put(':id/toggle-habilited')
+  async toggleHabilited(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() toggleHabilitedDto: ToggleHabilitedDto
+  ) {
+    return this.periodDetailsService.toggleHabilited(id, toggleHabilitedDto);
+  }
+
 
   @Put(':id')
   update(@Param('id') id: number, @Body() updatePeriodDetailDto: UpdatePerioDetaildDto) {
     return this.periodDetailsService.update(id, updatePeriodDetailDto);
   }
+
+
 
   @Delete(':id')
   remove(@Param('id') id: number) {
