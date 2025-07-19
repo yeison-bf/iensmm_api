@@ -16,9 +16,11 @@ export class SchedulesService {
     private readonly degreeRepo: Repository<Degree>,
   ) { }
 
-  async create(dto: CreateScheduleDto): Promise<Schedule> {
+  async create(dto: CreateScheduleDto): Promise<{ success: boolean; data?: Schedule; message?: string }> {
     const degree = await this.degreeRepo.findOneBy({ id: dto.degreeId });
-    if (!degree) throw new NotFoundException('Degree not found');
+    if (!degree) {
+      return { success: false, message: 'Degree not found' };
+    }
 
     const schedule = this.scheduleRepo.create({
       urlImagen: dto.urlImagen,
@@ -26,7 +28,9 @@ export class SchedulesService {
       degree,
     });
 
-    return this.scheduleRepo.save(schedule);
+    const savedSchedule = await this.scheduleRepo.save(schedule);
+
+    return { success: true, data: savedSchedule };
   }
 
   findAll(): Promise<Schedule[]> {
@@ -34,7 +38,7 @@ export class SchedulesService {
   }
 
 
-  
+
   async findOneByDegre(
     degreeId: number,
     year: number,
