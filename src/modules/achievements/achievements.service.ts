@@ -29,6 +29,7 @@ export class AchievementsService {
         degree: { id: createAchievementDto.degreeId },
         trainingArea: { id: createAchievementDto.trainingAreaId },
         periodDetail: { id: createAchievementDto.periodDetailId },
+        status: createAchievementDto.status,
       });
 
       // Save the achievement first
