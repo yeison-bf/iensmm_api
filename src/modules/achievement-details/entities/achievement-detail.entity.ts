@@ -16,6 +16,7 @@ export class AchievementDetail {
   @ManyToOne(() => Rating, { nullable: false })
   rating: Rating;
 
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -8,7 +8,8 @@ export class CreateAchievementDetailDto {
 
   @IsNumber()
   @IsNotEmpty()
-  ratingId: number;
+  ratingId: number; 
+
 }
 
 export class CreateAchievementDto {
@@ -45,4 +46,10 @@ export class CreateAchievementDto {
   @ValidateNested({ each: true })
   @Type(() => CreateAchievementDetailDto)
   details?: CreateAchievementDetailDto[];
+
+    
+   @IsOptional()
+  status: string;
+  
+  
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateAchievementDetailDto {
   @IsString()
@@ -12,4 +12,6 @@ export class CreateAchievementDetailDto {
   @IsNumber()
   @IsNotEmpty()
   ratingId: number;
+
+
 }

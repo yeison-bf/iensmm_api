@@ -39,4 +39,7 @@ export class Achievement {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column('text')
+  status: string;
 }

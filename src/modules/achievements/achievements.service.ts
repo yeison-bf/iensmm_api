@@ -72,6 +72,24 @@ export class AchievementsService {
     }
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
   async findAllWithDetails() {
     try {
       const achievements = await this.achievementRepository
