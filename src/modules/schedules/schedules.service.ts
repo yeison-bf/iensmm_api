@@ -14,7 +14,7 @@ export class SchedulesService {
 
     @InjectRepository(Degree)
     private readonly degreeRepo: Repository<Degree>,
-  ) {}
+  ) { }
 
   async create(dto: CreateScheduleDto): Promise<Schedule> {
     const degree = await this.degreeRepo.findOneBy({ id: dto.degreeId });
@@ -33,10 +33,12 @@ export class SchedulesService {
     return this.scheduleRepo.find();
   }
 
+
+  
   async findOneByDegre(
     degreeId: number,
     year: number,
-  ): Promise<Schedule> {
+  ): Promise<{ success: boolean; message?: string; data?: Schedule }> {
     const schedule = await this.scheduleRepo.findOne({
       where: {
         degree: {
@@ -45,11 +47,16 @@ export class SchedulesService {
         anio: year,
       },
     });
-    if (!schedule) throw new NotFoundException('Schedule not found');
-    return schedule;
+
+    if (!schedule) {
+      return { success: false, message: 'Schedule not found' };
+    }
+
+    return { success: true, data: schedule };
   }
 
-  
+
+
 
   async findOne(id: number): Promise<Schedule> {
     const schedule = await this.scheduleRepo.findOne({ where: { id } });
