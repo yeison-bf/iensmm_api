@@ -47,8 +47,7 @@ export class SchedulesService {
       where: {
         degree: {
           id: degreeId,
-        },
-        anio: year,
+        }
       },
     });
 
