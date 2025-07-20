@@ -43,6 +43,7 @@ export class StudentGradesController {
     return { allGradesClosed: result };
   }
 
+
   @Get('list/leveling')
   async findByTeacherAndYear(
     @Query('teacherId', ParseIntPipe) teacherId: number,
@@ -51,6 +52,7 @@ export class StudentGradesController {
   ) {
     return this.studentGradesService.findByTeacherAndYear(teacherId, year, onlyLowGrades);
   }
+
 
   @Get('voletin/filtered')
   findByFiltersVoletin(
@@ -87,6 +89,18 @@ export class StudentGradesController {
       onlyLowGrades ?? true
     );
   }
+
+
+
+   @Get('studentsCertificado')
+  findByStudentCertificate(
+    @Query('studentEnrollmentId') studentEnrollmentId?: number,
+    @Query('periodDetailId') periodDetailId?: number,
+  ) {
+    return this.studentGradesService.findByStudentCertificate(studentEnrollmentId, periodDetailId);
+  }
+
+
 
   // ======== Rutas Genéricas (Más generales después) ========
   @Get('filtered')

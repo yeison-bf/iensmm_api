@@ -289,6 +289,48 @@ export class StudentGradesService {
   }
 
 
+
+  
+
+  async findByStudentCertificate(studentEnrollmentId?: number, periodDetailId?: number) {
+    try {
+      const queryBuilder = this.gradeRepository
+        .createQueryBuilder('grade')
+        .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
+        .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
+        .leftJoinAndSelect('thinkingDetail.trainingArea', 'trainingArea')
+        // .leftJoinAndSelect('grade.period', 'period')
+        // .leftJoinAndSelect('grade.teacher', 'teacher');
+
+      if (studentEnrollmentId) {
+        queryBuilder.andWhere('grade.studentEnrollmentId = :studentEnrollmentId', { studentEnrollmentId });
+      }
+      if (periodDetailId) {
+        queryBuilder.andWhere('grade.periodDetailId = :periodDetailId', { periodDetailId });
+      }
+
+      const grades = await queryBuilder.getMany();
+      return {
+        success: true,
+        message: 'Calificaciones recuperadas exitosamente',
+        data: grades
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al recuperar las calificaciones: ${error.message}`,
+        data: null
+      };
+    }
+  }
+
+
+
+
+
+
+
+
   async findByFilters(groupId?: number, degreeId?: number, thinkingDetailId?: number, periodDetailId?: number) {
     try {
       const queryBuilder = this.gradeRepository
