@@ -54,11 +54,24 @@ export class AcademicAssignmentController {
   }
 
 
+  
+  @Get('degree/:id')
+  findByDegreeYear(
+    @Param('id') id: string,
+    @Query('year') year: number,
+    @Query('headquarterId') headquarterId: number,
+    @Query('programId') programId: number,
+  ) {
+    return this.academicAssignmentService.findByDegreeYear(+id, year, headquarterId, programId);
+  }
+
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.academicAssignmentService.findOne(+id);
   }
+
 
 
 

@@ -324,8 +324,34 @@ export class AcademicAssignmentService {
 
 
 
+async findByDegreeYear(id: number, year: number, headquarterId: number, programId: number) {
+  const assignment = await this.academicAssignmentRepository.findOne({
+    where: { degreeId: id, year, headquarterId, programId },
+    relations: [
+      'degree',
+      'headquarters',
+      'program',
+      'details',
+      'details.academicThinkingDetail',
+      'details.academicThinkingDetail.trainingArea',
+      'details.academicThinkingDetail.academicThinking'
+    ]
+  });
 
+  if (!assignment) {
+    return {
+      success: false,
+      message: `Asignación académica con ID ${id} no encontrada`,
+      data: null
+    };
+  }
 
+  return {
+    success: true,
+    message: 'Asignación académica recuperada exitosamente',
+    data: assignment
+  };
+}
 
 
 
