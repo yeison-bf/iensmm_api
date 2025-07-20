@@ -130,7 +130,8 @@ export class StudentEnrollmentService {
         .leftJoinAndSelect('enrollment.group', 'group')
         .leftJoinAndSelect('enrollment.degree', 'degree')
         .leftJoinAndSelect('enrollment.program', 'program')
-        .orderBy('enrollment.createdAt', 'DESC');
+        .orderBy('enrollment.createdAt', 'DESC')
+        .where('enrollment.status = :status', { status: true })
 
       if (headquarterId) {
         queryBuilder.andWhere('enrollment.headquarter_id = :headquarterId', { headquarterId });
