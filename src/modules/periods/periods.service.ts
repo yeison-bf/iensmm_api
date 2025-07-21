@@ -94,7 +94,8 @@ export class PeriodsService {
 
 
 
-  async findAll(institutionId?: number, programId?: number) {
+  async findAll(institutionId?: number, programId?: number, year?: number) {
+
     try {
       let where: any = {};
 
@@ -104,6 +105,10 @@ export class PeriodsService {
 
       if (programId) {
         where.programId = programId;
+      }
+
+      if (year) {
+        where.year = year;
       }
 
       const periods = await this.periodRepository.find({

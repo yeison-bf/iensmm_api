@@ -15,9 +15,10 @@ export class PeriodsController {
   @Get()
   findAll(
     @Query('institutionId') institutionId?: number,
-    @Query('programId') programId?: number
+    @Query('programId') programId?: number,
+    @Query('year') year?: number,
   ) {
-    return this.periodsService.findAll(institutionId, programId);
+    return this.periodsService.findAll(institutionId, programId, year);
   }
 
   
