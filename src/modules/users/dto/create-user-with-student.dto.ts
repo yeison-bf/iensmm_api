@@ -4,9 +4,8 @@ import { CreateUserDto } from './create-user.dto';
 
 
 export class CreateStudentInfoDto {
-  @Type(() => Date)
-  @IsDate()
-  birthDate: Date;
+  @IsString()
+  birthDate: string;
 
   @IsString()
   bloodType: string;

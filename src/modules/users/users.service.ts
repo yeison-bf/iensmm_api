@@ -680,7 +680,7 @@ export class UsersService {
   }
 
 
-  
+
   async findAllAdministratorsProgram(programId: number, institutionId: number) {
     try {
       const users = await this.userRepository
@@ -883,7 +883,7 @@ export class UsersService {
       const user = await this.userRepository.findOne({
         where: { username },
       });
-  
+
       if (!user) {
         return {
           success: false,
@@ -891,16 +891,16 @@ export class UsersService {
           data: null,
         };
       }
-  
+
       console.log(newPassword)
       // 2. Encriptar nueva contraseña
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
-  
+
       // 3. Guardar nueva contraseña
       user.password = hashedPassword;
       await this.userRepository.save(user);
-  
+
       return {
         success: true,
         message: 'La contraseña fue actualizada correctamente.',
@@ -1141,7 +1141,7 @@ export class UsersService {
 
       if (user) {
         const resetLink = `http://localhost:5173/recovery/newPassword?token=${user?.notificationEmail}&was=kfreogerogo43ut9ruvbb584y8gvb805y08b3&code=${user?.username}&r8vb804y50gyrevbyyv3brbvfbvkdfkjfbdbo457`;
-        
+
         const nombre = `${user.firstName} ${user.lastName}`;
         const message = `
         <p>Hola,</p>
@@ -1153,7 +1153,7 @@ export class UsersService {
         <p>Gracias por ser parte de nuestra comunidad.</p>
         <p><strong>Edunormas</strong></p>
         `;
-        
+
         const finalMessage = message.replace("{{resetLink}}", resetLink);
         await this.notificarUsuario(user.notificationEmail, nombre, finalMessage);
       }
@@ -1384,6 +1384,7 @@ export class UsersService {
       }
 
 
+
       // Buscvar profgrama 
       const program = await this.programRepository.findOne({
         where: { name: studentData.studentInfo.programa },
@@ -1392,8 +1393,6 @@ export class UsersService {
       if (!program) {
         throw new Error(`Headquarters "${studentData.user.headquarterIds}" not found`);
       }
-
-
 
       // Modify user data with found IDs
       const modifiedUserData = {
@@ -1425,6 +1424,17 @@ export class UsersService {
         throw new Error(userResult.message);
       }
 
+
+      const programEnrrollent = await this.programRepository.findOne({
+        where: { name: studentData.enrollment.programId },
+      });
+      console.log("programa seleccionado : ", programEnrrollent)
+
+      if (!programEnrrollent) {
+        throw new Error(`Program "${studentData.enrollment.programId}" not found`);
+      }
+
+
       // If enrollment data is provided, find actual group and degree IDs
       if (studentData.enrollment && studentData.enrollment.type) {
         const hasEnrollmentData = studentData.enrollment.groupId &&
@@ -1441,6 +1451,7 @@ export class UsersService {
             observations: studentData.enrollment.observations || '',
             studentId: userResult.data.id,
             headquarterId: headquarters.id,
+            programId: programEnrrollent.id,
             institutionId: headquarters.institution.id
           };
 

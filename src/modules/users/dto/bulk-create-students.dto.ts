@@ -1,5 +1,8 @@
+
+// Primero, actualiza tu DTO para que coincida con tus datos
 export class BulkCreateStudentDto {
   user: {
+    institution: number;  // Agregado
     firstName: string;
     lastName: string;
     document: string;
@@ -13,10 +16,9 @@ export class BulkCreateStudentDto {
     roleId: number;
     documentTypeId: string;
     headquarterIds: string;
-    
   };
   studentInfo: {
-    birthDate: Date;
+    birthDate: string;  // Cambiado a string ya que recibes "41630"
     bloodType: string;
     birthDepartment: string;
     birthCity: string;
@@ -30,13 +32,13 @@ export class BulkCreateStudentDto {
   enrollment: {
     schedule: string;
     folio: string;
-    registrationDate: Date;
+    registrationDate: string;  // Cambiado a string ya que recibes "45658"
     type: string;
-    observations: string;
+    observations?: string;  // Opcional
     groupId: string;
     degreeId: string;
-    headquarterId: number;    // Agregado
-    institutionId: number;    // Agregado
-    programId: string;        // Agregado
+    headquarterId?: number;    // Opcional
+    institutionId?: number;    // Opcional
+    programId?: string;        // Opcional
   };
 }
