@@ -1049,8 +1049,13 @@ export class UsersService {
         student: user.student,
         firma: user.TeacherSignature,
         role: user.role.name,
+        roleId: user.role.id,
         documentType: user.documentType,
         headquarters: user.headquarters,
+        phone: user.phone,
+        address: user.address,
+        gender: user.gender,
+        birthDate: user.birthDate,
       };
 
       // Add specific data based on role
