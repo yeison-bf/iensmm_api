@@ -1715,4 +1715,81 @@ export class UsersService {
       };
     }
   }
+
+
+
+
+
+
+  async getAllStudents(
+    page: number = 1,
+    limit: number = 10,
+    headquarterId?: number,
+    programId?: number,
+    search?: string
+  ) {
+    const skip = (page - 1) * limit;
+
+    // Construir el query base
+    const queryBuilder = this.studentRepository
+      .createQueryBuilder('student')
+      .leftJoinAndSelect('student.user', 'user')
+      .leftJoinAndSelect('student.enrollments', 'enrollment')
+      .leftJoinAndSelect('user.headquarters', 'headquarters')
+      .leftJoinAndSelect('user.documentType', 'documentType')
+      .leftJoinAndSelect('enrollment.group', 'group')
+      .leftJoinAndSelect('enrollment.degree', 'degree');
+
+    // Aplicar filtros de sede y programa
+    if (headquarterId) {
+      queryBuilder.andWhere('headquarters.id = :headquarterId', { headquarterId });
+    }
+
+    if (programId) {
+      queryBuilder.andWhere('enrollment.programId = :programId', { programId });
+    }
+
+    // Aplicar búsqueda si se proporciona
+    if (search && search.trim() !== '') {
+      const searchTerm = `%${search.trim()}%`;
+      queryBuilder.andWhere(
+        '(user.firstName LIKE :search OR ' +
+        'user.lastName LIKE :search OR ' +
+        'user.document LIKE :search OR ' +
+        'user.username LIKE :search OR ' +
+        'user.notificationEmail LIKE :search)',
+        { search: searchTerm }
+      );
+    }
+
+    // Obtener el total de registros que coinciden con los filtros
+    const totalItems = await queryBuilder.getCount();
+
+    // Aplicar paginación y obtener los resultados
+    const items = await queryBuilder
+      .orderBy('user.firstName', 'ASC')
+      .addOrderBy('user.lastName', 'ASC')
+      .skip(skip)
+      .take(limit)
+      .getMany();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      success: true,
+      data: {
+        items,
+        totalItems,
+        currentPage: page,
+        totalPages,
+        itemsPerPage: limit,
+        meta: {
+          totalPages,
+          currentPage: page,
+          itemsPerPage: limit,
+          totalItems
+        }
+      }
+    };
+  }
 }

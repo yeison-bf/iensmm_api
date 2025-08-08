@@ -45,6 +45,25 @@ export class UsersController {
   }
 
 
+  
+  @Get('/students/search')
+  async getAllStudents(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('headquarterId') headquarterId?: string,
+    @Query('programId') programId?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.usersService.getAllStudents(
+      parseInt(page),
+      parseInt(limit),
+      headquarterId ? parseInt(headquarterId) : undefined,
+      programId ? parseInt(programId) : undefined,
+      search
+    );
+  }
+
+
   @Get('/administrators')
   findAllAdministrators(@Query('institutionId') institutionId?: number) {
     return this.usersService.findAllAdministrators(institutionId);
