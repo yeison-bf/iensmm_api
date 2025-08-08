@@ -1721,13 +1721,14 @@ export class UsersService {
 
 
 
-  async getAllStudents(
-    page: number = 1,
-    limit: number = 10,
-    headquarterId?: number,
-    programId?: number,
-    search?: string
-  ) {
+async getAllStudents(
+  page: number = 1,
+  limit: number = 10,
+  headquarterId?: number,
+  programId?: number,
+  search?: string
+) {
+  try {
     const skip = (page - 1) * limit;
 
     // Construir el query base
@@ -1740,7 +1741,7 @@ export class UsersService {
       .leftJoinAndSelect('enrollment.group', 'group')
       .leftJoinAndSelect('enrollment.degree', 'degree');
 
-    // Aplicar filtros de sede y programa
+    // Filtros
     if (headquarterId) {
       queryBuilder.andWhere('headquarters.id = :headquarterId', { headquarterId });
     }
@@ -1749,7 +1750,7 @@ export class UsersService {
       queryBuilder.andWhere('enrollment.programId = :programId', { programId });
     }
 
-    // Aplicar búsqueda si se proporciona
+    // Búsqueda
     if (search && search.trim() !== '') {
       const searchTerm = `%${search.trim()}%`;
       queryBuilder.andWhere(
@@ -1762,34 +1763,47 @@ export class UsersService {
       );
     }
 
-    // Obtener el total de registros que coinciden con los filtros
-    const totalItems = await queryBuilder.getCount();
+    // Obtener resultados y total
+    const [students, total] = await Promise.all([
+      queryBuilder
+        .orderBy('user.firstName', 'ASC')
+        .addOrderBy('user.lastName', 'ASC')
+        .skip(skip)
+        .take(limit)
+        .getMany(),
+      queryBuilder.getCount()
+    ]);
 
-    // Aplicar paginación y obtener los resultados
-    const items = await queryBuilder
-      .orderBy('user.firstName', 'ASC')
-      .addOrderBy('user.lastName', 'ASC')
-      .skip(skip)
-      .take(limit)
-      .getMany();
+    // Agregar campo hasEnrollment
+    const enrichedStudents = students.map(student => ({
+      ...student,
+      hasEnrollment: student.enrollments?.length > 0 || false
+    }));
 
-    const totalPages = Math.ceil(totalItems / limit);
-
+    // Respuesta en el formato del segundo método
     return {
       success: true,
+      message: 'Estudiantes recuperados exitosamente',
       data: {
-        items,
-        totalItems,
-        currentPage: page,
-        totalPages,
-        itemsPerPage: limit,
+        items: enrichedStudents,
         meta: {
-          totalPages,
-          currentPage: page,
-          itemsPerPage: limit,
-          totalItems
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+          hasNextPage: page < Math.ceil(total / limit),
+          hasPreviousPage: page > 1
         }
       }
     };
+
+  } catch (error) {
+    return {
+      success: false,
+      message: `Error al recuperar estudiantes: ${error.message}`,
+      data: null,
+    };
   }
+}
+
 }
