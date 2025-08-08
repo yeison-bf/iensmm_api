@@ -118,6 +118,8 @@ export class StudentEnrollmentService {
     headquarterId?: number,
     year?: string,
     programId?: number,
+    degree?: number,
+    group?: number,
     page?: number,
     limit?: number
   ) {
@@ -138,6 +140,14 @@ export class StudentEnrollmentService {
 
       if (year) {
         queryBuilder.andWhere('YEAR(enrollment.createdAt) = :year', { year });
+      }
+
+      if (degree) {
+        queryBuilder.andWhere('enrollment.degreeId = :degree', { degree });
+      }
+
+      if (group) {
+        queryBuilder.andWhere('enrollment.groupId = :group', { group });
       }
 
       if (programId) {

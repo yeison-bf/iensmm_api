@@ -17,10 +17,13 @@ export class StudentEnrollmentController {
     @Query('sede') headquarterId?: number, 
     @Query('year') year?: string,
     @Query('programId') programId?: number,
+    @Query('degree') degree?: number,
+    @Query('group') group?: number,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10
   ) {
-    return this.enrollmentService.findAll(headquarterId, year, programId, page, limit);
+    return this.enrollmentService.findAll(headquarterId, year, programId, degree, group, page, limit);
+
   }
 
   @Get('listStudent')
