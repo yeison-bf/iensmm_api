@@ -48,13 +48,13 @@ export class NotificationService {
     });
 
     // Enviar correo a cada uno
-      for (const recipient of createNotificationDto.recipients) {
-        if (recipient?.email) {
-          const nombre = `${recipient.name}`;
-          const message = createNotificationDto.body;
-          await this.notificarUsuario(recipient.email, nombre, message);
-        }
+    for (const recipient of createNotificationDto.recipients) {
+      if (recipient?.email) {
+        const nombre = `${recipient.name}`;
+        const message = createNotificationDto.body;
+        await this.notificarUsuario(recipient.email, nombre, message);
       }
+    }
 
 
 
@@ -102,7 +102,7 @@ export class NotificationService {
     });
 
     if (!notification) {
-      throw new Error(`Notification with ID ${id} not found`);
+      return { success: false, message: 'Notification not found' };
     }
 
     // Obtener datos del usuario si existe userId
@@ -133,11 +133,12 @@ export class NotificationService {
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number): Promise<{ success: boolean; message: string }> {
     const result = await this.notificationRepository.delete(id);
     if (result.affected === 0) {
-      throw new Error(`Notification with ID ${id} not found`);
+      return { success: false, message: `Notification with ID ${id} not found` };
     }
+    return { success: true, message: `Notification with ID ${id} deleted successfully` };
   }
 
   // Método adicional para obtener las notificaciones por estado
