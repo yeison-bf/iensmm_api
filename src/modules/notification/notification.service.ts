@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateNotificationDto, UpdateNotificationDto } from './dto/create-notification.dto';
 import { Notification } from './entities/notification.entity';
 import { UsersService } from '../users/users.service';
+import { MailService } from 'src/mail/mail.service';
 
 
 
@@ -13,8 +14,21 @@ export class NotificationService {
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
     private userService: UsersService, // Inyectar el UserService
+    private readonly mailService: MailService,
 
   ) { }
+
+
+  async notificarUsuario(email: string, nombre: string, message: string) {
+    const contenido = `
+      <h1>Hola ${nombre}</h1>
+      <p>${message}</p>
+    `;
+    await this.mailService.sendMail(email, 'Notificación de Edunormas', contenido);
+  }
+
+
+
 
   async create(createNotificationDto: CreateNotificationDto): Promise<Notification> {
     // Extraer solo los nombres de los recipients y unirlos con punto y coma
@@ -32,6 +46,17 @@ export class NotificationService {
       instiution: createNotificationDto.instiution,
       userId: createNotificationDto.userId
     });
+
+    // Enviar correo a cada uno
+      for (const recipient of createNotificationDto.recipients) {
+        if (recipient?.email) {
+          const nombre = `${recipient.name}`;
+          const message = createNotificationDto.body;
+          await this.notificarUsuario(recipient.email, nombre, message);
+        }
+      }
+
+
 
     return await this.notificationRepository.save(notification);
   }

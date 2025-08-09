@@ -38,7 +38,7 @@ export class StudentEnrollmentService {
     await this.mailService.sendMail(email, 'Notificación de Edunormas', contenido);
   }
 
-
+ 
 
 
   async create(createEnrollmentDto: CreateStudentEnrollmentDto) {
