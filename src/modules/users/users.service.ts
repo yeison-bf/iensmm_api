@@ -1720,120 +1720,135 @@ export class UsersService {
 
 
 
-async getAllStudents(
-  page: number = 1,
-  limit: number = 10,
-  headquarterId?: number,
-  programId?: number,
-  search?: string
-) {
-  try {
-    const skip = (page - 1) * limit;
+  async getAllStudents(
+    page: number = 1,
+    limit: number = 10,
+    headquarterId?: number,
+    programId?: number,
+    search?: string
+  ) {
+    try {
+      const skip = (page - 1) * limit;
 
-    // Query base
-    const queryBuilder = this.studentRepository
-      .createQueryBuilder('student')
-      .leftJoinAndSelect('student.user', 'user')
-      .leftJoinAndSelect('user.role', 'role') // incluir role en el user
-      .leftJoinAndSelect('student.enrollments', 'enrollments')
-      .leftJoinAndSelect('enrollments.group', 'group')
-      .leftJoinAndSelect('enrollments.degree', 'degree')
-      .leftJoinAndSelect('user.headquarters', 'headquarters')
-      .leftJoinAndSelect('user.documentType', 'documentType');
+      // Query base
+      const queryBuilder = this.studentRepository
+        .createQueryBuilder('student')
+        .leftJoinAndSelect('student.user', 'user')
+        .leftJoinAndSelect('user.role', 'role') // incluir role en el user
+        .leftJoinAndSelect('student.enrollments', 'enrollments')
+        .leftJoinAndSelect('enrollments.group', 'group')
+        .leftJoinAndSelect('enrollments.degree', 'degree')
+        .leftJoinAndSelect('user.headquarters', 'headquarters')
+        .leftJoinAndSelect('user.documentType', 'documentType');
 
-    // Filtros
-    if (headquarterId) {
-      queryBuilder.andWhere('headquarters.id = :headquarterId', { headquarterId });
-    }
+      // Filtros
+      if (headquarterId) {
+        queryBuilder.andWhere('headquarters.id = :headquarterId', { headquarterId });
+      }
 
-    if (programId) {
-      queryBuilder.andWhere('enrollments.programId = :programId', { programId });
-    }
+      if (programId) {
+        queryBuilder.andWhere('enrollments.programId = :programId', { programId });
+      }
 
-    // Búsqueda (compatible con MySQL/MariaDB)
-    if (search && search.trim() !== '') {
-      const searchTerm = `%${search.trim().toLowerCase()}%`;
-      queryBuilder.andWhere(
-        `(
+      // Búsqueda (compatible con MySQL/MariaDB)
+      if (search && search.trim() !== '') {
+        const searchTerm = `%${search.trim().toLowerCase()}%`;
+        queryBuilder.andWhere(
+          `(
           LOWER(user.firstName) LIKE :search OR
           LOWER(user.lastName) LIKE :search OR
           LOWER(user.document) LIKE :search OR
           LOWER(user.username) LIKE :search OR
           LOWER(user.notificationEmail) LIKE :search
         )`,
-        { search: searchTerm }
-      );
-    }
+          { search: searchTerm }
+        );
+      }
 
-    // Obtener resultados y total en paralelo
-    const [students, total] = await Promise.all([
-      queryBuilder
-        .orderBy('user.firstName', 'ASC')
-        .addOrderBy('user.lastName', 'ASC')
-        .skip(skip)
-        .take(limit)
-        .getMany(),
-      queryBuilder.getCount()
-    ]);
+      // Obtener resultados y total en paralelo
+      const [students, total] = await Promise.all([
+        queryBuilder
+          .orderBy('user.firstName', 'ASC')
+          .addOrderBy('user.lastName', 'ASC')
+          .skip(skip)
+          .take(limit)
+          .getMany(),
+        queryBuilder.getCount()
+      ]);
 
-    // Transformar para devolver objeto centrado en "user"
-    const transformed = students.map((student) => {
-      // Desestructuramos student para separar user y enrollments del resto
-      const { user = null, enrollments = [], ...studentFields } = student as any;
+      // Transformar para devolver objeto centrado en "user"
+      const transformed = students.map((student) => {
+        // Desestructuramos student para separar user y enrollments del resto
+        const { user = null, enrollments = [], ...studentFields } = student as any;
 
-      // Si no hay user (por alguna razón) devolvemos algo básico
-      if (!user) {
-        return {
+        // Si no hay user (por alguna razón) devolvemos algo básico
+        if (!user) {
+          return {
+            ...studentFields,
+            student: { ...studentFields, enrollments: enrollments || [] },
+            hasEnrollment: (enrollments && enrollments.length > 0) || false
+          };
+        }
+
+        // Construimos el objeto final: propiedades del user en el primer nivel + student anidado
+        const userObj = { ...user };
+
+        // Evitar duplicados/conflictos: quitar relaciones repetidas dentro de studentFields si las hubiese
+        const studentObj = {
           ...studentFields,
-          student: { ...studentFields, enrollments: enrollments || [] },
+          enrollments: enrollments || []
+        };
+
+        return {
+          ...userObj,           // id, firstName, lastName, document, username, etc.
+          student: studentObj,  // todos los campos del student + enrollments
+          role: userObj.role || null,
+          documentType: userObj.documentType || null,
+          headquarters: userObj.headquarters || [],
           hasEnrollment: (enrollments && enrollments.length > 0) || false
         };
-      }
+      });
 
-      // Construimos el objeto final: propiedades del user en el primer nivel + student anidado
-      const userObj = { ...user };
-
-      // Evitar duplicados/conflictos: quitar relaciones repetidas dentro de studentFields si las hubiese
-      const studentObj = {
-        ...studentFields,
-        enrollments: enrollments || []
-      };
+      const totalPages = Math.ceil(total / limit);
 
       return {
-        ...userObj,           // id, firstName, lastName, document, username, etc.
-        student: studentObj,  // todos los campos del student + enrollments
-        role: userObj.role || null,
-        documentType: userObj.documentType || null,
-        headquarters: userObj.headquarters || [],
-        hasEnrollment: (enrollments && enrollments.length > 0) || false
-      };
-    });
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      success: true,
-      message: 'Estudiantes recuperados exitosamente',
-      data: {
-        items: transformed,
-        meta: {
-          total,
-          page,
-          limit,
-          totalPages,
-          hasNextPage: page < totalPages,
-          hasPreviousPage: page > 1
+        success: true,
+        message: 'Estudiantes recuperados exitosamente',
+        data: {
+          items: transformed,
+          meta: {
+            total,
+            page,
+            limit,
+            totalPages,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1
+          }
         }
-      }
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: `Error al recuperar estudiantes: ${error.message}`,
-      data: null
-    };
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al recuperar estudiantes: ${error.message}`,
+        data: null
+      };
+    }
   }
-}
 
+
+  async findOneUser(id: number) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id },
+      });
+      return user;
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error al recuperar estudiante: ${error.message}`,
+        data: null
+      };
+    }
+  }
 
 }

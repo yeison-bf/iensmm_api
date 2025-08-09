@@ -3,13 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateNotificationDto, UpdateNotificationDto } from './dto/create-notification.dto';
 import { Notification } from './entities/notification.entity';
+import { UsersService } from '../users/users.service';
+
+
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
-  ) {}
+    private userService: UsersService, // Inyectar el UserService
+
+  ) { }
 
   async create(createNotificationDto: CreateNotificationDto): Promise<Notification> {
     // Extraer solo los nombres de los recipients y unirlos con punto y coma
@@ -25,30 +30,77 @@ export class NotificationService {
       totalRecipients: createNotificationDto.totalRecipients,
       status: createNotificationDto.status ?? true,
       instiution: createNotificationDto.instiution,
+      userId: createNotificationDto.userId
     });
 
     return await this.notificationRepository.save(notification);
   }
 
-
   async findAll(institution: number): Promise<Notification[]> {
-    return await this.notificationRepository.find({
+    const notifications = await this.notificationRepository.find({
       where: { instiution: institution },
       order: { createdAt: 'DESC' }
     });
+
+    // Obtener datos de usuario para cada notificación
+    const notificationsWithUser = await Promise.all(
+      notifications.map(async (notification) => {
+        let user = null;
+        if (notification.userId) {
+          try {
+            user = await this.userService.findOneUser(notification.userId);
+          } catch (error) {
+            console.error(`Usuario con ID ${notification.userId} no encontrado:`, error);
+            user = null;
+          }
+        }
+
+        return {
+          ...notification,
+          user: user ? {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.notificationEmail,
+            // Agrega otros campos que necesites del usuario
+          } : null
+        };
+      })
+    );
+    return notificationsWithUser;
   }
 
 
-  async findOne(id: number): Promise<Notification> {
+  async findOne(id: number): Promise<any> {
     const notification = await this.notificationRepository.findOne({
       where: { id }
     });
-    
+
     if (!notification) {
       throw new Error(`Notification with ID ${id} not found`);
     }
-    
-    return notification;
+
+    // Obtener datos del usuario si existe userId
+    let user = null;
+    if (notification.userId) {
+      try {
+        user = await this.userService.findOneUser(notification.userId);
+      } catch (error) {
+        console.error(`Usuario con ID ${notification.userId} no encontrado:`, error);
+        user = null;
+      }
+    }
+
+    return {
+      ...notification,
+      user: user ? {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        // Agrega otros campos que necesites del usuario
+      } : null
+    };
   }
 
   async update(id: number, updateNotificationDto: UpdateNotificationDto): Promise<Notification> {

@@ -35,10 +35,14 @@ export class CreateNotificationDto {
 
   @IsNumber()
   instiution: number;
-  
+
   @IsOptional()
   @IsBoolean()
   status?: boolean;
+
+  @IsNumber()
+  userId: number;
+
 }
 
 export class UpdateNotificationDto {

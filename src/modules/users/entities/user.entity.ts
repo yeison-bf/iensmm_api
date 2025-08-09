@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable, OneToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable, OneToOne, OneToMany } from 'typeorm';
 import { Role } from '../../roles/entities/role.entity';
 import { DocumentType } from '../../document-type/entities/document-type.entity';
 import { Headquarters } from '../../headquarters/entities/headquarters.entity';
 import { Student } from 'src/modules/students/entities/student.entity';
 import { Administrator } from 'src/modules/administrators/entities/administrator.entity';
+import { Notification } from 'src/modules/notification/entities/notification.entity';
 
 @Entity('user')
 export class User {
@@ -82,4 +83,5 @@ export class User {
 
   @Column({ type: 'int' })
   institution: number;
+
 }

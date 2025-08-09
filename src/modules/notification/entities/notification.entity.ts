@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { User } from 'src/modules/users/entities/user.entity';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('notifications')
 export class Notification {
@@ -29,4 +30,9 @@ export class Notification {
 
     @CreateDateColumn()
     createdAt: Date;
+
+
+    @Column()
+    userId: number; // Esta es la FK explícita
+
 }
