@@ -12,12 +12,12 @@ export class NotificationController {
   }
 
   @Get()
-  findAll(@Query('status') status?: string) {
+  findAll(@Query('status') status?: string,@Query('institution') institution?: number) {
     if (status !== undefined) {
       const statusBoolean = status === 'true';
-      return this.notificationService.findByStatus(statusBoolean);
+      return this.notificationService.findByStatus(statusBoolean, institution);
     }
-    return this.notificationService.findAll();
+    return this.notificationService.findAll(institution);
   }
 
   @Get(':id')

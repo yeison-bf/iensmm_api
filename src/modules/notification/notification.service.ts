@@ -31,12 +31,13 @@ export class NotificationService {
   }
 
 
-  async findAll(): Promise<Notification[]> {
+  async findAll(institution: number): Promise<Notification[]> {
     return await this.notificationRepository.find({
+      where: { instiution: institution },
       order: { createdAt: 'DESC' }
     });
   }
-  
+
 
   async findOne(id: number): Promise<Notification> {
     const notification = await this.notificationRepository.findOne({
@@ -63,9 +64,9 @@ export class NotificationService {
   }
 
   // Método adicional para obtener las notificaciones por estado
-  async findByStatus(status: boolean): Promise<Notification[]> {
+  async findByStatus(status: boolean, institution: number): Promise<Notification[]> {
     return await this.notificationRepository.find({
-      where: { status },
+      where: { status, instiution: institution },
       order: { createdAt: 'DESC' }
     });
   }
