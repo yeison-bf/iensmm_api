@@ -11,9 +11,34 @@ import { UpdateStudentGradesBulkDto } from './dto/update-student-grade.dto';
 import { Degree } from '../degrees/entities/degree.entity';
 import { Group } from '../group/entities/group.entity';
 import { MailService } from 'src/mail/mail.service';
+import * as pdfParse from 'pdf-parse';
+
+
+
+export interface StudentData {
+  nombre: string;
+  grupo: string;
+  codigo: string;
+  asignaturas: Array<{
+    numero: number;
+    nombre: string;
+    intensidad_horaria: number;
+    nota: number;
+    desempeño: string;
+  }>;
+  estado: string; // APROBADO, APLAZADO
+  areas_recuperar?: Array<{
+    asignatura: string;
+    nota: number;
+    nivel_requerido: number;
+    fecha: string;
+  }>;
+}
+
 
 @Injectable()
 export class StudentGradesService {
+
   constructor(
 
     @InjectRepository(StudentGrade)
@@ -36,6 +61,8 @@ export class StudentGradesService {
   ) { }
 
 
+
+
   async notificarUsuario(email: string, nombre: string) {
     const contenido = `
       <h1>Hola ${nombre}</h1>
@@ -44,8 +71,6 @@ export class StudentGradesService {
 
     await this.mailService.sendMail(email, 'Registro confirmado', contenido);
   }
-
-
 
   async create(createGradeDto: CreateStudentGradeDto) {
     try {
@@ -140,24 +165,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   async findAll(studentId?: number, periodId?: number, teacherId?: number, thinkingDetailId?: number) {
     try {
@@ -288,10 +295,6 @@ export class StudentGradesService {
     }
   }
 
-
-
-  
-
   async findByStudentCertificate(studentEnrollmentId?: number, periodDetailId?: number) {
     try {
       const queryBuilder = this.gradeRepository
@@ -299,8 +302,8 @@ export class StudentGradesService {
         .leftJoinAndSelect('grade.studentEnrollment', 'enrollment')
         .leftJoinAndSelect('grade.academicThinkingDetail', 'thinkingDetail')
         .leftJoinAndSelect('thinkingDetail.trainingArea', 'trainingArea')
-        // .leftJoinAndSelect('grade.period', 'period')
-        // .leftJoinAndSelect('grade.teacher', 'teacher');
+      // .leftJoinAndSelect('grade.period', 'period')
+      // .leftJoinAndSelect('grade.teacher', 'teacher');
 
       if (studentEnrollmentId) {
         queryBuilder.andWhere('grade.studentEnrollmentId = :studentEnrollmentId', { studentEnrollmentId });
@@ -323,13 +326,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
-
-
-
-
 
   async findByFilters(groupId?: number, degreeId?: number, thinkingDetailId?: number, periodDetailId?: number) {
     try {
@@ -374,24 +370,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   async findByFiltersTrainignArea(groupId?: number, degreeId?: number, periodDetailId?: number) {
     try {
@@ -444,17 +422,6 @@ export class StudentGradesService {
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
   async findByFiltersVoletin(groupId?: number, degreeId?: number, thinkingDetailId?: number, periodDetailId?: number) {
     try {
       const queryBuilder = this.gradeRepository
@@ -499,18 +466,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
 
   async findByFiltersLeveling(
     groupId?: number,
@@ -564,8 +519,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
 
   async findByFiltersLevelingList(
     groupId?: number,
@@ -658,9 +611,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
 
   async findByTeacherAndYear(
     teacherId: number,
@@ -812,25 +762,21 @@ export class StudentGradesService {
     }
   }
 
-
   async checkAllGradesStatusByStudentAndPeriod(
     studentId: number,
     periodId: number,
   ): Promise<boolean> {
     try {
       const grades = await this.gradeRepository.find({
-        where: { studentEnrollmentId: studentId, periodDetailId: periodId, status: false }
+        where: { studentEnrollmentId: studentId, periodDetailId: periodId, status: true }
       })
+      console.log(grades)
       // Si no encuentra ninguna nota con status false, significa que todas están en true
       return grades.length > 0 ? true : false;
     } catch (error) {
       throw new Error(`Error al verificar estado de notas: ${error.message}`);
     }
   }
-
-
-
-
 
   async findByEnrollmentAndPeriod(studentEnrollmentId: number, periodId: number) {
     try {
@@ -917,8 +863,6 @@ export class StudentGradesService {
     }
   }
 
-
-
   // Listar promedios por peeridos
   async getGradeAveragesByPeriod(enrollmentId: number, periodId: number) {
     try {
@@ -990,9 +934,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
 
   async getGradesGroupedForChart(studentEnrollmentId: number, periodDetailId: number) {
     try {
@@ -1075,19 +1016,6 @@ export class StudentGradesService {
       };
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // MÉTODO CORREGIDO
   async updateBulk(updateGradesDto: UpdateStudentGradesBulkDto) {
@@ -1196,6 +1124,215 @@ export class StudentGradesService {
       };
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // Método para agregar a tu servicio existente
+async extractDataFromPdf(pdfBuffer: Buffer): Promise<StudentData[]> {
+  console.log("Si entra al pdf ")
+  try {
+    // Parsear el PDF
+    const pdfData = await pdfParse(pdfBuffer);
+    const text = pdfData.text;
+    
+    // Dividir el texto en secciones (páginas o bloques de estudiante)
+    const sections = this.splitIntoSections(text);
+    
+    // Extraer datos de cada sección
+    const extractedData: StudentData[] = [];
+    
+    for (const section of sections) {
+      const data = this.extractDataFromSection(section);
+      if (data) {
+        extractedData.push(data);
+      }
+    }
+    
+    return this.validateAndCleanData(extractedData);
+    
+  } catch (error) {
+    throw new Error(`Error procesando PDF: ${error.message}`);
+  }
+}
+
+private splitIntoSections(text: string): string[] {
+  // Dividir por nombre de estudiante (cada línea que tiene nombres completos en mayúsculas)
+  const lines = text.split('\n');
+  const sections = [];
+  let currentSection = '';
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Buscar líneas que parecen nombres de estudiantes (todas mayúsculas, más de 10 caracteres)
+    if (line.length > 10 && /^[A-ZÁÉÍÓÚÑ\s]+$/.test(line) && line.includes(' ') && !line.includes('NORMAL') && !line.includes('MARIA')) {
+      // Si ya tenemos una sección, guardarla
+      if (currentSection.length > 100) {
+        sections.push(currentSection);
+      }
+      // Iniciar nueva sección con este nombre
+      currentSection = line + '\n';
+    } else {
+      currentSection += line + '\n';
+    }
+  }
+  
+  // Agregar la última sección
+  if (currentSection.length > 100) {
+    sections.push(currentSection);
+  }
+  
+  return sections;
+}
+
+private extractDataFromSection(section: string): StudentData | null {
+  try {
+    const lines = section.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Buscar nombre (primera línea que parece un nombre)
+    let nombre = '';
+    for (const line of lines) {
+      if (line.length > 10 && /^[A-ZÁÉÍÓÚÑ\s]+$/.test(line) && line.includes(' ') && !line.includes('NORMAL')) {
+        nombre = line;
+        break;
+      }
+    }
+    
+    if (!nombre) return null;
+    
+    // Buscar código - línea que contiene "Codigo" seguido de números
+    let codigo = '';
+    for (const line of lines) {
+      const codigoMatch = line.match(/Codigo\s+(\d+)/);
+      if (codigoMatch) {
+        codigo = codigoMatch[1];
+        break;
+      }
+    }
+    
+    // Buscar grupo - línea que contiene "Grupo:"
+    let grupo = '';
+    for (const line of lines) {
+      const grupoMatch = line.match(/Grupo:\s*(\w+)/);
+      if (grupoMatch) {
+        grupo = grupoMatch[1];
+        break;
+      }
+    }
+    
+    // Extraer asignaturas - buscar líneas que empiecen con número y tengan nota al final
+    const asignaturas = [];
+    for (const line of lines) {
+      // Patrón: número + texto + número decimal al final
+      const match = line.match(/^(\d+)\s+(\d+)\s*([A-ZÁÉÍÓÚÑ\s&]+?)\s+([\d.]+)$/);
+      if (match) {
+        const desempeñoLine = lines[lines.indexOf(line) - 1] || '';
+        asignaturas.push({
+          numero: parseInt(match[1]),
+          intensidad_horaria: parseInt(match[2]),
+          nombre: match[3].trim(),
+          nota: parseFloat(match[4]),
+          desempeño: desempeñoLine.includes('Desempeño') ? desempeñoLine.trim() : 'Desempeño'
+        });
+      }
+    }
+    
+    // Buscar estado
+    let estado = 'DESCONOCIDO';
+    const sectionText = section.toLowerCase();
+    if (sectionText.includes('aprobado')) estado = 'APROBADO';
+    if (sectionText.includes('aplazado')) estado = 'APLAZADO';
+    
+    // Buscar áreas a recuperar
+    const areas_recuperar = [];
+    for (const line of lines) {
+      const recuperarMatch = line.match(/([A-ZÁÉÍÓÚÑ\s]+)\s+([\d.]+)\s+NIV\(([\d.]+)\)\s+([\d-]+)/);
+      if (recuperarMatch) {
+        areas_recuperar.push({
+          asignatura: recuperarMatch[1].trim(),
+          nota: parseFloat(recuperarMatch[2]),
+          nivel_requerido: parseFloat(recuperarMatch[3]),
+          fecha: recuperarMatch[4]
+        });
+      }
+    }
+    
+    if (asignaturas.length === 0) return null;
+    
+    return {
+      nombre,
+      grupo,
+      codigo,
+      asignaturas,
+      estado,
+      areas_recuperar: areas_recuperar.length > 0 ? areas_recuperar : undefined
+    };
+    
+  } catch (error) {
+    console.error('Error extrayendo datos de sección:', error);
+    return null;
+  }
+}
+
+private cleanName(name: string): string {
+  return name
+    .replace(/\s+/g, ' ')
+    .replace(/[^\w\sÀ-ÿ]/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+private validateAndCleanData(data: StudentData[]): StudentData[] {
+  return data.filter(item => {
+    if (!item.nombre || !item.codigo) return false;
+    if (!item.asignaturas || item.asignaturas.length === 0) return false;
+    
+    // Limpiar nombre
+    item.nombre = this.cleanName(item.nombre);
+    
+    // Validar notas
+    item.asignaturas = item.asignaturas.filter(asig => 
+      asig.nota >= 0 && asig.nota <= 5 && asig.nombre.length > 0
+    );
+    
+    return item.asignaturas.length > 0;
+  });
+}
+
+
 
 
 }

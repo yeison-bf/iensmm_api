@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseBoolPipe, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, ParseBoolPipe, ParseIntPipe, DefaultValuePipe, UploadedFile, BadRequestException, UseInterceptors } from '@nestjs/common';
 import { StudentGradesService } from './student-grades.service';
 import { CreateStudentGradeDto } from './dto/create-student-grade.dto';
 import { UpdateStudentGradesBulkDto } from './dto/update-student-grade.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('student-grades')
 export class StudentGradesController {
@@ -35,7 +36,7 @@ export class StudentGradesController {
 
 
   @Get('status-check')
-   async checkGradesStatus(
+  async checkGradesStatus(
     @Query('studentId', ParseIntPipe) studentId: number,
     @Query('periodId', ParseIntPipe) periodId: number,
   ) {
@@ -92,7 +93,7 @@ export class StudentGradesController {
 
 
 
-   @Get('studentsCertificado')
+  @Get('studentsCertificado')
   findByStudentCertificate(
     @Query('studentEnrollmentId') studentEnrollmentId?: number,
     @Query('periodDetailId') periodDetailId?: number,
@@ -130,6 +131,55 @@ export class StudentGradesController {
   create(@Body() createGradeDto: CreateStudentGradeDto) {
     return this.studentGradesService.create(createGradeDto);
   }
+
+
+
+  @Post('extract-pdf')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB
+    },
+    fileFilter: (req, file, callback) => {
+      if (file.mimetype !== 'application/pdf') {
+        callback(new BadRequestException('Solo archivos PDF permitidos'), false);
+        return;
+      }
+      callback(null, true);
+    },
+  }))
+  async extractPdfToJson(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Archivo PDF requerido');
+    }
+
+    try {
+      const extractedData = await this.studentGradesService.extractDataFromPdf(file.buffer);
+
+      return {
+        success: true,
+        message: 'PDF procesado correctamente',
+        total_records: extractedData.length,
+        data: extractedData
+      };
+
+    } catch (error) {
+      throw new BadRequestException(`Error: ${error.message}`);
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   @Get(':id')
   findOne(@Param('id') id: number) {
