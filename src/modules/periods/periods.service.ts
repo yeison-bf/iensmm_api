@@ -39,6 +39,7 @@ export class PeriodsService {
         periodsQuantity: createPeriodDto.periodsQuantity,
         institution,
         programId: createPeriodDto.programId,
+        semestreAnual: createPeriodDto.semestreAnual
       });
 
       // Save the period first
@@ -256,7 +257,8 @@ export class PeriodsService {
       period.year = updatePeriodDto.year ?? period.year;
       period.periodsQuantity = updatePeriodDto.periodsQuantity ?? period.periodsQuantity;
       period.programId = updatePeriodDto.programId ?? period.programId;
-  
+      period.semestreAnual = updatePeriodDto.semestreAnual ?? period.semestreAnual;
+
       const updatedPeriod = await this.periodRepository.save(period);
   
       // Si vienen detalles de periodo, actualizarlos
