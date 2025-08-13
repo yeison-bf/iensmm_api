@@ -63,8 +63,5 @@ export class CreatePeriodDetailDto {
   @IsBoolean()
   statushasLeveling: boolean = false; // Valor por defecto: false
 
-  @IsOptional()
-  @IsBoolean()
-  semestreAnual: boolean = false; // Valor por defecto: false
 
 }

@@ -62,7 +62,5 @@ export class PeriodDetail {
   @Column({ type: 'boolean', default: false })
   statushasLeveling: boolean; // ¿Tiene nivelación?
 
-  @Column({ type: 'boolean', default: false })
-  semestreAnual: boolean; // ¿Tiene nivelación?
 
 }

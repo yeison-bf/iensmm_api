@@ -47,10 +47,6 @@ class PeriodDetailDto {
 
   @IsOptional()
   @IsBoolean()
-  semestreAnual: boolean = false;
-
-  @IsOptional()
-  @IsBoolean()
   statushasLeveling: boolean = false;
 
 }
@@ -82,4 +78,9 @@ export class CreatePeriodDto {
   @ValidateNested({ each: true })
   @Type(() => PeriodDetailDto)
   periodDetails: PeriodDetailDto[];
+
+  @IsOptional()
+  @IsBoolean()
+  semestreAnual: boolean = false; // Valor por defecto: false
+
 }

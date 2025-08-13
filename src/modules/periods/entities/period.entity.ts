@@ -33,4 +33,9 @@ export class Period {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+
+    @Column({ type: 'boolean', default: false })
+  semestreAnual: boolean; // ¿Tiene nivelación?
+
+  
 }
