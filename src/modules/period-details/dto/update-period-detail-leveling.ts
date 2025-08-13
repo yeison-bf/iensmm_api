@@ -25,4 +25,12 @@ export class UpdatePerioDetailLevelingDto {
     @IsBoolean()
     habilited: boolean = false; // Valor por defecto: false
     
+    @IsOptional()
+    @IsBoolean()
+    statushasLeveling: boolean = false; // Valor por defecto: false
+
+    @IsOptional()
+    @IsBoolean()
+    semestreAnual: boolean = false; // Valor por defecto: false
+
   }

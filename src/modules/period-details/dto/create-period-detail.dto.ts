@@ -4,10 +4,9 @@ import { Type } from 'class-transformer';
 export class CreatePeriodDetailDto {
   @IsOptional()
   id?: number; // ✅ Necesario para actualización
- 
+
   @IsString()
   @IsNotEmpty()
-  @Length(1, 20)
   code: string;
 
   @Type(() => Date)
@@ -58,4 +57,14 @@ export class CreatePeriodDetailDto {
   @IsOptional()
   @IsBoolean()
   habilited: boolean = false; // Valor por defecto: false
+
+
+  @IsOptional()
+  @IsBoolean()
+  statushasLeveling: boolean = false; // Valor por defecto: false
+
+  @IsOptional()
+  @IsBoolean()
+  semestreAnual: boolean = false; // Valor por defecto: false
+
 }

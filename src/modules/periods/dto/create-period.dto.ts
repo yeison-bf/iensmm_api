@@ -28,7 +28,7 @@ class PeriodDetailDto {
   @IsOptional()
   closeDate: Date;
 
-  
+
   @IsOptional()
   @IsDateString()
   startDateLeveling?: Date;
@@ -44,6 +44,14 @@ class PeriodDetailDto {
   @IsOptional()
   @IsBoolean()
   hasRecovery: boolean = false;
+
+  @IsOptional()
+  @IsBoolean()
+  semestreAnual: boolean = false;
+
+  @IsOptional()
+  @IsBoolean()
+  statushasLeveling: boolean = false;
 
 }
 
@@ -65,10 +73,10 @@ export class CreatePeriodDto {
   @IsNumber()
   @IsNotEmpty()
   institutionId: number;
-  
+
   @IsString()
   @IsOptional()
-  programId?:number
+  programId?: number
 
   @IsArray()
   @ValidateNested({ each: true })
